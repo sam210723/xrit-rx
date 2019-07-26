@@ -7,7 +7,6 @@ import ccsds as CCSDS
 from collections import deque
 from time import sleep
 from threading import Thread
-from tools import CCITT_LUT
 
 class Demuxer:
     """
@@ -51,9 +50,9 @@ class Demuxer:
         self.coreReady = True
 
         # Thread globals
-        lastVCID = None             # Last VCID seen
-        crclut = CCITT_LUT()        # CP_PDU CRC LUT
-
+        lastVCID = None                         # Last VCID seen
+        crclut = CCSDS.CP_PDU.CCITT_LUT()       # CP_PDU CRC LUT
+        
         # Open VCDU dump file
         dumpFile = None
         if self.dumpPath != None:

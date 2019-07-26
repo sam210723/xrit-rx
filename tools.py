@@ -39,29 +39,3 @@ def get_bits_int(data, start, length, count):
     bits = get_bits(data, start, length, count)
 
     return int(bits, 2)
-
-
-def CCITT_LUT():
-    """
-    Creates Lookup Table for CRC-16/CCITT-FALSE calculation
-    """
-
-    crcTable = []
-    poly = 0x1021
-    
-    for i in range(256):
-        crc = 0
-        c = i << 8
-
-        for j in range(8):
-            if (crc ^ c) & 0x8000:
-                crc = (crc << 1) ^ poly
-            else:
-                crc = crc << 1
-
-            c = c << 1
-            crc = crc & 0xFFFF
-
-        crcTable.append(crc)
-
-    return crcTable

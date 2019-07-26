@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
   - CP_PDU sequence enum
+  - Moved CCITT LUT function
 
 ### Fixed
   - 
