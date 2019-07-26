@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
   - GK-2A virtual channel names
   - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-img.py))
+  - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-add.py))
 
 ### Changed
   - CP_PDU sequence enum

@@ -32,12 +32,12 @@ def init():
     # Check if input is a directory
     if os.path.isdir(args.INPUT):
         # Loop through files with specified extension in input folder
-        for f in glob.glob(args.INPUT + "/*{}".format(args.ext)):
+        for f in glob.glob(args.INPUT + "/IMG_*{}".format(args.ext)):
             files.append(f)
         files.sort()
         
         if files.__len__() <= 0:
-            print("No \"{}\" files found".format(args.ext))
+            print("No \"{}\" IMG files found".format(args.ext))
             exit(1)
         
         # Print file list
