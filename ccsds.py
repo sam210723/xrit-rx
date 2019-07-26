@@ -52,15 +52,16 @@ class VCDU:
         try:
             return scname[scid]
         except KeyError:
-            return None
+            return "UNKNOWN"
     
     def get_VC(self, vcid):
         """
         Get name of Virtual Channel by ID
         """
         vcname = {}
-        vcname[0] = "FD"
-        vcname[4] = "ANT"
+        vcname[0] = "FULL DISK"
+        vcname[4] = "ALPHA-NUMERIC TEXT"
+        vcname[5] = "ADDITIONAL DATA"
         vcname[63] = "FILL"
 
         try:
@@ -73,7 +74,7 @@ class VCDU:
         Prints information about the current VCDU to the console
         """
 
-        print("\n[VCID] {} {}: {}".format(self.SC, self.VCID, self.VC))
+        print("\n[VCID {}] {}: {}".format(self.VCID, self.SC, self.VC))
 
 
 class M_PDU:
