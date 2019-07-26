@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - 
+  - GK-2A virtual channel names
 
 ### Changed
-  - 
+  - CP_PDU sequence enum
 
 ### Fixed
   - 

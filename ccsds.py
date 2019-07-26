@@ -6,6 +6,7 @@ Parsing and assembly functions for all CCSDS protocol layers
 """
 
 from Crypto.Cipher import DES
+from enum import Enum
 from tools import get_bits, get_bits_int
 import os
 
@@ -124,6 +125,7 @@ class CP_PDU:
     def __init__(self, data):
         self.data = data
         self.PAYLOAD = None
+        self.Sequence = Enum('Sequence', 'CONTINUE FIRST LAST SINGLE')
         self.parse()
     
     def parse(self):
@@ -143,8 +145,14 @@ class CP_PDU:
         self.LENGTH = get_bits_int(header, 32, 16, 48) + 1      # Packet Length
 
         # Parse sequence flag
-        seqn = ["CONTINUE", "FIRST", "LAST", "SINGLE"]
-        self.SEQ = seqn[self.SEQ]
+        if self.SEQ == 0:
+            self.SEQ = self.Sequence.CONTINUE
+        elif self.SEQ == 1:
+            self.SEQ = self.Sequence.FIRST
+        elif self.SEQ == 2:
+            self.SEQ = self.Sequence.LAST
+        elif self.SEQ == 3:
+            self.SEQ = self.Sequence.SINGLE
 
         # Add post-header data to payload
         self.PAYLOAD = self.data[6:]
@@ -190,7 +198,7 @@ class CP_PDU:
             Length: 1
         """
 
-        if self.COUNTER == 0 and self.APID == 0 and self.LENGTH == 1 and self.SEQ == "CONTINUE":
+        if self.COUNTER == 0 and self.APID == 0 and self.LENGTH == 1 and self.SEQ == self.Sequence.CONTINUE:
             return True
         else:
             return False
@@ -221,7 +229,7 @@ class CP_PDU:
         Prints information about the current CP_PDU to the console
         """
 
-        print("  [CP_PDU] APID: {}   SEQ: {}   #{}   LEN: {}".format(self.APID, self.SEQ, self.COUNTER, self.LENGTH))
+        print("  [CP_PDU] APID: {}   SEQ: {}   #{}   LEN: {}".format(self.APID, self.SEQ.name, self.COUNTER, self.LENGTH))
 
 
 class TP_File:

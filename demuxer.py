@@ -289,15 +289,15 @@ class Channel:
         Processes complete CP_PDUs to build a TP_File
         """
 
-        if cppdu.SEQ == "FIRST":
+        if cppdu.SEQ == cppdu.Sequence.FIRST:
             # Create new TP_File
             self.cTPFile = CCSDS.TP_File(cppdu.PAYLOAD[:-2])
 
-        elif cppdu.SEQ == "CONTINUE":
+        elif cppdu.SEQ == cppdu.Sequence.CONTINUE:
             # Add data to TP_File
             self.cTPFile.append(cppdu.PAYLOAD[:-2])
 
-        elif cppdu.SEQ == "LAST":
+        elif cppdu.SEQ == cppdu.Sequence.LAST:
             # Close current TP_File
             lenok = self.cTPFile.finish(cppdu.PAYLOAD[:-2])
 
