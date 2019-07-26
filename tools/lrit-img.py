@@ -153,7 +153,7 @@ def process_group(name, mode, files):
     print()
 
     # Save output image to disk
-    outFName = args.INPUT + "\\" + name + ".jpg"
+    outFName = args.INPUT + "/" + name + ".jpg"
     outImage.save(outFName, format='JPEG', subsampling=0, quality=100)
     print("  Saved image: \"{}\"".format(outFName))
 
