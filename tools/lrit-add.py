@@ -74,8 +74,13 @@ def process_file(fpath):
     # Load file
     headerField, dataField = load_lrit(fpath)
 
+    # Check output extension
+    outext = get_output_ext(mode)
+    if outext == ".bin":
+        print("  UNKNOWN OBSERVATION MODE (dumping as .bin file)")
+
     # Save data to disk
-    outFName = fpath + get_output_ext(mode)
+    outFName = fpath + outext
     outFile = open(outFName, mode="wb")
     outFile.write(dataField)
     outFile.close()
@@ -144,16 +149,17 @@ def get_output_ext(mode):
     exts['GWW3F'] = '.gif'      # Global Wave Model
     exts['RWW3A'] = '.gif'      # Regional Wave Analysis
     exts['SICEA'] = '.png'      # Sea Ice
-    exts['SSTF24'] = '.png'     # Sea Surface Temperature
-    exts['SSTF48'] = '.png'     # Sea Surface Temperature
-    exts['SSTF72'] = '.png'     # Sea Surface Temperature
-    exts['SUFA03'] = '.gif'     # Local Synoptic
-    exts['UP50A'] = '.gif'      # Wide Synoptic
+    exts['SSTA'] = '.gif'       # Sea Surface Temperature Analysis
+    exts['SSTF24'] = '.png'     # Sea Surface Temperature Forecast 24hrs
+    exts['SSTF48'] = '.png'     # Sea Surface Temperature Forecast 48hrs
+    exts['SSTF72'] = '.png'     # Sea Surface Temperature Forecast 72hrs
+    exts['SUFA03'] = '.gif'     # Regional Synoptic
+    exts['UP50A'] = '.gif'      # Synoptic
     
     try:
         return exts[mode]
     except KeyError:
-        return None
+        return '.bin'
 
 
 def get_name(mode):
@@ -166,16 +172,17 @@ def get_name(mode):
     names['GWW3F'] = "Global Wave Model"
     names['RWW3A'] = "Regional Wave Analysis"
     names['SICEA'] = "Sea Ice"
-    names['SSTF24'] = "Sea Surface Temperature"
-    names['SSTF48'] = "Sea Surface Temperature"
-    names['SSTF72'] = "Sea Surface Temperature"
+    names['SSTA'] = "Sea Surface Temperature Analysis"
+    names['SSTF24'] = "Sea Surface Temperature Forecast 24hrs"
+    names['SSTF48'] = "Sea Surface Temperature Forecast 48hrs"
+    names['SSTF72'] = "Sea Surface Temperature Forecast 72hrs"
     names['SUFA03'] = "Regional Synoptic"
     names['UP50A'] = "Synoptic"
 
     try:
         return names[mode]
     except KeyError:
-        return None
+        return "UNKNOWN"
 
 
 def get_bits(data, start, length, count):
