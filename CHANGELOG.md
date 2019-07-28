@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
   - Moved CCITT LUT function
 
 ### Fixed
-  - 
+  - Handle socket reset exception
 </details>
 
 ## [v1.0](https://github.com/sam210723/xrit-rx/releases/tag/v1.0) - 2019-07-23

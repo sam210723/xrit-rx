@@ -85,13 +85,24 @@ def loop():
 
     while True:
         if source == "GOESRECV":
-            data = sck.recv(buflen + 8)
+            try:
+                data = sck.recv(buflen + 8)
+            except ConnectionResetError:
+                print("LOST CONNECTION TO GOESRECV\nExiting...")
+                demux.stop()
+                exit()
 
             if len(data) == buflen + 8:
                 demux.push(data[8:])
         
         elif source == "OSP":
-            data = sck.recv(buflen)
+            try:
+                data = sck.recv(buflen)
+            except ConnectionResetError:
+                print("LOST CONNECTION TO OPEN SATELLITE PROJECT\nExiting...")
+                demux.stop()
+                exit()
+            
             demux.push(data)
 
         elif source == "FILE":
