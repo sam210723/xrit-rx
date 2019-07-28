@@ -179,7 +179,7 @@ def process_single_segment(fpath):
 
 def load_lrit(fpath):
     """
-    Load LRIT file and return data field
+    Load LRIT file and return fields
     """
 
     # Read file bytes from disk

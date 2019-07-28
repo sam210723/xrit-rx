@@ -89,7 +89,7 @@ def process_file(fpath):
 
 def load_lrit(fpath):
     """
-    Load LRIT file and return data field
+    Load LRIT file and return fields
     """
 
     # Read file bytes from disk
@@ -155,6 +155,7 @@ def get_output_ext(mode):
     exts['SSTF72'] = '.png'     # Sea Surface Temperature Forecast 72hrs
     exts['SUFA03'] = '.gif'     # Regional Synoptic
     exts['UP50A'] = '.gif'      # Synoptic
+    exts['UP50F24'] = '.png'    # Synoptic Forecast 24hrs
     
     try:
         return exts[mode]
@@ -178,6 +179,7 @@ def get_name(mode):
     names['SSTF72'] = "Sea Surface Temperature Forecast 72hrs"
     names['SUFA03'] = "Regional Synoptic"
     names['UP50A'] = "Synoptic"
+    names['UP50F24'] = "Synoptic Forecast 24hrs"
 
     try:
         return names[mode]
