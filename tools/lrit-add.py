@@ -69,22 +69,24 @@ def process_file(fpath):
     """
 
     name, mode = parse_fname(fpath)
-    print("  Type: {}".format(get_name(mode)))
+    print("  Image Type:       {}".format(get_name(mode)))
 
     # Load file
     headerField, dataField = load_lrit(fpath)
 
     # Check output extension
-    outext = get_output_ext(mode)
+    outext = get_output_ext(dataField)
     if outext == ".bin":
-        print("  UNKNOWN OBSERVATION MODE (dumping as .bin file)")
+        print("  Output Format:    UNKNOWN FILE SIGNATURE (dumping as .bin file)")
+    else:
+        print("  Output Format:    {}".format(outext[1:].upper()))
 
     # Save data to disk
     outFName = fpath + outext
     outFile = open(outFName, mode="wb")
     outFile.write(dataField)
     outFile.close()
-    print("  Saved data: \"{}\"".format(outFName))
+    print("  Output Path:     \"{}\"".format(outFName))
 
 
 def load_lrit(fpath):
@@ -139,28 +141,18 @@ def parse_fname(fpath):
     return name, mode
 
 
-def get_output_ext(mode):
+def get_output_ext(data):
     """
-    Returns output extenstion of given observation mode
+    Detects output extension based on file signature
     """
 
-    exts = {}
-    exts['ANT'] = '.txt'        # Alpha-numeric Text
-    exts['GWW3F'] = '.gif'      # Global Wave Model
-    exts['RWW3A'] = '.gif'      # Regional Wave Analysis
-    exts['SICEA'] = '.png'      # Sea Ice
-    exts['SSTA'] = '.gif'       # Sea Surface Temperature Analysis
-    exts['SSTF24'] = '.png'     # Sea Surface Temperature Forecast 24hrs
-    exts['SSTF48'] = '.png'     # Sea Surface Temperature Forecast 48hrs
-    exts['SSTF72'] = '.png'     # Sea Surface Temperature Forecast 72hrs
-    exts['SUFA03'] = '.gif'     # Regional Synoptic
-    exts['UP50A'] = '.gif'      # Synoptic
-    exts['UP50F24'] = '.png'    # Synoptic Forecast 24hrs
-    
-    try:
-        return exts[mode]
-    except KeyError:
-        return '.bin'
+    ext = ".bin"
+    if data[:3] == b'GIF':
+        ext = ".gif"
+    elif data[1:4] == b'PNG':
+        ext = ".png"
+
+    return ext
 
 
 def get_name(mode):
