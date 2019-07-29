@@ -18,6 +18,9 @@ All notable changes to this project will be documented in this file.
 ## [v1.0.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.1) - 2019-07-29
 Added tools for bulk processing LRIT IMG and ADD files, plus some minor code refactoring.
 
+<details>
+<summary>Details</summary>
+
 ### Added
   - GK-2A virtual channel names
   - GK-2A file type names
@@ -31,7 +34,7 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 
 ### Fixed
   - Socket connection reset exception
-
+</details>
 
 ## [v1.0](https://github.com/sam210723/xrit-rx/releases/tag/v1.0) - 2019-07-23
 Initial release based on the [COMS-1 project](https://github.com/sam210723/COMS-1).
