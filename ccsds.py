@@ -7,7 +7,6 @@ Parsing and assembly functions for all CCSDS protocol layers
 
 from Crypto.Cipher import DES
 from enum import Enum
-from tools import get_bits, get_bits_int
 import os
 
 
@@ -18,6 +17,7 @@ class VCDU:
 
     def __init__(self, data):
         self.data = data
+        self.tools = Tools()
         self.parse()
     
     def parse(self):
@@ -28,12 +28,12 @@ class VCDU:
         header = self.data[:6]
 
         # Header fields
-        self.VER = get_bits_int(header, 0, 2, 48)           # Virtual Channel Version
-        self.SCID = get_bits_int(header, 2, 8, 48)          # Spacecraft ID
-        self.VCID = get_bits_int(header, 10, 6, 48)         # Virtual Channel ID
-        self.COUNTER = get_bits_int(header, 16, 24, 48)     # VCDU Counter
-        self.REPLAY = get_bits_int(header, 40, 1, 48)       # Replay Flag
-        self.SPARE = get_bits_int(header, 41, 7, 48)        # Spare (always b0000000)
+        self.VER = self.tools.get_bits_int(header, 0, 2, 48)           # Virtual Channel Version
+        self.SCID = self.tools.get_bits_int(header, 2, 8, 48)          # Spacecraft ID
+        self.VCID = self.tools.get_bits_int(header, 10, 6, 48)         # Virtual Channel ID
+        self.COUNTER = self.tools.get_bits_int(header, 16, 24, 48)     # VCDU Counter
+        self.REPLAY = self.tools.get_bits_int(header, 40, 1, 48)       # Replay Flag
+        self.SPARE = self.tools.get_bits_int(header, 41, 7, 48)        # Spare (always b0000000)
 
         # Spacecraft and virtual channel names
         self.SC = self.get_SC(self.SCID)
@@ -85,6 +85,7 @@ class M_PDU:
 
     def __init__(self, data):
         self.data = data
+        self.tools = Tools()
         self.parse()
     
     def parse(self):
@@ -95,8 +96,8 @@ class M_PDU:
         header = self.data[:2]
 
         # Header fields
-        #self.SPARE = get_bits(header, 0, 5, 16)            # Spare Field (always b00000)
-        self.POINTER = get_bits_int(header, 5, 11, 16)      # First Pointer Header
+        #self.SPARE = self.tools.get_bits(header, 0, 5, 16)            # Spare Field (always b00000)
+        self.POINTER = self.tools.get_bits_int(header, 5, 11, 16)      # First Pointer Header
 
         # Detect if M_PDU contains CP_PDU header
         if self.POINTER != 2047:  # 0x07FF
@@ -124,6 +125,7 @@ class CP_PDU:
 
     def __init__(self, data):
         self.data = data
+        self.tools = Tools()
         self.PAYLOAD = None
         self.Sequence = Enum('Sequence', 'CONTINUE FIRST LAST SINGLE')
         self.parse()
@@ -136,13 +138,13 @@ class CP_PDU:
         header = self.data[:6]
 
         # Header fields
-        self.VER = get_bits(header, 0, 3, 48)                   # Version (always b000)
-        self.TYPE = get_bits(header, 3, 1, 48)                  # Type (always b0)
-        self.SHF = get_bits(header, 4, 1, 48)                   # Secondary Header Flag
-        self.APID = get_bits_int(header, 5, 11, 48)             # Application Process ID
-        self.SEQ = get_bits_int(header, 16, 2, 48)              # Sequence Flag
-        self.COUNTER = get_bits_int(header, 18, 14, 48)         # Packet Sequence Counter
-        self.LENGTH = get_bits_int(header, 32, 16, 48) + 1      # Packet Length
+        self.VER = self.tools.get_bits(header, 0, 3, 48)                   # Version (always b000)
+        self.TYPE = self.tools.get_bits(header, 3, 1, 48)                  # Type (always b0)
+        self.SHF = self.tools.get_bits(header, 4, 1, 48)                   # Secondary Header Flag
+        self.APID = self.tools.get_bits_int(header, 5, 11, 48)             # Application Process ID
+        self.SEQ = self.tools.get_bits_int(header, 16, 2, 48)              # Sequence Flag
+        self.COUNTER = self.tools.get_bits_int(header, 18, 14, 48)         # Packet Sequence Counter
+        self.LENGTH = self.tools.get_bits_int(header, 32, 16, 48) + 1      # Packet Length
 
         # Parse sequence flag
         if self.SEQ == 0:
@@ -203,7 +205,7 @@ class CP_PDU:
         else:
             return False
     
-    def CCITT_LUT():
+    def CCITT_LUT(self):
         """
         Creates Lookup Table for CRC-16/CCITT-FALSE calculation
         """
@@ -264,6 +266,7 @@ class TP_File:
 
     def __init__(self, data):
         self.data = data
+        self.tools = Tools()
         self.PAYLOAD = None
         self.parse()
     
@@ -275,8 +278,8 @@ class TP_File:
         header = self.data[:10]
 
         # Header fields
-        self.COUNTER = get_bits_int(header, 0, 16, 80)                # File Counter
-        self.LENGTH = int(get_bits_int(header, 16, 64, 80)/8)         # File Length
+        self.COUNTER = self.tools.get_bits_int(header, 0, 16, 80)                # File Counter
+        self.LENGTH = int(self.tools.get_bits_int(header, 16, 64, 80)/8)         # File Length
 
         # Add post-header data to payload
         self.PAYLOAD = self.data[10:]
@@ -343,6 +346,7 @@ class S_PDU:
 
     def __init__(self, data, k):
         self.data = data
+        self.tools = Tools()
         self.keys = k
         self.key = None
         self.headerField = None
@@ -369,11 +373,11 @@ class S_PDU:
         primaryHeader = self.data[:16]
 
         # Header fields
-        self.HEADER_TYPE = get_bits_int(primaryHeader, 0, 8, 128)               # Header Type (always 0x00)
-        self.HEADER_LEN = get_bits_int(primaryHeader, 8, 16, 128)               # Header Length (always 0x10)
-        self.FILE_TYPE = get_bits_int(primaryHeader, 24, 8, 128)                # File Type
-        self.TOTAL_HEADER_LEN = get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
-        self.DATA_LEN = get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
+        self.HEADER_TYPE = self.tools.get_bits_int(primaryHeader, 0, 8, 128)               # Header Type (always 0x00)
+        self.HEADER_LEN = self.tools.get_bits_int(primaryHeader, 8, 16, 128)               # Header Length (always 0x10)
+        self.FILE_TYPE = self.tools.get_bits_int(primaryHeader, 24, 8, 128)                # File Type
+        self.TOTAL_HEADER_LEN = self.tools.get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
+        self.DATA_LEN = self.tools.get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
 
         #print("  Header Length: {} bits ({} bytes)".format(self.TOTAL_HEADER_LEN, self.TOTAL_HEADER_LEN/8))
         #print("  Data Length: {} bits ({} bytes)".format(self.DATA_LEN, self.DATA_LEN/8))
@@ -439,6 +443,7 @@ class xRIT:
 
     def __init__(self, data):
         self.data = data
+        self.tools = Tools()
         self.parse()
     
     def parse(self):
@@ -449,11 +454,11 @@ class xRIT:
         primaryHeader = self.data[:16]
 
         # Header fields
-        self.HEADER_TYPE = get_bits_int(primaryHeader, 0, 8, 128)               # Header Type (always 0x00)
-        self.HEADER_LEN = get_bits_int(primaryHeader, 8, 16, 128)               # Header Length (always 0x10)
-        self.FILE_TYPE = get_bits_int(primaryHeader, 24, 8, 128)                # File Type
-        self.TOTAL_HEADER_LEN = get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
-        self.DATA_LEN = get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
+        self.HEADER_TYPE = self.tools.get_bits_int(primaryHeader, 0, 8, 128)               # Header Type (always 0x00)
+        self.HEADER_LEN = self.tools.get_bits_int(primaryHeader, 8, 16, 128)               # Header Length (always 0x10)
+        self.FILE_TYPE = self.tools.get_bits_int(primaryHeader, 24, 8, 128)                # File Type
+        self.TOTAL_HEADER_LEN = self.tools.get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
+        self.DATA_LEN = self.tools.get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
 
         #TODO: Update when GK-2A specification available
         if self.FILE_TYPE == 0:
@@ -547,3 +552,41 @@ class xRIT:
         """
 
         print("  [NEW FILE] {}".format(self.FILE_NAME))
+
+
+class Tools:
+    """
+    Various utility functions
+    """
+
+    def get_bits(self, data, start, length, count):
+        """
+        Get bits from bytes
+
+        :param data: Bytes to get bits from
+        :param start: Start offset in bits
+        :param length: Number of bits to get
+        :param count: Total number of bits in bytes (accounts for leading zeros)
+        """
+
+        dataInt = int.from_bytes(data, byteorder='big')
+        dataBin = format(dataInt, '0' + str(count) + 'b')
+        end = start + length
+        bits = dataBin[start : end]
+
+        return bits
+
+
+    def get_bits_int(self, data, start, length, count):
+        """
+        Get bits from bytes as integer
+
+        :param data: Bytes to get bits from
+        :param start: Start offset in bits
+        :param length: Number of bits to get
+        :param count: Total number of bits in bytes (accounts for leading zeros)
+        """
+
+        bits = self.get_bits(data, start, length, count)
+
+        return int(bits, 2)

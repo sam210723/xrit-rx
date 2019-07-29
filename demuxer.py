@@ -51,7 +51,7 @@ class Demuxer:
 
         # Thread globals
         lastVCID = None                         # Last VCID seen
-        crclut = CCSDS.CP_PDU.CCITT_LUT()       # CP_PDU CRC LUT
+        crclut = CCSDS.CP_PDU.CCITT_LUT(None)   # CP_PDU CRC LUT
         
         # Open VCDU dump file
         dumpFile = None
