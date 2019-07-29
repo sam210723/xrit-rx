@@ -20,6 +20,7 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 
 ### Added
   - GK-2A virtual channel names
+  - GK-2A file type names
   - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-img.py))
   - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-add.py))
 

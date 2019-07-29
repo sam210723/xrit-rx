@@ -460,7 +460,7 @@ class xRIT:
         self.TOTAL_HEADER_LEN = self.tools.get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
         self.DATA_LEN = self.tools.get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
 
-        #TODO: Update when GK-2A specification available
+        # Get file type
         if self.FILE_TYPE == 0:
             self.FILE_TYPE = "Image Data"
         elif self.FILE_TYPE == 1:
@@ -469,14 +469,8 @@ class xRIT:
             self.FILE_TYPE = "Alphanumeric Text"
         elif self.FILE_TYPE == 3:
             self.FILE_TYPE = "Encryption Key Message"
-        elif self.FILE_TYPE == 128:
-            self.FILE_TYPE = "CMDPS Analysis Data"
-        elif self.FILE_TYPE == 129:
-            self.FILE_TYPE = "NWP Data"
-        elif self.FILE_TYPE == 130:
-            self.FILE_TYPE = "GOCI Data"
-        elif self.FILE_TYPE == 131:
-            self.FILE_TYPE = "Typhoon Info"
+        else:
+            self.FILE_TYPE = str(self.FILE_TYPE) + " (UNKNOWN)"
 
         # Loop through headers until Annotation Text header (type 4)
         offset = self.HEADER_LEN
@@ -551,7 +545,7 @@ class xRIT:
         Prints information about the current xRIT file to the console
         """
 
-        print("  [NEW FILE] {}".format(self.FILE_NAME))
+        print("  [NEW FILE] {}: \"{}\"".format(self.FILE_TYPE, self.FILE_NAME))
 
 
 class Tools:
