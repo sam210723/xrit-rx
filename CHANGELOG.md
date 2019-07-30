@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - 
+  - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/xrit-decrypt.py))
+  - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/keymsg-decrypt.py))
 
 ### Changed
   - 
