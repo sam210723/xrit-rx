@@ -4,4 +4,4 @@
 
 Data is output in the form of ``.lrit`` files and/or processed images (``.jpg`` / ``.png`` / ``.gif``) such as the ones below.
 
-![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/GK-2AWavelengths.png)
+![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths.png)
