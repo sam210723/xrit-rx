@@ -220,7 +220,10 @@ def parse_fname(fpath):
     """
     Parse LRIT file name into components
     """
-
+    splitfilepath = fpath.split("/")
+    filepath = splitfilepath[-1]
+    split = filepath.split("_")
+    
     split = fpath.split("_")
     mode = split[1]
     name = fpath.replace(args.ext, "")[:-3]
