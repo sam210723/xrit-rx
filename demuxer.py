@@ -81,7 +81,7 @@ class Demuxer:
                 if lastVCID != vcdu.VCID:
                     if self.verbose: print()
                     vcdu.print_info()
-                    if vcdu.VCID in self.blacklist: print("  IGNORING DATA (VCID IS BLACKLISTED)")
+                    if vcdu.VCID in self.blacklist: print("  IGNORING DATA (CHANNEL IS BLACKLISTED)")
                     lastVCID = vcdu.VCID
 
                 # Discard fill packets
@@ -184,6 +184,9 @@ class Channel:
         # Check VCDU continuity counter
         self.continuity(vcdu)
 
+        # VCDU indicator
+        if self.verbose: print(".", end="")
+
         # Parse M_PDU
         mpdu = CCSDS.M_PDU(vcdu.MPDU)
 
@@ -235,7 +238,7 @@ class Channel:
             else:
                 if self.verbose:
                     self.cCPPDU.print_info()
-                    print("    HEADER:     0x{}".format(hex(mpdu.POINTER)[2:].upper()))
+                    print("    HEADER:     0x{}\n    ".format(hex(mpdu.POINTER)[2:].upper()), end="")
         else:
             # Append packet to current CP_PDU
             try:
@@ -273,7 +276,7 @@ class Channel:
 
         # Show length error
         if lenok:
-            print("    LENGTH:     OK")
+            print("\n    LENGTH:     OK")
         else:
             ex = self.cCPPDU.LENGTH
             ac = len(self.cCPPDU.PAYLOAD)
