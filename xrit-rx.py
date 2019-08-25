@@ -5,12 +5,14 @@ https://github.com/sam210723/xrit-rx
 Frontend for CCSDS demultiplexer and image generator
 """
 
+import ast
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from demuxer import Demuxer
 from os import mkdir, path
 import socket
 from time import time
+import ccsds as CCSDS
 
 
 # Globals
@@ -20,7 +22,8 @@ stime = None            # Processing start time
 source = None           # Input source type
 spacecraft = None       # Spacecraft name
 downlink = None         # Downlink type (LRIT/HRIT)
-output = None           # Output root path
+output = None           # Output path root
+blacklist = []          # VCID blacklist
 packetf = None          # Packet file object
 keypath = None          # Decryption key file path
 keys = {}               # Decryption keys
@@ -41,6 +44,7 @@ def init():
     global stime
     global downlink
     global output
+    global blacklist
     global demux
     global keys
 
@@ -58,7 +62,7 @@ def init():
 
     # Create demuxer instance
     output += "/" + downlink + "/"
-    demux = Demuxer(downlink, args.v, args.dump, output, keys)
+    demux = Demuxer(downlink, args.v, args.dump, output, blacklist, keys)
 
     # Check demuxer thread is ready
     if not demux.coreReady:
@@ -297,6 +301,7 @@ def parse_config(path):
     global spacecraft
     global downlink
     global output
+    global blacklist
     global keypath
 
     cfgp = ConfigParser()
@@ -309,8 +314,17 @@ def parse_config(path):
     
     spacecraft = cfgp.get('rx', 'spacecraft').upper()
     downlink = cfgp.get('rx', 'mode').upper()
-    output = cfgp.get('rx', 'output')
+    output = cfgp.get('output', 'path')
+    bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
+
+    # If VCID blacklist is not empty
+    if bl != "":
+        # Parse blacklist string into int or list
+        blacklist = ast.literal_eval(bl)
+
+        # If parsed into int, wrap int in list
+        if type(blacklist) == int: blacklist = [blacklist]
 
     return cfgp
 
@@ -347,8 +361,18 @@ def print_config():
     absp = path.abspath(output)
     absp = absp[0].upper() + absp[1:]  # Fix lowercase drive letter
     print("OUTPUT PATH:      {}".format(absp))
-    print("KEY FILE:         {}".format(keypath))
+
+    if (len(blacklist) == 0):
+        print("IGNORED VCIDs:    None")
+    else:
+        blacklist_str = ""
+        for i, c in enumerate(blacklist):
+            if i > 0: blacklist_str += ", "
+            blacklist_str += "{} ({})".format(c, CCSDS.VCDU.get_VC(None, int(c)))
+        
+        print("IGNORED VCIDs:    {}".format(blacklist_str))
     
+    print("KEY FILE:         {}".format(keypath))
     print("VERSION:          {}\n".format(ver))
 
 

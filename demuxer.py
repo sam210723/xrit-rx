@@ -13,11 +13,11 @@ class Demuxer:
     Coordinates demultiplexing of CCSDS virtual channels into xRIT files.
     """
 
-    def __init__(self, dl, v, d, o, k):
+    def __init__(self, dl, v, d, o, b, k):
         """
         Initialises demuxer class
         """
-        
+
         # Configure instance globals
         self.rxq = deque()              # Data receive queue
         self.coreReady = False          # Core thread ready state
@@ -25,7 +25,8 @@ class Demuxer:
         self.downlink = dl              # Downlink type (LRIT/HRIT)
         self.verbose = v                # Verbose output flag
         self.dumpPath = d               # VCDU dump file path
-        self.outputPath = o             # xRIT file output path root
+        self.outputPath = o             # Output path root
+        self.blacklist = b              # VCID blacklist
         self.keys = k                   # Decryption keys
         self.channelHandlers = {}       # List of channel handlers
         self.vcduCounter = -1           # VCDU continuity counter
@@ -84,11 +85,14 @@ class Demuxer:
                 if lastVCID != vcdu.VCID:
                     if self.verbose: print()
                     vcdu.print_info()
+                    if vcdu.VCID in self.blacklist: print("  IGNORING DATA (VCID IS BLACKLISTED)")
                     lastVCID = vcdu.VCID
 
                 # Discard fill packets
-                if vcdu.VCID == 63:
-                    continue
+                if vcdu.VCID == 63: continue
+                
+                # Discard VCDUs in blacklisted VCIDs
+                if vcdu.VCID in self.blacklist: continue
                 
                 # Check channel handler for current VCID exists
                 try:
