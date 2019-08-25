@@ -469,6 +469,8 @@ class xRIT:
             self.FILE_TYPE = "Alphanumeric Text"
         elif self.FILE_TYPE == 3:
             self.FILE_TYPE = "Encryption Key Message"
+        elif self.FILE_TYPE == 255:     # Not in specification
+            self.FILE_TYPE = "Additional Data"
         else:
             self.FILE_TYPE = str(self.FILE_TYPE) + " (UNKNOWN)"
 
