@@ -124,27 +124,35 @@ class CP_PDU:
     """
 
     def __init__(self, data):
-        self.data = data
+        self.header = None
         self.tools = Tools()
+        self.PARSED = False
         self.PAYLOAD = None
         self.Sequence = Enum('Sequence', 'CONTINUE FIRST LAST SINGLE')
-        self.parse()
+
+        # Parse header once enough data is present
+        if len(data) >= 6:
+            self.header = data[:6]
+            self.parse()
+            
+            # Add post-header data to payload
+            self.PAYLOAD = data[6:]
+        else:
+            self.header = data
     
     def parse(self):
         """
         Parse CP_PDU header fields
         """
 
-        header = self.data[:6]
-
         # Header fields
-        self.VER = self.tools.get_bits(header, 0, 3, 48)                   # Version (always b000)
-        self.TYPE = self.tools.get_bits(header, 3, 1, 48)                  # Type (always b0)
-        self.SHF = self.tools.get_bits(header, 4, 1, 48)                   # Secondary Header Flag
-        self.APID = self.tools.get_bits_int(header, 5, 11, 48)             # Application Process ID
-        self.SEQ = self.tools.get_bits_int(header, 16, 2, 48)              # Sequence Flag
-        self.COUNTER = self.tools.get_bits_int(header, 18, 14, 48)         # Packet Sequence Counter
-        self.LENGTH = self.tools.get_bits_int(header, 32, 16, 48) + 1      # Packet Length
+        self.VER = self.tools.get_bits(self.header, 0, 3, 48)                   # Version (always b000)
+        self.TYPE = self.tools.get_bits(self.header, 3, 1, 48)                  # Type (always b0)
+        self.SHF = self.tools.get_bits(self.header, 4, 1, 48)                   # Secondary Header Flag
+        self.APID = self.tools.get_bits_int(self.header, 5, 11, 48)             # Application Process ID
+        self.SEQ = self.tools.get_bits_int(self.header, 16, 2, 48)              # Sequence Flag
+        self.COUNTER = self.tools.get_bits_int(self.header, 18, 14, 48)         # Packet Sequence Counter
+        self.LENGTH = self.tools.get_bits_int(self.header, 32, 16, 48) + 1      # Packet Length
 
         # Parse sequence flag
         if self.SEQ == 0:
@@ -156,15 +164,24 @@ class CP_PDU:
         elif self.SEQ == 3:
             self.SEQ = self.Sequence.SINGLE
 
-        # Add post-header data to payload
-        self.PAYLOAD = self.data[6:]
+        self.PARSED = True
     
     def append(self, data):
         """
         Append data to CP_PDU payload
         """
 
-        self.PAYLOAD += data
+        # Get number of bytes remaining in header
+        rem = 6 - len(self.header)
+        if rem != 0:
+            self.header += data[:rem]
+
+        # Parse header once enough data is present
+        if not self.PARSED and len(self.header) == 6:
+            self.parse()
+            self.PAYLOAD = data[rem:]
+        else:
+            self.PAYLOAD += data
 
     def finish(self, data, crclut):
         """

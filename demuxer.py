@@ -185,7 +185,7 @@ class Channel:
         self.continuity(vcdu)
 
         # VCDU indicator
-        if self.verbose: print(".", end="")
+        #if self.verbose: print(".", end="")
 
         # Parse M_PDU
         mpdu = CCSDS.M_PDU(vcdu.MPDU)
@@ -211,6 +211,10 @@ class Channel:
                 # Create new CP_PDU
                 postptr = mpdu.PACKET[mpdu.POINTER:]
                 self.cCPPDU = CCSDS.CP_PDU(postptr)
+
+                # Need more data to parse CP_PDU header
+                if not self.cCPPDU.PARSED:
+                    return
 
                 # Handle CP_PDUs less than one M_PDU in length
                 if 1 < self.cCPPDU.LENGTH < 886 and len(self.cCPPDU.PAYLOAD) > self.cCPPDU.LENGTH:
@@ -238,11 +242,17 @@ class Channel:
             else:
                 if self.verbose:
                     self.cCPPDU.print_info()
-                    print("    HEADER:     0x{}\n    ".format(hex(mpdu.POINTER)[2:].upper()), end="")
+                    print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
+                    print("    OFFSET:     0x{}".format(hex(mpdu.POINTER)[2:].upper()), end="")
         else:
             # Append packet to current CP_PDU
             try:
+                wasparsed = self.cCPPDU.PARSED
                 self.cCPPDU.append(mpdu.PACKET)
+                if wasparsed != self.cCPPDU.PARSED and self.verbose:
+                    self.cCPPDU.print_info()
+                    print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
+                    print("    OFFSET:     SPANS MULTIPLE M_PDUs", end="")
             except AttributeError:
                 if self.verbose: print("  NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
     
@@ -281,7 +291,7 @@ class Channel:
             ex = self.cCPPDU.LENGTH
             ac = len(self.cCPPDU.PAYLOAD)
             diff = ac - ex
-            print("    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
+            print("\n    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
 
         # Show CRC error
         if crcok:
