@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
   - VCDU continuity counter
+  - Handle CP_PDU headers spanning multiple M_PDUs
 </details>
 
 
