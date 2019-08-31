@@ -5,9 +5,26 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - 
+
+### Changed
+  - 
+
+### Fixed
+  - 
+</details>
+
+
+## [v1.0.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.2) - 2019-08-31
+Added decryption tools, an option to blacklist individual virtual channels, and fixed some demuxer bugs.
+
+<details>
+<summary>Details</summary>
+
+### Added
+  - Virtual channel (VCID) blacklist
   - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/xrit-decrypt.py))
   - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/keymsg-decrypt.py))
-  - Virtual channel (VCID) blacklist
 
 ### Changed
   - 
@@ -16,7 +33,6 @@ All notable changes to this project will be documented in this file.
   - VCDU continuity counter
   - Handle CP_PDU headers spanning multiple M_PDUs
 </details>
-
 
 ## [v1.0.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.1) - 2019-07-29
 Added tools for bulk processing LRIT IMG and ADD files, plus some minor code refactoring.
