@@ -7,10 +7,10 @@ Demultiplexed data is output as `.lrit` files which can be processed into images
 ![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths.png)
 
 ## Getting Started
-The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
+The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
-**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/) and [`pillow`](https://pypi.org/project/Pillow/) to be installed before use. These can be installed with the following command:
+**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/) and [`pillow`](https://pypi.org/project/Pillow/) to be installed using the following command:
 ```
 pip3 install pycryptodome pillow
 ```
@@ -18,7 +18,12 @@ pip3 install pycryptodome pillow
 Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (`xrit-rx-v1.x.zip`) from the Releases page.
 
 ### Configuring xrit-rx
-All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file, which is split up into four sections: `rx`, `output`, `goesrecv` and `osp`.
+All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
+
+If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` option will need to be updated with the IP address of the device running **goesrecv**.
+
+<details>
+<summary>Full list of options</summary>
 
 #### `rx` section
 
@@ -49,3 +54,4 @@ All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a PC running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
+</details>
