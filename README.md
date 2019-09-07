@@ -7,7 +7,15 @@ Demultiplexed data is output as `.lrit` files which can be processed into images
 ![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths.png)
 
 ## Getting Started
-The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin configuring **xrit-rx**.
+The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
+
+### Installing xrit-rx
+**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/) and [`pillow`](https://pypi.org/project/Pillow/) to be installed before use. These can be installed with the following command:
+```
+pip3 install pycryptodome pillow
+```
+
+Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (`xrit-rx-v1.x.zip`) from the Releases page.
 
 ### Configuring xrit-rx
 All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file, which is split up into four sections: `rx`, `output`, `goesrecv` and `osp`.
