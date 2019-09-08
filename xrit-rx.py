@@ -11,7 +11,7 @@ from configparser import ConfigParser
 from demuxer import Demuxer
 from os import mkdir, path
 import socket
-from time import time
+from time import time, sleep
 import ccsds as CCSDS
 
 
@@ -30,7 +30,7 @@ keys = {}               # Decryption keys
 sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
-ver = "1.0.2"           # xrit-rx version
+ver = "1.0.3"           # xrit-rx version
 
 
 def init():
@@ -134,6 +134,9 @@ def loop():
                     # Stop core thread
                     demux.stop()
                     exit()
+                else:
+                    # Limit loop speed when waiting for demuxer to finish processing
+                    sleep(0.5)
 
 
 def config_input():
