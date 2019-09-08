@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
   - 
 
 ### Fixed
-  - 
+  - Free-running loop while demuxing a file
 </details>
 
 
