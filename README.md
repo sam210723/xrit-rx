@@ -56,7 +56,7 @@ If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` optio
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
 </details>
 
-# Acknowledgments
+## Acknowledgments
   - [Lucas Teske](https://twitter.com/lucasteske) - Developer of [**Open Satellite Project**](https://github.com/opensatelliteproject) and writer of ["GOES Satellite Hunt"](https://www.teske.net.br/lucas/2016/10/goes-satellite-hunt-part-1-antenna-system/)
   - [Pieter Noordhuis](https://twitter.com/pnoordhuis) - Developer of [**goestools**](https://github.com/pietern/goestools)
   - [John Bell](https://twitter.com/eswnl) - Software testing and IQ recordings
