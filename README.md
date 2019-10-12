@@ -15,18 +15,16 @@ The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https
 pip3 install pycryptodome pillow
 ```
 
-Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest/download/xrit-rx.zip) (`xrit-rx.zip`) from the Releases page.
+Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (`xrit-rx-v1.x.zip`) from the Releases page.
 
 ### Configuring xrit-rx
 All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
 
 If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` option will need to be updated with the IP address of the device running **goesrecv**.
 
-<details>
-<summary>Full list of options</summary>
+### List of options
 
 #### `rx` section
-
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
@@ -54,7 +52,7 @@ If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` optio
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a PC running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
-</details>
+
 
 ## Acknowledgments
   - [Lucas Teske](https://twitter.com/lucasteske) - Developer of [**Open Satellite Project**](https://github.com/opensatelliteproject) and writer of ["GOES Satellite Hunt"](https://www.teske.net.br/lucas/2016/10/goes-satellite-hunt-part-1-antenna-system/)
