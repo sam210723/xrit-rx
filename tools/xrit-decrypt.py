@@ -36,7 +36,6 @@ def init():
         # Loop through files with .hrit extension in input folder
         for f in glob.glob(args.XRIT + "/*.hrit"):
             files.append(f)
-            print(" - {}".format(f))
 
         if files.__len__() <= 0:
             print("No LRIT/HRIT files found")
