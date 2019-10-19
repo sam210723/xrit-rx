@@ -15,7 +15,7 @@ The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https
 pip3 install pycryptodome pillow
 ```
 
-Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (`xrit-rx-v1.x.zip`) from the Releases page.
+Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) ([direct](https://github.com/sam210723/xrit-rx/releases/latest/download/xrit-rx.zip)) from the Releases page.
 
 ### Configuring xrit-rx
 All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
