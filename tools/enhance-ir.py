@@ -161,7 +161,7 @@ def handle_input(path):
                 continue
 
             # Process image file
-            input = Image.open(open(f, mode="rb"))
+            input = Image.open(open(f, mode="rb")).convert('L')
             process(input)
             output.save(name + outext)
             print("  Saved {}".format(name + outext))
@@ -171,8 +171,9 @@ def handle_input(path):
         name = os.path.splitext(ntpath.basename(path))[0]
         print("Processing {}...".format(name))
         
-        input = Image.open(open(path, mode="rb"))
+        input = Image.open(open(path, mode="rb")).convert('L')
         process(input)
+
         output.save(name + outext)
         print("  Saved {}".format(name + outext))
         print()
@@ -227,13 +228,35 @@ def process(img):
         text = "{}K".format(args.cold)
         draw.text((xoff + (coldI * scale) - 40, output.height - gradh - rmar), text, fill=col, font=fnt)   # Cold
 
-    # Apply LUT to source pixels
-    #TODO: Replace with faster NumPy LUT implementation
-    w, h = input.size
-    for y in range(h):
-        for x in range(w):
-            l = input.getpixel((x, y))[0]
-            output.putpixel((x, y), lut[l])
+    # Create empty NumPy arrays for each channel
+    nplutR = np.zeros(len(lut), dtype=np.uint8)
+    nplutG = np.zeros(len(lut), dtype=np.uint8)
+    nplutB = np.zeros(len(lut), dtype=np.uint8)
+
+    # Convert LUT channels into separate NumPy arrays
+    for i, c in enumerate(lut):
+        nplutR[i] = c[0]
+        nplutG[i] = c[1]
+        nplutB[i] = c[2]
+    
+    # Get grayscale values from input image
+    gray = np.array(input)
+    
+    # Apply each channel of LUT to grayscale image
+    enhR = nplutR[gray]
+    enhG = nplutG[gray]
+    enhB = nplutB[gray]
+
+    # Convert enhanced arrays to images
+    iR = Image.fromarray(enhR)
+    iG = Image.fromarray(enhG)
+    iB = Image.fromarray(enhB)
+    
+    # Combine enhanced channels into an RGB image
+    i = Image.merge("RGB", (iR, iG, iB))
+
+    # Paste enhanced image in output image
+    output.paste(i)
 
 
 def show_lut(lut):
