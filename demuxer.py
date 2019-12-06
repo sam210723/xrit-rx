@@ -7,6 +7,7 @@ import ccsds as CCSDS
 from collections import deque
 from time import sleep
 from threading import Thread
+import sys
 
 class Demuxer:
     """
@@ -100,7 +101,9 @@ class Demuxer:
 
                 # Pass VCDU to appropriate channel handler
                 self.channelHandlers[vcdu.VCID].data_in(vcdu)
-                
+
+                # Debugging delay
+                #if self.verbose: sleep(0.1)
             else:
                 # No packet available, sleep thread
                 sleep(self.coreWait / 1000)
@@ -184,9 +187,6 @@ class Channel:
         # Check VCDU continuity counter
         self.continuity(vcdu)
 
-        # VCDU indicator
-        #if self.verbose: print(".", end="")
-
         # Parse M_PDU
         mpdu = CCSDS.M_PDU(vcdu.MPDU)
 
@@ -243,7 +243,7 @@ class Channel:
                 if self.verbose:
                     self.cCPPDU.print_info()
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
-                    print("    OFFSET:     0x{}".format(hex(mpdu.POINTER)[2:].upper()), end="")
+                    print("    OFFSET:     0x{}\n    ".format(hex(mpdu.POINTER)[2:].upper()), end="")
         else:
             # Append packet to current CP_PDU
             try:
@@ -252,9 +252,13 @@ class Channel:
                 if wasparsed != self.cCPPDU.PARSED and self.verbose:
                     self.cCPPDU.print_info()
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
-                    print("    OFFSET:     SPANS MULTIPLE M_PDUs", end="")
+                    print("    OFFSET:     SPANS MULTIPLE M_PDUs\n", end="")
             except AttributeError:
                 if self.verbose: print("  NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
+        
+        # VCDU indicator
+        if self.verbose: print(".", end="")
+        sys.stdout.flush()
     
 
     def continuity(self, vcdu):
@@ -337,3 +341,10 @@ class Channel:
 
                 if self.verbose: print("    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
                 print("  SKIPPING FILE (DROPPED PACKETS?)")
+        
+        if self.verbose:
+            ac = len(self.cTPFile.PAYLOAD)
+            ex = self.cTPFile.LENGTH
+            p = round((ac/ex) * 100)
+            diff = ex - ac
+            print(f"    [TP_File]  CURRENT LEN: {ac} ({p}%)     EXPECTED LEN: {ex}     DIFF: {diff}\n\n\n")

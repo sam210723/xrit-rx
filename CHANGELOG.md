@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
   - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/tree/master/tools/enhance-ir.py))
+  - Extra detail in verbose mode
 
 ### Changed
   - 
