@@ -355,7 +355,7 @@ class Channel:
             ex = self.cTPFile.LENGTH
             p = round((ac/ex) * 100)
             diff = ex - ac
-            print(f"    [TP_File]  CURRENT LEN: {ac} ({p}%)     EXPECTED LEN: {ex}     DIFF: {diff}\n\n\n")
+            print("    [TP_File]  CURRENT LEN: {} ({}%)     EXPECTED LEN: {}     DIFF: {}\n\n\n".format(ac, p, ex, diff))
 
 
     def notify(self, vcid):
