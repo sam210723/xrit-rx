@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
   - Extra detail in verbose mode
 
 ### Changed
-  - 
+  - Write incomplete TP_Files to disk on VCID change ([COMSFOG / COMSIR1 issue](https://github.com/sam210723/xrit-rx/issues/5))
 
 ### Fixed
   - Free-running loop while demuxing a file

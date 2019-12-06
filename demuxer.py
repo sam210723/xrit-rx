@@ -80,6 +80,11 @@ class Demuxer:
 
                 # Check for VCID change
                 if lastVCID != vcdu.VCID:
+                    # Notify channel handlers of VCID change
+                    for chan in self.channelHandlers:
+                        self.channelHandlers[chan].notify(vcdu.VCID)
+                    
+                    # Print VCID info
                     if self.verbose: print()
                     vcdu.print_info()
                     if vcdu.VCID in self.blacklist: print("  IGNORING DATA (CHANNEL IS BLACKLISTED)")
@@ -341,6 +346,9 @@ class Channel:
 
                 if self.verbose: print("    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
                 print("  SKIPPING FILE (DROPPED PACKETS?)")
+            
+            # Clear finished TP_File
+            self.cTPFile = None
         
         if self.verbose:
             ac = len(self.cTPFile.PAYLOAD)
@@ -348,3 +356,22 @@ class Channel:
             p = round((ac/ex) * 100)
             diff = ex - ac
             print(f"    [TP_File]  CURRENT LEN: {ac} ({p}%)     EXPECTED LEN: {ex}     DIFF: {diff}\n\n\n")
+
+
+    def notify(self, vcid):
+        """
+        Notifies virtual channel handler of change in VCID
+        """
+
+        # No longer the active channel handler  
+        if vcid != self.VCID:
+            # Channel has unfinished TP_File
+            if self.cTPFile != None:
+                # Handle S_PDU (decryption)
+                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.keys)
+
+                # Create new xRIT file
+                xrit = CCSDS.xRIT(spdu.PLAINTEXT)
+                xrit.save(self.outputPath)
+                xrit.print_info()
+                print("    FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
