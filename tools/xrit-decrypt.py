@@ -159,11 +159,14 @@ def parse_key_header(headerField, dataField, fpath):
     keyHLen = int.from_bytes(headerField[offset + 1 : offset + 3], byteorder='big')
     index = headerField[offset + 5 : offset + keyHLen]
     indexStr = hex(int.from_bytes(index, byteorder='big')).upper()[2:]
-    key = keys[index]
 
-    print("  Key Index: {}".format(indexStr))
-
-    decrypt(headerField, dataField, fpath, key)
+    if index != b'\x00\x00':
+        print("  Key Index: {}".format(indexStr))
+        key = keys[index]
+        decrypt(headerField, dataField, fpath, key)
+    else:
+        print("  Key Index: 0 (UNENCRYPTED)")
+        print("  Skipping unencrypted file")
 
 
 def decrypt(headers, data, fpath, key):
