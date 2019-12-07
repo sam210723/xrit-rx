@@ -35,8 +35,10 @@ ver = "1.0.3"           # xrit-rx version
 
 def init():
     print("┌──────────────────────────────────────────────┐")
-    print("│    xrit-rx - LRIT/HRIT Downlink Processor    │")
-    print("│         github.com/sam210723/xrit-rx         │")
+    print("│                   xrit-rx                    │")
+    print("│         LRIT/HRIT Downlink Processor         │")
+    print("├──────────────────────────────────────────────┤")
+    print("│     @sam210723         vksdr.com/xrit-rx     │")
     print("└──────────────────────────────────────────────┘\n")
     
     global args
