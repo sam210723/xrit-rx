@@ -121,6 +121,11 @@ def loop():
                 if data == b'':
                     #print("INPUT FILE LOADED")
                     packetf.close()
+
+                    # Append single fill VCDU (VCID 63)
+                    # Triggers TP_File processing inside channel handlers
+                    demux.push(b'\x70\xFF\x00\x00\x00\x00')
+
                     continue
                 
                 # Push VCDU to demuxer

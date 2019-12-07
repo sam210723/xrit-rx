@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
   - Free-running loop while demuxing a file
   - Exception caused by key index 0 in xrit-decrypt
+  - Final file from VCDU dump not being processed
 </details>
 
 
