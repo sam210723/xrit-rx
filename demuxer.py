@@ -106,9 +106,6 @@ class Demuxer:
 
                 # Pass VCDU to appropriate channel handler
                 self.channelHandlers[vcdu.VCID].data_in(vcdu)
-
-                # Debugging delay
-                #if self.verbose: sleep(0.1)
             else:
                 # No packet available, sleep thread
                 sleep(self.coreWait / 1000)
@@ -374,4 +371,13 @@ class Channel:
                 xrit = CCSDS.xRIT(spdu.PLAINTEXT)
                 xrit.save(self.outputPath)
                 xrit.print_info()
-                print("    FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
+
+                if len(self.cTPFile.PAYLOAD) < self.cTPFile.LENGTH:
+                    print("    FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
+                    ac = len(self.cTPFile.PAYLOAD)
+                    ex = self.cTPFile.LENGTH
+                    p = round((ac/ex) * 100)
+                    print("    {}% OF EXPECTED LENGTH".format(p))
+
+                # Clear finished TP_File
+                self.cTPFile = None
