@@ -6,13 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
   - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/tree/master/tools/enhance-ir.py))
-  - Extra detail in verbose mode
+  - Extra demuxer info in verbose mode
 
 ### Changed
   - Write incomplete TP_Files to disk on VCID change ([COMSFOG / COMSIR1 issue](https://github.com/sam210723/xrit-rx/issues/5))
+  - Clear xRIT key header after file is decrypted (avoids double-decryption)
 
 ### Fixed
   - Free-running loop while demuxing a file
+  - Exception caused by key index 0 in xrit-decrypt
 </details>
 
 

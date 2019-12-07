@@ -429,6 +429,12 @@ class S_PDU:
                 for i in range(dFMod8):
                     self.dataField += b'\x00'
                 #print("  Added {} null bytes to fill last DES block".format(dFMod8))
+        
+        # Set key header to 0x0000
+        decHeaderField = self.headerField[: offset + 3]
+        decHeaderField += b'\x00\x00\x00\x00'
+        decHeaderField += self.headerField[offset + 7:]
+        self.headerField = decHeaderField
 
     def get_next_header(self, offset):
         """

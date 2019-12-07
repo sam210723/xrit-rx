@@ -49,10 +49,7 @@ def init():
         print("\nDecrypting files...")
         print("-----------------------------------------")
         for f in files:
-            if os.path.isfile(f + ".dec"):
-                print("Skipping {}\nFile already decrypted\n".format(f))
-            else:
-                load_xrit(f)
+            load_xrit(f)
             
             print("-----------------------------------------")
 
@@ -135,7 +132,7 @@ def parse_primary_header(data, fpath):
     if dFMod8 != 0:
         for i in range(dFMod8):
             dataField += b'x00'
-        print("\nAdded {} null bytes to fill last DES block\n".format(dFMod8))
+        print("\nAdded {} null bytes to fill last DES block".format(dFMod8))
 
     parse_key_header(headerField, dataField, fpath)
 
@@ -145,7 +142,7 @@ def parse_key_header(headerField, dataField, fpath):
     Parses xRIT key header to get key index
     """
 
-    print("Parsing xRIT key header...")
+    print("\nParsing xRIT key header...")
 
     # Loop through headers until Key header (type 7)
     offset = 0
@@ -163,14 +160,20 @@ def parse_key_header(headerField, dataField, fpath):
     if index != b'\x00\x00':
         print("  Key Index: {}".format(indexStr))
         key = keys[index]
-        decrypt(headerField, dataField, fpath, key)
+
+        # Set key header to 0x0000
+        decHeaderField = headerField[: offset + 3]
+        decHeaderField += b'\x00\x00\x00\x00'
+        decHeaderField += headerField[offset + 7:]
+
+        decrypt(decHeaderField, dataField, fpath, key)
     else:
         print("  Key Index: 0 (UNENCRYPTED)")
         print("  Skipping unencrypted file")
 
 
 def decrypt(headers, data, fpath, key):
-    print("Decrypting...")
+    print("\nDecrypting...")
 
     decoder = DES.new(key,DES.MODE_ECB)
     decData = decoder.decrypt(data)
