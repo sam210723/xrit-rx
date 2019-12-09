@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - 
+
+### Changed
+  - 
+
+### Fixed
+  - 
+</details>
+
+
+## [v1.0.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.3) - 2019-12-09
+Added work-around for ``COMSFOG`` and ``COMSIR1`` transmission issue, an infrared imagery enhancement tool, and fixed some demuxer bugs.
+
+<details>
+<summary>Details</summary>
+
+### Added
   - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/tree/master/tools/enhance-ir.py))
   - Extra demuxer info in verbose mode
 
@@ -30,13 +47,11 @@ Added decryption tools, an option to blacklist individual virtual channels, and 
   - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/xrit-decrypt.py))
   - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/keymsg-decrypt.py))
 
-### Changed
-  - 
-
 ### Fixed
   - VCDU continuity counter
   - Handle CP_PDU headers spanning multiple M_PDUs
 </details>
+
 
 ## [v1.0.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.1) - 2019-07-29
 Added tools for bulk processing LRIT IMG and ADD files, plus some minor code refactoring.
@@ -58,6 +73,7 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 ### Fixed
   - Socket connection reset exception
 </details>
+
 
 ## [v1.0](https://github.com/sam210723/xrit-rx/releases/tag/v1.0) - 2019-07-23
 Initial release based on the [COMS-1 project](https://github.com/sam210723/COMS-1).
