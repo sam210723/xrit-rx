@@ -53,7 +53,8 @@ argparser.add_argument("INPUT", action="store", help="Input image path")
 argparser.add_argument("--hot", action="store", help="Hotter limit in Kelvin (275K by default)", default=275)
 argparser.add_argument("--cold", action="store", help="Colder limit in Kelvin (230K by default)", default=230)
 argparser.add_argument("-s", action="store_true", help="Disable drawing of LUT and text", default=False)
-argparser.add_argument("-o", action="store_true", help="Overwrite existing enhanced images")
+argparser.add_argument("-o", action="store_true", help="Overwrite existing enhanced images", default=False)
+argparser.add_argument("-t", action="store_true", help="Output only enhanced areas as a transparent PNG", default=False)
 args = argparser.parse_args()
 
 
@@ -64,6 +65,7 @@ outext = "_ENHANCED.jpg"    # Output extension
 files = []                  # Multi-file list
 lut = []                    # Final LUT
 kelvin = []                 # Kelvin conversion table
+alpha = []                  # Alpha mask
 gradh = 50                  # Gradient height
 hotI = None                 # Hot temperature index
 coldI = None                # Cold temperature index
@@ -71,6 +73,12 @@ coldI = None                # Cold temperature index
 
 def init():
     gen_luts()
+
+    # Output PNG in transparent mode
+    if args.t:
+        global outext
+        outext = "_ENHANCED.png"
+
     handle_input(args.INPUT)
 
 
@@ -83,6 +91,7 @@ def gen_luts():
     global lut
     global hotI
     global coldI
+    global alpha
 
     # Generate base 8-bit grayscale LUT
     for i in range(256):
@@ -124,6 +133,16 @@ def gen_luts():
             lut[hotI + i] = (r, g, b)
         else:
             lut[hotI + i] = sclut[i]
+    
+    # Generate alpha mask
+    if args.t:
+        for i in range(len(lut)):
+            if i < hotI:
+                alpha.append(0)
+            elif hotI <= i <= coldI:
+                alpha.append(255)
+            elif i > coldI:
+                alpha.append(0)
 
 
 def handle_input(path):
@@ -194,7 +213,12 @@ def process(img):
     w = img.width
 
     # Create output image
-    output = Image.new("RGB", (w, h), (0, 0, 0))
+    if args.t:
+        # Transparent PNG
+        output = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    else:
+        # Normal JPEG
+        output = Image.new("RGB", (w, h), (0, 0, 0))
 
     # Not simple mode
     if not args.s:
@@ -248,12 +272,27 @@ def process(img):
     enhB = nplutB[gray]
 
     # Convert enhanced arrays to images
-    iR = Image.fromarray(enhR)
-    iG = Image.fromarray(enhG)
-    iB = Image.fromarray(enhB)
+    iR = Image.fromarray(enhR).convert('L')
+    iG = Image.fromarray(enhG).convert('L')
+    iB = Image.fromarray(enhB).convert('L')
     
-    # Combine enhanced channels into an RGB image
-    i = Image.merge("RGB", (iR, iG, iB))
+    # Combine enhanced channels into an RGB(A) image
+    if args.t:
+        # Convert alpha list to np array
+        nplutA = np.asarray(alpha)
+        
+        # Apply alpha mask to image
+        enhA = nplutA[gray]
+
+        # Convert alpha mask to image
+        iA = Image.fromarray(enhA).convert('L')
+
+        # Merge channels
+        i = Image.merge("RGBA", (iR, iG, iB, iA))
+    else:
+        # Merge channels
+        i = Image.merge("RGB", (iR, iG, iB))
+
 
     # Paste enhanced image in output image
     output.paste(i)
