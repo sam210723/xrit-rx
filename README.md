@@ -14,9 +14,9 @@ Demultiplexed data is output as `.lrit` files which can be processed into images
 The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
-**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/) and [`pillow`](https://pypi.org/project/Pillow/) to be installed using the following command:
+**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/), [`pillow`](https://pypi.org/project/Pillow/) and [`numpy`](https://pypi.org/project/numpy) to be installed using the following command:
 ```
-pip3 install pycryptodome pillow
+pip3 install pycryptodome pillow numpy
 ```
 
 Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) ([direct](https://github.com/sam210723/xrit-rx/releases/latest/download/xrit-rx.zip)) from the Releases page.
