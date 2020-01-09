@@ -4,7 +4,7 @@
 [![Github all releases](https://img.shields.io/github/downloads/sam210723/xrit-rx/total.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
 [![GitHub license](https://img.shields.io/github/license/sam210723/xrit-rx.svg)](https://github.com/sam210723/xrit-rx/blob/master/LICENSE)
 
-**xrit-rx** is a LRIT packet demultiplexer and xRIT file processor for geostationary meteorological satellite [GK-2A (GEO-KOMPSAT-2A)](https://www.wmo-sat.info/oscar/satellites/view/34). It takes input in the form of VCDUs (Virtual Channel Data Units) from software such as [**goesrecv**](https://github.com/sam210723/goestools) ([original](https://github.com/pietern/goestools)) by [Pieter Noordhuis](https://twitter.com/pnoordhuis), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
+**xrit-rx** is a LRIT packet demultiplexer and xRIT file processor for geostationary meteorological satellite [GK-2A (GEO-KOMPSAT-2A)](https://nmsc.kma.go.kr/enhome/html/base/cmm/selectPage.do?page=satellite.gk2a.intro). It takes input in the form of VCDUs (Virtual Channel Data Units) from software such as [**goesrecv**](https://github.com/sam210723/goestools) (originally by [Pieter Noordhuis](https://twitter.com/pnoordhuis)), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
 
 Demultiplexed data is output as `.lrit` files which can be processed into images such as the ones below.
 
@@ -14,17 +14,19 @@ Demultiplexed data is output as `.lrit` files which can be processed into images
 The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
-**xrit-rx** requires Python packages [`pycryptodome`](https://pypi.org/project/pycryptodome/), [`pillow`](https://pypi.org/project/Pillow/) and [`numpy`](https://pypi.org/project/numpy) to be installed using the following command:
+Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
+
+[`numpy`](https://pypi.org/project/numpy), [`pillow`](https://pypi.org/project/Pillow/) and [`pycryptodome`](https://pypi.org/project/pycryptodome/) are required to run **xrit-rx**. Use the following command to download and install these packages:
 ```
 pip3 install -r requirements.txt
 ```
 
-Once these packages are installed, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) ([direct](https://github.com/sam210723/xrit-rx/releases/latest/download/xrit-rx.zip)) from the Releases page.
+Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](tools/decryption.md).
 
 ### Configuring xrit-rx
 All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
 
-If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` option will need to be updated with the IP address of the device running **goesrecv**.
+If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
 
 ### List of options
 
@@ -34,7 +36,7 @@ If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` optio
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
 | `mode` | Type of downlink being received | `lrit` | `lrit` |
 | `input` | Input source | `goesrecv` or `osp` | `goesrecv` |
-| `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin.dec` |
+| `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
 #### `output` section
 
@@ -47,14 +49,14 @@ If **xrit-rx** is not running on the same device as **goesrecv**, the `ip` optio
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP Address of a Raspberry Pi running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
+| `ip` | IP Address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of **goesrecv** | *Any TCP port number* | `5004` |
 
 #### `osp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP Address of a PC running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
+| `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
 
 
