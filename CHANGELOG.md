@@ -8,7 +8,8 @@ All notable changes to this project will be documented in this file.
   - Transparent enhanced image output option
 
 ### Changed
-  - 
+  - Default key file name **(check when upgrading from an old version)**
+  - ``keymsg-decrypt.py`` output file name
 
 ### Fixed
   - 
