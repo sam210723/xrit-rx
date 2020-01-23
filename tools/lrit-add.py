@@ -74,6 +74,11 @@ def process_file(fpath):
     # Load file
     headerField, dataField = load_lrit(fpath)
 
+    # Skip encrypted files
+    if parse_key_header(headerField):
+        print("  SKIPPING ENCRYPTED LRIT FILE")
+        return
+
     # Check output extension
     outext = get_output_ext(dataField)
     if outext == ".bin":
@@ -126,6 +131,29 @@ def parse_primary(data):
     #print("    Data Length: {} bits ({} bytes)".format(DATA_LEN, DATA_LEN/8))
 
     return TOTAL_HEADER_LEN, DATA_LEN
+
+
+def parse_key_header(headerField):
+    """
+    Parses xRIT key header to get key index
+    """
+
+    print("\nParsing xRIT key header...")
+
+    # Loop through headers until Key header (type 7)
+    offset = 0
+    nextHeader = int.from_bytes(headerField[offset : offset + 1], byteorder='big')
+
+    while nextHeader != 7:
+        offset += int.from_bytes(headerField[offset + 1 : offset + 3], byteorder='big')
+        nextHeader = int.from_bytes(headerField[offset : offset + 1], byteorder='big')
+        
+    # Parse Key header (type 7)
+    keyHLen = int.from_bytes(headerField[offset + 1 : offset + 3], byteorder='big')
+    index = headerField[offset + 5 : offset + keyHLen]
+    indexStr = hex(int.from_bytes(index, byteorder='big')).upper()[2:]
+
+    return index != b'\x00\x00'
 
 
 def parse_fname(fpath):
