@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
   - Added check for encrypted LRIT files in ``lrit-img.py`` and ``lrit-add.py``
   - Output file type options (Image or xRIT files)
   - Demuxer configuration tuple
+  - Channel handler configuration tuple
 
 ### Changed
   - Default key file name **(check when upgrading from an old version)**

@@ -65,11 +65,9 @@ def init():
     # Load decryption keys
     load_keys()
 
-    # Create demuxer config tuple
+    # Create demuxer instance
     dcfg = namedtuple('dcfg', 'downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
-
-    # Create demuxer instance
     demux = Demuxer(dcfg(downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
 
     # Check demuxer thread is ready
