@@ -14,28 +14,21 @@ class Demuxer:
     Coordinates demultiplexing of CCSDS virtual channels into xRIT files.
     """
 
-    def __init__(self, dl, v, d, o, i, x, b, k):
+    def __init__(self, config):
         """
         Initialises demuxer class
         """
 
         # Configure instance globals
+        self.config = config            # Configuration tuple
         self.rxq = deque()              # Data receive queue
         self.coreReady = False          # Core thread ready state
         self.coreStop = False           # Core thread stop flag
-        self.downlink = dl              # Downlink type (LRIT/HRIT)
-        self.verbose = v                # Verbose output flag
-        self.dumpPath = d               # VCDU dump file path
-        self.outputPath = o             # Output path root
-        self.outputImages = i           # Flag for saving Images to disk
-        self.outputXRIT = x             # Flag for saving xRIT files to disk
-        self.blacklist = b              # VCID blacklist
-        self.keys = k                   # Decryption keys
-        self.channelHandlers = {}       # List of channel handlers
+        self.channels = {}              # List of channel handlers
 
-        if self.downlink == "LRIT":
+        if self.config.downlink == "LRIT":
             self.coreWait = 54          # Core loop delay in ms for LRIT (108.8ms per packet @ 64 kbps)
-        elif self.downlink == "HRIT":
+        elif self.config.downlink == "HRIT":
             self.coreWait = 1           # Core loop delay in ms for HRIT (2.2ms per packet @ 3 Mbps)
 
         # Start core demuxer thread
@@ -57,9 +50,9 @@ class Demuxer:
         crclut = CCSDS.CP_PDU.CCITT_LUT(None)   # CP_PDU CRC LUT
         
         # Open VCDU dump file
-        dumpFile = None
-        if self.dumpPath != None:
-            dumpFile = open(self.dumpPath, 'wb+')
+        dumpf = None
+        if self.config.dump != None:
+            dumpf = open(self.config.dump, 'wb+')
 
         # Thread loop
         while not self.coreStop:
@@ -72,51 +65,50 @@ class Demuxer:
                 vcdu = CCSDS.VCDU(packet)
 
                 # Dump raw VCDU to file
-                if dumpFile != None and vcdu.VCID != 63:
-                    dumpFile.write(packet)
+                if dumpf != None and vcdu.VCID != 63:
+                    dumpf.write(packet)
 
                 # Check spacecraft is supported
                 if vcdu.SC != "GK-2A":
-                    if self.verbose: print("SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
+                    if self.config.verbose: print("SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
                     continue
 
                 # Check for VCID change
                 if lastVCID != vcdu.VCID:
                     # Notify channel handlers of VCID change
-                    for chan in self.channelHandlers:
-                        self.channelHandlers[chan].notify(vcdu.VCID)
+                    for chan in self.channels:
+                        self.channels[chan].notify(vcdu.VCID)
                     
                     # Print VCID info
-                    if self.verbose: print()
+                    if self.config.verbose: print()
                     vcdu.print_info()
-                    if vcdu.VCID in self.blacklist: print("  IGNORING DATA (CHANNEL IS BLACKLISTED)")
+                    if vcdu.VCID in self.config.blacklist: print("  IGNORING DATA (CHANNEL IS BLACKLISTED)")
                     lastVCID = vcdu.VCID
 
                 # Discard fill packets
                 if vcdu.VCID == 63: continue
                 
                 # Discard VCDUs in blacklisted VCIDs
-                if vcdu.VCID in self.blacklist: continue
+                if vcdu.VCID in self.config.blacklist: continue
                 
                 # Check channel handler for current VCID exists
                 try:
-                    self.channelHandlers[vcdu.VCID]
+                    self.channels[vcdu.VCID]
                 except KeyError:
                     # Create new channel handler instance
-                    self.channelHandlers[vcdu.VCID] = Channel(vcdu.VCID, self.verbose, crclut, self.outputPath, self.outputImages, self.outputXRIT, self.keys)
-                    if self.verbose: print("  CREATED NEW CHANNEL HANDLER\n")
+                    self.channels[vcdu.VCID] = Channel(vcdu.VCID, self.config.verbose, crclut, self.config.output, self.config.images, self.config.xrit, self.config.keys)
+                    if self.config.verbose: print("  CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
-                self.channelHandlers[vcdu.VCID].data_in(vcdu)
+                self.channels[vcdu.VCID].data_in(vcdu)
             else:
                 # No packet available, sleep thread
                 sleep(self.coreWait / 1000)
         
         # Gracefully exit core thread
         if self.coreStop:
-            if dumpFile != None:
-                dumpFile.close()
-            
+            if dumpf != None:
+                dumpf.close()
             return
 
     def push(self, packet):
@@ -144,10 +136,7 @@ class Demuxer:
         Checks if receive queue is empty
         """
 
-        if len(self.rxq) == 0:
-            return True
-        else:
-            return False
+        return len(self.rxq) == 0
 
     def stop(self):
         """
