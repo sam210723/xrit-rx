@@ -96,8 +96,8 @@ class Demuxer:
                     self.channels[vcdu.VCID]
                 except KeyError:
                     # Create new channel handler instance
-                    ccfg = namedtuple('ccfg', 'VCID verbose lut output images xrit keys')
-                    self.channels[vcdu.VCID] = Channel(ccfg(vcdu.VCID, self.config.verbose, crclut, self.config.output, self.config.images, self.config.xrit, self.config.keys))
+                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
+                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crclut))
                     if self.config.verbose: print("  CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
