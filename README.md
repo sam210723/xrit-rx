@@ -43,6 +43,8 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `path` | Root output path for `.lrit` files | *Absolute or relative file path* | `"received"` |
+| `images` | Enable/Disable saving Image files to disk | `True` or `False` | `True` |
+| `xrit` | Enable/Disable saving xRIT files to disk | `True` or `False` | `False` |
 | `channel_blacklist` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
 #### `goesrecv` section

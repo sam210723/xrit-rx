@@ -14,7 +14,7 @@ class Demuxer:
     Coordinates demultiplexing of CCSDS virtual channels into xRIT files.
     """
 
-    def __init__(self, dl, v, d, o, b, k):
+    def __init__(self, dl, v, d, o, i, x, b, k):
         """
         Initialises demuxer class
         """
@@ -27,6 +27,8 @@ class Demuxer:
         self.verbose = v                # Verbose output flag
         self.dumpPath = d               # VCDU dump file path
         self.outputPath = o             # Output path root
+        self.outputImages = i           # Flag for saving Images to disk
+        self.outputXRIT = x             # Flag for saving xRIT files to disk
         self.blacklist = b              # VCID blacklist
         self.keys = k                   # Decryption keys
         self.channelHandlers = {}       # List of channel handlers
@@ -101,7 +103,7 @@ class Demuxer:
                     self.channelHandlers[vcdu.VCID]
                 except KeyError:
                     # Create new channel handler instance
-                    self.channelHandlers[vcdu.VCID] = Channel(vcdu.VCID, self.verbose, crclut, self.outputPath, self.keys)
+                    self.channelHandlers[vcdu.VCID] = Channel(vcdu.VCID, self.verbose, crclut, self.outputPath, self.outputImages, self.outputXRIT, self.keys)
                     if self.verbose: print("  CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
@@ -160,7 +162,7 @@ class Channel:
     Virtual channel data handler
     """
 
-    def __init__(self, vcid, v, crclut, output, k):
+    def __init__(self, vcid, v, crclut, output, i, x, k):
         """
         Initialises virtual channel data handler
         :param vcid: Virtual Channel ID
@@ -175,6 +177,8 @@ class Channel:
         self.verbose = v            # Verbose output flag
         self.crclut = crclut        # CP_PDU CRC LUT
         self.outputPath = output    # xRIT file output path root
+        self.outputImages = i       # Flag for saving Images to disk
+        self.outputXRIT = x         # Flag for saving xRIT files to disk
         self.keys = k               # Decryption keys
         self.cCPPDU = None          # Current CP_PDU object
         self.cTPFile = None         # Current TP_File object
@@ -331,10 +335,8 @@ class Channel:
                 # Handle S_PDU (decryption)
                 spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.keys)
 
-                # Create new xRIT file
-                xrit = CCSDS.xRIT(spdu.PLAINTEXT)
-                xrit.save(self.outputPath)
-                xrit.print_info()
+                # Handle xRIT file
+                self.handle_xRIT(spdu)
 
             elif not lenok:
                 ex = self.cTPFile.LENGTH
@@ -355,6 +357,23 @@ class Channel:
             print("    [TP_File]  CURRENT LEN: {} ({}%)     EXPECTED LEN: {}     DIFF: {}\n\n\n".format(ac, p, ex, diff))
 
 
+    def handle_xRIT(self, spdu):
+        """
+        Processes complete S_PDUs to build xRIT and Image files
+        """
+
+        # Create new xRIT file
+        xrit = CCSDS.xRIT(spdu.PLAINTEXT)
+
+        # Save xRIT file if enabled
+        if self.outputXRIT:
+            xrit.save(self.outputPath)
+            xrit.print_info()
+
+        if self.outputImages:
+            #TODO
+            pass
+
     def notify(self, vcid):
         """
         Notifies virtual channel handler of change in VCID
@@ -367,10 +386,8 @@ class Channel:
                 # Handle S_PDU (decryption)
                 spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.keys)
 
-                # Create new xRIT file
-                xrit = CCSDS.xRIT(spdu.PLAINTEXT)
-                xrit.save(self.outputPath)
-                xrit.print_info()
+                # Handle xRIT file
+                self.handle_xRIT(spdu)
 
                 if len(self.cTPFile.PAYLOAD) < self.cTPFile.LENGTH:
                     print("    FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")

@@ -23,6 +23,8 @@ source = None           # Input source type
 spacecraft = None       # Spacecraft name
 downlink = None         # Downlink type (LRIT/HRIT)
 output = None           # Output path root
+output_images = None    # Flag for saving Images to disk
+output_xrit = None      # Flag for saving xRIT files to disk
 blacklist = []          # VCID blacklist
 packetf = None          # Packet file object
 keypath = None          # Decryption key file path
@@ -64,7 +66,7 @@ def init():
 
     # Create demuxer instance
     output += "/" + downlink + "/"
-    demux = Demuxer(downlink, args.v, args.dump, output, blacklist, keys)
+    demux = Demuxer(downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys)
 
     # Check demuxer thread is ready
     if not demux.coreReady:
@@ -311,6 +313,8 @@ def parse_config(path):
     global spacecraft
     global downlink
     global output
+    global output_images
+    global output_xrit
     global blacklist
     global keypath
 
@@ -325,6 +329,8 @@ def parse_config(path):
     spacecraft = cfgp.get('rx', 'spacecraft').upper()
     downlink = cfgp.get('rx', 'mode').upper()
     output = cfgp.get('output', 'path')
+    output_images = cfgp.getboolean('output', 'images')
+    output_xrit = cfgp.getboolean('output', 'xrit')
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
 
