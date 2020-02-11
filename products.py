@@ -53,7 +53,7 @@ class Product:
         Parse file name into namedtuple
         """
 
-        name = collections.namedtuple("name", "type mode sequence channel date time segment")
+        name = collections.namedtuple("name", "type mode sequence channel date time full")
 
         if n.split("_")[0] == "IMG":
             tup = name(
@@ -63,7 +63,7 @@ class Product:
                 n.split("_")[3],
                 self.parse_date(n.split("_")[4]),
                 self.parse_time(n.split("_")[5]),
-                int(n.split("_")[6][:2])
+                n.split(".")[0][:-3]
             )
         else:
             tup = name(
@@ -73,24 +73,33 @@ class Product:
                 None,
                 self.parse_date(n.split("_")[3]),
                 self.parse_time(n.split("_")[4]),
-                int(n.split("_")[5][:2])
+                n.split(".")[0][:-3]
             )
         
         return tup
 
     def parse_date(self, date):
-        d = int(date[6:])
-        m = int(date[4:6])
-        y = int(date[:4])
+        d = date[6:]
+        m = date[4:6]
+        y = date[:4]
 
         return (d, m, y)
 
     def parse_time(self, time):
-        h = int(time[:2])
-        m = int(time[2:4])
-        s = int(time[4:6])
+        h = time[:2]
+        m = time[2:4]
+        s = time[4:6]
 
         return (h, m ,s)
+
+    def get_path(self):
+        """
+        Get save path of product (without extension)
+        """
+
+        path = "{2}{1}{0}/{3}/".format(*self.name.date, self.name.mode)
+
+        return self.root + path + self.name.full
 
     def print_info(self):
         """
@@ -111,7 +120,12 @@ class MultiSegmentImage(Product):
     Multi-segment image products (e.g. Full Disk)
     """
 
-    pass
+    def save(self):
+        """
+        Save product to disk
+        """
+
+        path = self.get_path()
 
 
 class SingleSegmentImage(Product):
@@ -119,7 +133,12 @@ class SingleSegmentImage(Product):
     Single segment image products (e.g. Additional Data)
     """
 
-    pass
+    def save(self):
+        """
+        Save product to disk
+        """
+
+        path = self.get_path()
 
 
 class AlphanumericText(Product):
@@ -127,4 +146,9 @@ class AlphanumericText(Product):
     Plain text products (e.g. Transmission Schedule)
     """
 
-    pass
+    def save(self):
+        """
+        Save product to disk
+        """
+
+        path = self.get_path()
