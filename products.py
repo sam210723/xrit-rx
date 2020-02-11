@@ -9,12 +9,31 @@ import os
 import PIL
 
 
-def new(spacecraft, downlink, xrit, root):
+def new(spacecraft, downlink, name, root):
     """
-    Select product class based on file name
+    Select product class
     """
+
+    types = {
+        "GK-2A": {
+            "LRIT": {
+                "FD": MultiSegmentImage,
+                "ANT": AlphanumericText
+            }
+        }
+    }
+
+    # Observation mode
+    mode = name.split("_")[1]
+
+    try:
+        # Get product type from dict
+        pclass = types[spacecraft][downlink][mode]
+    except KeyError:
+        # Treat all other products as single segment images
+        pclass = SingleSegmentImage
     
-    return
+    return pclass(spacecraft, downlink, name, root)
 
 
 class Product:
@@ -22,7 +41,11 @@ class Product:
     Product base class
     """
 
-    pass
+    def __init__(self, spacecraft, downlink, name, root):
+        self.spacecraft = spacecraft
+        self.downlink = downlink
+        self.name = name
+        self.root = root
 
 
 class MultiSegmentImage(Product):

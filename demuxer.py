@@ -357,7 +357,7 @@ class Channel:
         if self.config.images:
             # Create new product
             if self.cProduct == None:
-                self.cProduct = products.new(self.config.spacecraft, self.config.downlink, xrit, self.config.output)
+                self.cProduct = products.new(self.config.spacecraft, self.config.downlink, xrit.FILE_NAME, self.config.output)
 
 
     def notify(self, vcid):
