@@ -240,17 +240,24 @@ def process(img):
         p2 = (xoff + dlen + rmar, output.height - (gradh * 1.5) + rmar)
         draw.rectangle((p1, p2), outline=(0xFF, 0xFF, 0xFF), width=3)
 
-        # Draw LUT text
-        fnt = ImageFont.truetype("arialbd.ttf", size=38)
-        col = (0xFF, 0xFF, 0xFF, 0xFF)
-        text = "{}K".format(round(cal[0]))
-        draw.text((xoff / 2 - 10, img.height + (gradh / 2) + 3), text, fill=col, font=fnt)   # Start
-        text = "{}K".format(round(cal[7]))
-        draw.text((w - xoff + 30, img.height + (gradh / 2) + 3), text, fill=col, font=fnt)   # End
-        text = "{}K".format(args.hot)
-        draw.text((xoff + (hotI * scale) - 40, output.height - gradh - rmar), text, fill=col, font=fnt)   # Hot
-        text = "{}K".format(args.cold)
-        draw.text((xoff + (coldI * scale) - 40, output.height - gradh - rmar), text, fill=col, font=fnt)   # Cold
+        # Try load Arial Bold font
+        try:
+            fnt = ImageFont.truetype("arialbd.ttf", size=38)
+        except OSError:
+            print("  UNABLE TO LOAD FONT \"arialbd.ttf\"")
+            fnt = None
+
+        if fnt:
+            # Draw LUT text
+            col = (0xFF, 0xFF, 0xFF, 0xFF)
+            text = "{}K".format(round(cal[0]))
+            draw.text((xoff / 2 - 10, img.height + (gradh / 2) + 3), text, fill=col, font=fnt)   # Start
+            text = "{}K".format(round(cal[7]))
+            draw.text((w - xoff + 30, img.height + (gradh / 2) + 3), text, fill=col, font=fnt)   # End
+            text = "{}K".format(args.hot)
+            draw.text((xoff + (hotI * scale) - 40, output.height - gradh - rmar), text, fill=col, font=fnt)   # Hot
+            text = "{}K".format(args.cold)
+            draw.text((xoff + (coldI * scale) - 40, output.height - gradh - rmar), text, fill=col, font=fnt)   # Cold
 
     # Create empty NumPy arrays for each channel
     nplutR = np.zeros(len(lut), dtype=np.uint8)

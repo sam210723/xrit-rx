@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
   - ``keymsg-decrypt.py`` output file name
 
 ### Fixed
-  - 
+  - Missing TrueType font exception
 </details>
 
 
