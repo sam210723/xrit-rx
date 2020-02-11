@@ -9,7 +9,7 @@ from threading import Thread
 import sys
 
 import ccsds as CCSDS
-from products import Product
+import products
 
 
 class Demuxer:
@@ -353,11 +353,11 @@ class Channel:
             xrit.save(self.config.output)
             xrit.print_info()
 
+        # Save image file if enabled
         if self.config.images:
             # Create new product
             if self.cProduct == None:
-                self.cProduct = Product(self.config.spacecraft, self.config.downlink, xrit.FILE_NAME)
-                self.cProduct.print_info()
+                self.cProduct = products.new(self.config.spacecraft, self.config.downlink, xrit, self.config.output)
 
 
     def notify(self, vcid):
