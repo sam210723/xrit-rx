@@ -60,4 +60,14 @@ class Product:
     def print_info(self):
         print("  [PRODUCT] {} {} {}/{}/{} {}:{}:{} UTC".format(self.mode, self.seq, *self.parse_date(), *self.parse_time()))
 
+
+class MultiSegmentImage(Product):
+    pass
+
+
+class SingleSegmentImage(Product):
+    pass
+
+
+class AlphanumericText(Product):
     pass
