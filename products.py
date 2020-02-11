@@ -92,7 +92,7 @@ class Product:
 
         return (h, m ,s)
 
-    def get_path(self):
+    def get_path(self, ext=None):
         """
         Get save path of product (without extension)
         """
@@ -104,7 +104,7 @@ class Product:
         if not os.path.exists("{}/{}".format(self.root, date)): os.mkdir(self.root + "/" + date)
         if not os.path.exists("{}/{}/{}".format(self.root, date, self.name.mode)): os.mkdir(self.root + "/" + date + "/" + self.name.mode)
 
-        return self.root + path + self.name.full
+        return "{}{}{}{}".format(self.root, path, self.name.full, "" if not ext else ".{}".format(ext))
 
     def print_info(self):
         """
