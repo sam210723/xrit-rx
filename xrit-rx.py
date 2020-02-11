@@ -12,6 +12,7 @@ from configparser import ConfigParser
 from os import mkdir, path
 import socket
 from time import time, sleep
+
 from demuxer import Demuxer
 import ccsds as CCSDS
 
@@ -66,9 +67,9 @@ def init():
     load_keys()
 
     # Create demuxer instance
-    dcfg = namedtuple('dcfg', 'downlink verbose dump output images xrit blacklist keys')
+    dcfg = namedtuple('dcfg', 'spacecraft downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
-    demux = Demuxer(dcfg(downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
+    demux = Demuxer(dcfg(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
 
     # Check demuxer thread is ready
     if not demux.coreReady:
