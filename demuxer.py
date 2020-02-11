@@ -3,11 +3,14 @@ demuxer.py
 https://github.com/sam210723/xrit-rx
 """
 
-import ccsds as CCSDS
 from collections import deque, namedtuple
 from time import sleep
 from threading import Thread
 import sys
+
+import ccsds as CCSDS
+from products import Product
+
 
 class Demuxer:
     """
@@ -161,6 +164,7 @@ class Channel:
         self.counter = -1           # VCDU continuity counter
         self.cCPPDU = None          # Current CP_PDU object
         self.cTPFile = None         # Current TP_File object
+        self.cProduct = None        # Current product object
 
 
     def data_in(self, vcdu):
@@ -350,8 +354,10 @@ class Channel:
             xrit.print_info()
 
         if self.config.images:
-            #TODO
-            pass
+            # Create new product
+            if self.cProduct == None:
+                self.cProduct = Product(self.config.spacecraft, self.config.downlink, xrit.FILE_NAME)
+                self.cProduct.print_info()
 
 
     def notify(self, vcid):
