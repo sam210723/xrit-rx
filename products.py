@@ -97,7 +97,12 @@ class Product:
         Get save path of product (without extension)
         """
 
-        path = "{2}{1}{0}/{3}/".format(*self.name.date, self.name.mode)
+        date = "{2}{1}{0}".format(*self.name.date)
+        path = "{}/{}/".format(date, self.name.mode)
+
+        # Check output directories exist
+        if not os.path.exists("{}/{}".format(self.root, date)): os.mkdir(self.root + "/" + date)
+        if not os.path.exists("{}/{}/{}".format(self.root, date, self.name.mode)): os.mkdir(self.root + "/" + date + "/" + self.name.mode)
 
         return self.root + path + self.name.full
 
