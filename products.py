@@ -6,8 +6,9 @@ Parsing and assembly functions for downlinked products
 """
 
 import collections
+import io
 import os
-import PIL
+from PIL import Image, ImageFile
 
 
 def new(config, name):
@@ -132,27 +133,54 @@ class MultiSegmentImage(Product):
         
         # Product specific setup
         self.alias = "IMAGE"                # Product type alias
-        self.segs = 0                       # Segment counter
+        self.segc = 0                       # Segment counter
+        self.segi = []                      # Segment image object list
 
     def add(self, xrit):
         """
         Add data to product
         """
 
-        self.segs += 1
+        # Create image from xRIT data field
+        buf = io.BytesIO(xrit.DATA_FIELD)
+        img = Image.open(buf)
+        self.segi.append(img)
+
+        # Increment counter and indicator
+        self.segc += 1
         print(".", end="", flush=True)
         
         # Mark as complete after 10 segments
-        if self.segs == 10: self.complete = True
+        if self.segc == 10: self.complete = True
 
     def save(self):
         """
         Save product to disk
         """
 
+        # Create new image
+        outI = Image.new("RGB", self.get_res())
+
+        # Combine segments into output image
+        for i, seg in enumerate(self.segi):
+            outI.paste(seg, (0, seg.size[1] * i))
+
+        # Save image to disk
         path = self.get_path("jpg")
-        
+        outI.save(path, format='JPEG', subsampling=0, quality=100)
         print("\n    Saved: \"{}.jpg\"\n".format(self.name.full))
+    
+    def get_res(self):
+        """
+        Returns the horizontal and vertical resolution of the given observation mode
+        """
+
+        if self.config.spacecraft == "GK-2A":
+            if self.name.mode == "FD": outH = outV = 2200
+        else:
+            outH = outV = None
+        
+        return outH, outV
 
 
 class SingleSegmentImage(Product):
