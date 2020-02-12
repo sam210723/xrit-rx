@@ -139,6 +139,9 @@ class MultiSegmentImage(Product):
         Add data to product
         """
 
+        # Get segment number
+        segn = int(xrit.FILE_NAME.split(".")[0][-2:])
+
         # Create image from xRIT data field
         buf = io.BytesIO(xrit.DATA_FIELD)
         img = Image.open(buf)
@@ -148,8 +151,9 @@ class MultiSegmentImage(Product):
         self.segc += 1
         #print(".", end="", flush=True)
         
-        # Mark as complete after 10 segments
-        if self.segc == 10: self.complete = True
+        # Mark as complete after 10 segments or 10th segment
+        if self.segc == 10 or segn == 10:
+            self.complete = True
 
     def save(self):
         """
