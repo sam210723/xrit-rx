@@ -401,6 +401,8 @@ def print_config():
     
     print("KEY FILE:         {}".format(keypath))
     print("VERSION:          {}\n".format(ver))
+    
+    print("Writing packets to: \"{}\"".format(args.dump))
 
 
 try:

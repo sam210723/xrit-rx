@@ -68,8 +68,14 @@ class Demuxer:
                 vcdu = CCSDS.VCDU(packet)
 
                 # Dump raw VCDU to file
-                if dumpf != None and vcdu.VCID != 63:
-                    dumpf.write(packet)
+                if dumpf != None:
+                    # Write packet to file if not fill
+                    if vcdu.VCID != 63:
+                        dumpf.write(packet)
+                    else:
+                        # Write single fill packet to file (forces VCDU change on playback)
+                        if lastVCID != 63:
+                            dumpf.write(packet)
 
                 # Check spacecraft is supported
                 if vcdu.SC != "GK-2A":
