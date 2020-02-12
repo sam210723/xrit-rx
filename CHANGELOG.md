@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - Output products (images/text) directly from demuxer
   - Transparent enhanced image output option
   - Added check for encrypted LRIT files in ``lrit-img.py`` and ``lrit-add.py``
   - Output file type options (Image or xRIT files)
