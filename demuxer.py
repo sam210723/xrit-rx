@@ -362,7 +362,7 @@ class Channel:
             self.cProduct.add(xrit)
             xrit.print_info()
 
-            # Save and clear complete products
+            # Save and clear complete product
             if self.cProduct.complete:
                 self.cProduct.save()
                 self.cProduct = None
@@ -395,3 +395,7 @@ class Channel:
 
                 # Clear finished TP_File
                 self.cTPFile = None
+            elif self.cProduct != None:
+                # Save and clear current product
+                self.cProduct.save()
+                self.cProduct = None
