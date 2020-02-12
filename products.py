@@ -191,20 +191,42 @@ class SingleSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
+        self.payload = None
 
     def add(self, xrit):
         """
         Add data to product
         """
 
-        self.completed = True
+        self.payload = xrit.DATA_FIELD
+        self.complete = True
 
     def save(self):
         """
         Save product to disk
         """
 
-        path = self.get_path()
+        ext = self.get_ext()
+        path = self.get_path(ext)
+
+        outf = open(path, mode="wb")
+        outf.write(self.payload)
+        outf.close()
+
+        print("    Saved \"{}\"".format(path))
+
+    def get_ext(self):
+        """
+        Detects output extension based on file signature
+        """
+
+        ext = "bin"
+        if self.payload[:3] == b'GIF':
+            ext = "gif"
+        elif self.payload[1:4] == b'PNG':
+            ext = "png"
+
+        return ext
 
 
 class AlphanumericText(Product):
