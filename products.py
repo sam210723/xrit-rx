@@ -111,14 +111,14 @@ class Product:
         Print product info
         """
 
-        print("  [{}] {}{} #{} {}/{}/{} {}:{}:{} UTC".format(
+        print("  [{}] {}{} #{} {}/{}/{} {}:{}:{} UTC\n    ".format(
             self.alias,
             self.name.mode,
             "" if not self.name.channel else " {}".format(self.name.channel),
             self.name.sequence,
             *self.name.date,
             *self.name.time
-        ))
+        ), end="", flush=True)
 
 
 class MultiSegmentImage(Product):
@@ -131,14 +131,28 @@ class MultiSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "IMAGE"
+        self.alias = "IMAGE"                # Product type alias
+        self.segs = 0                       # Segment counter
+
+    def add(self, xrit):
+        """
+        Add data to product
+        """
+
+        self.segs += 1
+        print(".", end="", flush=True)
+        
+        # Mark as complete after 10 segments
+        if self.segs == 10: self.complete = True
 
     def save(self):
         """
         Save product to disk
         """
 
-        path = self.get_path()
+        path = self.get_path("jpg")
+        
+        print("\n    Saved: \"{}.jpg\"\n".format(self.name.full))
 
 
 class SingleSegmentImage(Product):
@@ -151,7 +165,14 @@ class SingleSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "IMAGE"
+        self.alias = "IMAGE"                # Product type alias
+
+    def add(self, xrit):
+        """
+        Add data to product
+        """
+
+        self.completed = True
 
     def save(self):
         """
@@ -171,11 +192,18 @@ class AlphanumericText(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "TEXT"
+        self.alias = "TEXT"                 # Product type alias
+
+    def add(self, xrit):
+        """
+        Add data to product
+        """
+
+        self.completed = True
 
     def save(self):
         """
         Save product to disk
         """
 
-        path = self.get_path()
+        path = self.get_path("txt")

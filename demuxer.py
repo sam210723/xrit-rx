@@ -359,6 +359,9 @@ class Channel:
             if self.cProduct == None:
                 self.cProduct = products.new(self.config, xrit.FILE_NAME)
                 self.cProduct.print_info()
+            
+            # Add data to current product
+            self.cProduct.add(xrit)
 
 
     def notify(self, vcid):
