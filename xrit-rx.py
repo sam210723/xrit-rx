@@ -260,11 +260,18 @@ def load_keys():
 
     global keypath
     global keys
+    global output_images
+    global output_xrit
 
     # Check key file exists
     if not path.exists(keypath):
-        print("KEY FILE NOT FOUND (will output encrypted files)")
-        return
+        print("KEY FILE NOT FOUND: ONLY ENCRYPTED XRIT FILES WILL BE SAVED")
+        
+        # Only output xRIT files
+        output_images = False
+        output_xrit = True
+        
+        return False
 
     # Load key file
     keyf = open(keypath, mode='rb')
@@ -290,6 +297,7 @@ def load_keys():
         keys[index] = key
 
     print("Decryption keys loaded")
+    return True
 
 
 def parse_args():
