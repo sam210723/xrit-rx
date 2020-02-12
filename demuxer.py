@@ -3,11 +3,14 @@ demuxer.py
 https://github.com/sam210723/xrit-rx
 """
 
-import ccsds as CCSDS
 from collections import deque, namedtuple
 from time import sleep
 from threading import Thread
 import sys
+
+import ccsds as CCSDS
+import products
+
 
 class Demuxer:
     """
@@ -161,6 +164,7 @@ class Channel:
         self.counter = -1           # VCDU continuity counter
         self.cCPPDU = None          # Current CP_PDU object
         self.cTPFile = None         # Current TP_File object
+        self.cProduct = None        # Current product object
 
 
     def data_in(self, vcdu):
@@ -341,17 +345,30 @@ class Channel:
         Processes complete S_PDUs to build xRIT and Image files
         """
 
-        # Create new xRIT file
+        # Create new xRIT object
         xrit = CCSDS.xRIT(spdu.PLAINTEXT)
 
         # Save xRIT file if enabled
-        if self.config.xrit:
-            xrit.save(self.config.output)
+        if self.config.xrit: xrit.save(self.config.output)
+
+        # Save image file if enabled
+        if self.config.images:
+            # Create new product
+            if self.cProduct == None:
+                self.cProduct = products.new(self.config, xrit.FILE_NAME)
+                self.cProduct.print_info()
+            
+            # Add data to current product
+            self.cProduct.add(xrit)
             xrit.print_info()
 
-        if self.config.images:
-            #TODO
-            pass
+            # Save and clear complete products
+            if self.cProduct.complete:
+                self.cProduct.save()
+                self.cProduct = None
+        else:
+            # Print XRIT file info
+            xrit.print_info()
 
 
     def notify(self, vcid):

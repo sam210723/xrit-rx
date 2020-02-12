@@ -34,7 +34,7 @@ keys = {}               # Decryption keys
 sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
-ver = "1.0.3"           # xrit-rx version
+ver = "1.1"             # xrit-rx version
 
 
 def init():
