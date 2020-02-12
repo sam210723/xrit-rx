@@ -43,10 +43,11 @@ class Product:
     """
 
     def __init__(self, spacecraft, downlink, name, root):
-        self.spacecraft = spacecraft
-        self.downlink = downlink
-        self.name = self.parse_name(name)
-        self.root = root
+        self.spacecraft = spacecraft        # Spacecraft name
+        self.downlink = downlink            # Downlink name
+        self.name = self.parse_name(name)   # Product name
+        self.root = root                    # Root output path
+        self.alias = "PRODUCT"              # Product type alias
     
     def parse_name(self, n):
         """
@@ -111,7 +112,8 @@ class Product:
         Print product info
         """
 
-        print("  [PRODUCT] {}{} #{} {}/{}/{} {}:{}:{} UTC".format(
+        print("  [{}] {}{} #{} {}/{}/{} {}:{}:{} UTC".format(
+            self.alias,
             self.name.mode,
             "" if not self.name.channel else " {}".format(self.name.channel),
             self.name.sequence,
@@ -124,6 +126,13 @@ class MultiSegmentImage(Product):
     """
     Multi-segment image products (e.g. Full Disk)
     """
+
+    def __init__(self, spacecraft, downlink, name, root):
+        # Call parent class init method
+        Product.__init__(self, spacecraft, downlink, name, root)
+        
+        # Product specific setup
+        self.alias = "IMAGE"
 
     def save(self):
         """
@@ -138,6 +147,13 @@ class SingleSegmentImage(Product):
     Single segment image products (e.g. Additional Data)
     """
 
+    def __init__(self, spacecraft, downlink, name, root):
+        # Call parent class init method
+        Product.__init__(self, spacecraft, downlink, name, root)
+        
+        # Product specific setup
+        self.alias = "IMAGE"
+
     def save(self):
         """
         Save product to disk
@@ -150,6 +166,13 @@ class AlphanumericText(Product):
     """
     Plain text products (e.g. Transmission Schedule)
     """
+
+    def __init__(self, spacecraft, downlink, name, root):
+        # Call parent class init method
+        Product.__init__(self, spacecraft, downlink, name, root)
+        
+        # Product specific setup
+        self.alias = "TEXT"
 
     def save(self):
         """
