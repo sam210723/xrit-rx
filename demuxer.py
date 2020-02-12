@@ -345,13 +345,11 @@ class Channel:
         Processes complete S_PDUs to build xRIT and Image files
         """
 
-        # Create new xRIT file
+        # Create new xRIT object
         xrit = CCSDS.xRIT(spdu.PLAINTEXT)
 
         # Save xRIT file if enabled
-        if self.config.xrit:
-            xrit.save(self.config.output)
-            xrit.print_info()
+        if self.config.xrit: xrit.save(self.config.output)
 
         # Save image file if enabled
         if self.config.images:
@@ -362,11 +360,15 @@ class Channel:
             
             # Add data to current product
             self.cProduct.add(xrit)
+            xrit.print_info()
 
-            # Save and clear current product
+            # Save and clear complete products
             if self.cProduct.complete:
                 self.cProduct.save()
                 self.cProduct = None
+        else:
+            # Print XRIT file info
+            xrit.print_info()
 
 
     def notify(self, vcid):

@@ -112,14 +112,13 @@ class Product:
         Print product info
         """
 
-        print("  [{}] {}{} #{} {}/{}/{} {}:{}:{} UTC\n    ".format(
-            self.alias,
+        print("  [PRODUCT] {} #{}{}    {}:{}:{} UTC    {}/{}/{}".format(
             self.name.mode,
-            "" if not self.name.channel else " {}".format(self.name.channel),
             self.name.sequence,
-            *self.name.date,
-            *self.name.time
-        ), end="", flush=True)
+            "" if not self.name.channel else "    {}".format(self.name.channel),
+            *self.name.time,
+            *self.name.date
+        ))
 
 
 class MultiSegmentImage(Product):
@@ -132,7 +131,6 @@ class MultiSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "IMAGE"                # Product type alias
         self.segc = 0                       # Segment counter
         self.segi = []                      # Segment image object list
 
@@ -148,7 +146,7 @@ class MultiSegmentImage(Product):
 
         # Increment counter and indicator
         self.segc += 1
-        print(".", end="", flush=True)
+        #print(".", end="", flush=True)
         
         # Mark as complete after 10 segments
         if self.segc == 10: self.complete = True
@@ -168,7 +166,7 @@ class MultiSegmentImage(Product):
         # Save image to disk
         path = self.get_path("jpg")
         outI.save(path, format='JPEG', subsampling=0, quality=100)
-        print("\n    Saved: \"{}.jpg\"\n".format(self.name.full))
+        print("    Saved \"{}\"".format(path))
     
     def get_res(self):
         """
@@ -193,7 +191,6 @@ class SingleSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "IMAGE"                # Product type alias
 
     def add(self, xrit):
         """
@@ -220,7 +217,6 @@ class AlphanumericText(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.alias = "TEXT"                 # Product type alias
 
     def add(self, xrit):
         """
