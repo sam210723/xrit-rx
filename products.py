@@ -10,7 +10,7 @@ import os
 import PIL
 
 
-def new(spacecraft, downlink, name, root):
+def new(config, name):
     """
     Get new product class
     """
@@ -29,12 +29,12 @@ def new(spacecraft, downlink, name, root):
 
     try:
         # Get product type from dict
-        pclass = types[spacecraft][downlink][mode]
+        pclass = types[config.spacecraft][config.downlink][mode]
     except KeyError:
         # Treat all other products as single segment images
         pclass = SingleSegmentImage
     
-    return pclass(spacecraft, downlink, name, root)
+    return pclass(config, name)
 
 
 class Product:
@@ -42,12 +42,11 @@ class Product:
     Product base class
     """
 
-    def __init__(self, spacecraft, downlink, name, root):
-        self.spacecraft = spacecraft        # Spacecraft name
-        self.downlink = downlink            # Downlink name
+    def __init__(self, config, name):
+        self.config = config                # Configuration tuple
         self.name = self.parse_name(name)   # Product name
-        self.root = root                    # Root output path
         self.alias = "PRODUCT"              # Product type alias
+        self.complete = False               # Completed product flag
     
     def parse_name(self, n):
         """
@@ -102,10 +101,10 @@ class Product:
         path = "{}/{}/".format(date, self.name.mode)
 
         # Check output directories exist
-        if not os.path.exists("{}/{}".format(self.root, date)): os.mkdir(self.root + "/" + date)
-        if not os.path.exists("{}/{}/{}".format(self.root, date, self.name.mode)): os.mkdir(self.root + "/" + date + "/" + self.name.mode)
+        if not os.path.exists("{}/{}".format(self.config.output, date)): os.mkdir(self.config.output + "/" + date)
+        if not os.path.exists("{}/{}/{}".format(self.config.output, date, self.name.mode)): os.mkdir(self.config.output + "/" + date + "/" + self.name.mode)
 
-        return "{}{}{}{}".format(self.root, path, self.name.full, "" if not ext else ".{}".format(ext))
+        return "{}{}{}{}".format(self.config.output, path, self.name.full, "" if not ext else ".{}".format(ext))
 
     def print_info(self):
         """
@@ -127,9 +126,9 @@ class MultiSegmentImage(Product):
     Multi-segment image products (e.g. Full Disk)
     """
 
-    def __init__(self, spacecraft, downlink, name, root):
+    def __init__(self, config, name):
         # Call parent class init method
-        Product.__init__(self, spacecraft, downlink, name, root)
+        Product.__init__(self, config, name)
         
         # Product specific setup
         self.alias = "IMAGE"
@@ -147,9 +146,9 @@ class SingleSegmentImage(Product):
     Single segment image products (e.g. Additional Data)
     """
 
-    def __init__(self, spacecraft, downlink, name, root):
+    def __init__(self, config, name):
         # Call parent class init method
-        Product.__init__(self, spacecraft, downlink, name, root)
+        Product.__init__(self, config, name)
         
         # Product specific setup
         self.alias = "IMAGE"
@@ -167,9 +166,9 @@ class AlphanumericText(Product):
     Plain text products (e.g. Transmission Schedule)
     """
 
-    def __init__(self, spacecraft, downlink, name, root):
+    def __init__(self, config, name):
         # Call parent class init method
-        Product.__init__(self, spacecraft, downlink, name, root)
+        Product.__init__(self, config, name)
         
         # Product specific setup
         self.alias = "TEXT"
