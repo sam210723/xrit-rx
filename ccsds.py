@@ -63,7 +63,7 @@ class VCDU:
         vcname[0] = "FULL DISK"
         vcname[4] = "ALPHA-NUMERIC TEXT"
         vcname[5] = "ADDITIONAL DATA"
-        vcname[63] = "FILL"
+        vcname[63] = "IDLE"
 
         try:
             return vcname[vcid]

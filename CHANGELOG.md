@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
   - Default key file name **(check when upgrading from an old version)**
   - ``keymsg-decrypt.py`` output file name
+  - Rename FILL packets to IDLE packets
 
 ### Fixed
   - Missing TrueType font exception
