@@ -363,6 +363,11 @@ class Channel:
             # Add data to current product
             self.cProduct.add(xrit)
 
+            # Save and clear current product
+            if self.cProduct.complete:
+                self.cProduct.save()
+                self.cProduct = None
+
 
     def notify(self, vcid):
         """
