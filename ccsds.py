@@ -508,6 +508,9 @@ class xRIT:
         # Parse Annotation Text header (type 4)
         athLen = self.get_header_len(offset)
         self.FILE_NAME = self.data[offset + 3 : offset + athLen].decode('utf-8')
+
+        # Get data field
+        self.DATA_FIELD = self.data[self.TOTAL_HEADER_LEN : self.TOTAL_HEADER_LEN + self.DATA_LEN]
     
     def get_next_header(self, offset):
         """
