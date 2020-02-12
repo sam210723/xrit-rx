@@ -217,13 +217,15 @@ class AlphanumericText(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
+        self.payload = None
 
     def add(self, xrit):
         """
         Add data to product
         """
 
-        self.completed = True
+        self.payload = xrit.DATA_FIELD
+        self.complete = True
 
     def save(self):
         """
@@ -231,3 +233,9 @@ class AlphanumericText(Product):
         """
 
         path = self.get_path("txt")
+        
+        outf = open(path, mode="wb")
+        outf.write(self.payload)
+        outf.close()
+
+        print("    Saved \"{}\"".format(path))
