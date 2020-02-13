@@ -132,7 +132,7 @@ class MultiSegmentImage(Product):
         
         # Product specific setup
         self.segc = 0                       # Segment counter
-        self.segi = []                      # Segment image object list
+        self.segi = {}                      # Segment image object list
 
     def add(self, xrit):
         """
@@ -145,7 +145,7 @@ class MultiSegmentImage(Product):
         # Create image from xRIT data field
         buf = io.BytesIO(xrit.DATA_FIELD)
         img = Image.open(buf)
-        self.segi.append(img)
+        self.segi[segn] = img
 
         # Increment counter and indicator
         self.segc += 1
@@ -164,8 +164,9 @@ class MultiSegmentImage(Product):
         outI = Image.new("RGB", self.get_res())
 
         # Combine segments into output image
-        for i, seg in enumerate(self.segi):
-            outI.paste(seg, (0, seg.size[1] * i))
+        for s in self.segi:
+            i = self.segi[s]
+            outI.paste(i, (0, i.size[1] * (s-1)))
 
         # Save image to disk
         path = self.get_path("jpg")
