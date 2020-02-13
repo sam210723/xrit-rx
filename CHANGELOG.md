@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
   - Output file type options (Image or xRIT files)
   - Demuxer configuration tuple
   - Channel handler configuration tuple
+  - Detect GK-2A LRIT Daily Operation Plan
 
 ### Changed
   - Default key file name **(check when upgrading from an old version)**

@@ -265,4 +265,8 @@ class AlphanumericText(Product):
         outf.write(self.payload)
         outf.close()
 
+        # Detect GK-2A LRIT DOP
+        if self.payload[:40].decode('utf-8') == "GK-2A AMI LRIT DOP(Daily Operation Plan)":
+            print("    GK-2A LRIT Daily Operation Plan")
+
         print("    Saved \"{}\"".format(path))
