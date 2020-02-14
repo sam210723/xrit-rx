@@ -6,6 +6,8 @@ Parsing and assembly functions for downlinked products
 """
 
 import collections
+import colorama
+from colorama import Fore, Back, Style
 import io
 import os
 from PIL import Image, ImageFile
@@ -171,7 +173,7 @@ class MultiSegmentImage(Product):
         # Save image to disk
         path = self.get_path("jpg")
         outI.save(path, format='JPEG', subsampling=0, quality=100)
-        print("    Saved \"{}\"".format(path))
+        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
     
     def get_res(self):
         """
@@ -218,7 +220,7 @@ class SingleSegmentImage(Product):
         outf.write(self.payload)
         outf.close()
 
-        print("    Saved \"{}\"".format(path))
+        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
 
     def get_ext(self):
         """
@@ -269,4 +271,4 @@ class AlphanumericText(Product):
         if self.payload[:40].decode('utf-8') == "GK-2A AMI LRIT DOP(Daily Operation Plan)":
             print("    GK-2A LRIT Daily Operation Plan")
 
-        print("    Saved \"{}\"".format(path))
+        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))

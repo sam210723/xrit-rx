@@ -8,6 +8,8 @@ Frontend for CCSDS demultiplexer and image generator
 import ast
 from argparse import ArgumentParser
 from collections import namedtuple
+import colorama
+from colorama import Fore, Back, Style
 from configparser import ConfigParser
 from os import mkdir, path
 import socket
@@ -59,6 +61,9 @@ def init():
     config = parse_config(args.config)
     print_config()
 
+    # Initialise Colorama
+    colorama.init(autoreset=True)
+
     # Configure directories and input source
     dirs()
     config_input()
@@ -73,7 +78,7 @@ def init():
 
     # Check demuxer thread is ready
     if not demux.coreReady:
-        print("DEMUXER CORE THREAD FAILED TO START\nExiting...")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START\nExiting...")
         exit()
 
     print("──────────────────────────────────────────────────────────────────────────────────\n")
@@ -185,14 +190,15 @@ def config_input():
 
         # Check VCDU file exists
         if not path.exists(args.file):
-            print("INPUT FILE DOES NOT EXIST\nExiting...")
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "INPUT FILE DOES NOT EXIST")
+            print("Exiting...")
             exit()
         
         packetf = open(args.file, 'rb')
-        print("Opened input file: \"{}\"".format(args.file))
+        print(Fore.GREEN + Style.BRIGHT + "OPENED PACKET FILE")
 
     else:
-        print("UNKNOWN INPUT MODE: \"{}\"".format(source))
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "UNKNOWN INPUT MODE: \"{}\"".format(source))
         print("Exiting...")
         exit()
 
@@ -204,10 +210,10 @@ def connect_socket(addr):
 
     try:
         sck.connect(addr)
-        print("CONNECTED")
+        print(Fore.GREEN + Style.BRIGHT + "CONNECTED")
     except socket.error as e:
         if e.errno == 10061:
-            print("CONNECTION REFUSED")
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "CONNECTION REFUSED")
         else:
             print(e)
     
@@ -227,7 +233,7 @@ def nanomsg_init():
 
     # Check nanomsg response
     if nmres != b'\x00\x53\x50\x00\x00\x20\x00\x00':
-        print("  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
         exit()
 
 
@@ -247,9 +253,9 @@ def dirs():
             mkdir(absp)
             mkdir(absp + "/" + downlink + "/")
 
-            print("Created output folders")
+            print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
         except OSError as e:
-            print("Error creating output folders\n{}\n\nExiting...".format(e))
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}\n\nExiting...".format(e))
             exit()
 
 
@@ -265,7 +271,7 @@ def load_keys():
 
     # Check key file exists
     if not path.exists(keypath):
-        print("KEY FILE NOT FOUND: ONLY ENCRYPTED XRIT FILES WILL BE SAVED")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "KEY FILE NOT FOUND: ONLY ENCRYPTED XRIT FILES WILL BE SAVED")
         
         # Only output xRIT files
         output_images = False
@@ -296,7 +302,7 @@ def load_keys():
         # Add key to dictionary
         keys[index] = key
 
-    print("Decryption keys loaded")
+    print(Fore.GREEN + Style.BRIGHT + "DECRYPTION KEYS LOADED")
     return True
 
 
@@ -402,7 +408,8 @@ def print_config():
     print("KEY FILE:         {}".format(keypath))
     print("VERSION:          {}\n".format(ver))
     
-    print("Writing packets to: \"{}\"".format(args.dump))
+    if args.dump:
+        print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
 
 
 try:
