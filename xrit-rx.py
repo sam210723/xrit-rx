@@ -7,11 +7,15 @@ Frontend for CCSDS demultiplexer and image generator
 
 import ast
 from argparse import ArgumentParser
+from collections import namedtuple
+import colorama
+from colorama import Fore, Back, Style
 from configparser import ConfigParser
-from demuxer import Demuxer
 from os import mkdir, path
 import socket
 from time import time, sleep
+
+from demuxer import Demuxer
 import ccsds as CCSDS
 
 
@@ -23,6 +27,8 @@ source = None           # Input source type
 spacecraft = None       # Spacecraft name
 downlink = None         # Downlink type (LRIT/HRIT)
 output = None           # Output path root
+output_images = None    # Flag for saving Images to disk
+output_xrit = None      # Flag for saving xRIT files to disk
 blacklist = []          # VCID blacklist
 packetf = None          # Packet file object
 keypath = None          # Decryption key file path
@@ -30,7 +36,7 @@ keys = {}               # Decryption keys
 sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
-ver = "1.0.3"           # xrit-rx version
+ver = "1.1"             # xrit-rx version
 
 
 def init():
@@ -55,6 +61,9 @@ def init():
     config = parse_config(args.config)
     print_config()
 
+    # Initialise Colorama
+    colorama.init(autoreset=True)
+
     # Configure directories and input source
     dirs()
     config_input()
@@ -63,12 +72,13 @@ def init():
     load_keys()
 
     # Create demuxer instance
+    dcfg = namedtuple('dcfg', 'spacecraft downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
-    demux = Demuxer(downlink, args.v, args.dump, output, blacklist, keys)
+    demux = Demuxer(dcfg(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
 
     # Check demuxer thread is ready
     if not demux.coreReady:
-        print("DEMUXER CORE THREAD FAILED TO START\nExiting...")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START\nExiting...")
         exit()
 
     print("──────────────────────────────────────────────────────────────────────────────────\n")
@@ -180,14 +190,15 @@ def config_input():
 
         # Check VCDU file exists
         if not path.exists(args.file):
-            print("INPUT FILE DOES NOT EXIST\nExiting...")
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "INPUT FILE DOES NOT EXIST")
+            print("Exiting...")
             exit()
         
         packetf = open(args.file, 'rb')
-        print("Opened input file: \"{}\"".format(args.file))
+        print(Fore.GREEN + Style.BRIGHT + "OPENED PACKET FILE")
 
     else:
-        print("UNKNOWN INPUT MODE: \"{}\"".format(source))
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "UNKNOWN INPUT MODE: \"{}\"".format(source))
         print("Exiting...")
         exit()
 
@@ -199,10 +210,10 @@ def connect_socket(addr):
 
     try:
         sck.connect(addr)
-        print("CONNECTED")
+        print(Fore.GREEN + Style.BRIGHT + "CONNECTED")
     except socket.error as e:
         if e.errno == 10061:
-            print("CONNECTION REFUSED")
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "CONNECTION REFUSED")
         else:
             print(e)
     
@@ -222,7 +233,7 @@ def nanomsg_init():
 
     # Check nanomsg response
     if nmres != b'\x00\x53\x50\x00\x00\x20\x00\x00':
-        print("  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
         exit()
 
 
@@ -242,9 +253,9 @@ def dirs():
             mkdir(absp)
             mkdir(absp + "/" + downlink + "/")
 
-            print("Created output folders")
+            print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
         except OSError as e:
-            print("Error creating output folders\n{}\n\nExiting...".format(e))
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}\n\nExiting...".format(e))
             exit()
 
 
@@ -255,11 +266,18 @@ def load_keys():
 
     global keypath
     global keys
+    global output_images
+    global output_xrit
 
     # Check key file exists
     if not path.exists(keypath):
-        print("KEY FILE NOT FOUND (will output encrypted files)")
-        return
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "KEY FILE NOT FOUND: ONLY ENCRYPTED XRIT FILES WILL BE SAVED")
+        
+        # Only output xRIT files
+        output_images = False
+        output_xrit = True
+        
+        return False
 
     # Load key file
     keyf = open(keypath, mode='rb')
@@ -284,7 +302,8 @@ def load_keys():
         # Add key to dictionary
         keys[index] = key
 
-    print("Decryption keys loaded")
+    print(Fore.GREEN + Style.BRIGHT + "DECRYPTION KEYS LOADED")
+    return True
 
 
 def parse_args():
@@ -311,6 +330,8 @@ def parse_config(path):
     global spacecraft
     global downlink
     global output
+    global output_images
+    global output_xrit
     global blacklist
     global keypath
 
@@ -325,6 +346,8 @@ def parse_config(path):
     spacecraft = cfgp.get('rx', 'spacecraft').upper()
     downlink = cfgp.get('rx', 'mode').upper()
     output = cfgp.get('output', 'path')
+    output_images = cfgp.getboolean('output', 'images')
+    output_xrit = cfgp.getboolean('output', 'xrit')
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
 
@@ -384,6 +407,9 @@ def print_config():
     
     print("KEY FILE:         {}".format(keypath))
     print("VERSION:          {}\n".format(ver))
+    
+    if args.dump:
+        print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
 
 
 try:

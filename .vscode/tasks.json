@@ -8,6 +8,12 @@
             "type": "shell",
             "command": "python xrit-rx.py",
             "problemMatcher": []
+        },
+        {
+            "label": "Run xrit-rx (file)",
+            "type": "shell",
+            "command": "python xrit-rx.py --file \"samples\\GK-2A LRIT VCDU TEST.bin\"",
+            "problemMatcher": []
         }
     ]
 }

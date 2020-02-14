@@ -5,13 +5,43 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - Transparent enhanced image output option
+  - 
 
 ### Changed
   - 
 
 ### Fixed
   - 
+</details>
+
+
+## [v1.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.1) - 2020-02-14
+Products (images/text) are now output directly from xrit-rx rather than relying on ``lrit-img.py`` and ``lrit-add.py``.
+Progress bar for multi-segment images and colour-coded success/failure messages were also added.
+
+<details>
+<summary>Details</summary>
+
+### Added
+  - Output products (images/text) directly from demuxer
+  - Transparent enhanced image output option
+  - Added check for encrypted LRIT files in ``lrit-img.py`` and ``lrit-add.py``
+  - Output file type options (Image or xRIT files)
+  - Demuxer configuration tuple
+  - Channel handler configuration tuple
+  - Detect GK-2A LRIT Daily Operation Plan
+  - Console output colours
+  - Progress bar for multi-segment images
+
+### Changed
+  - Default key file name **(check when upgrading from an old version)**
+  - ``keymsg-decrypt.py`` output file name
+  - Disable product output if no keys loaded
+  - Write single fill VCDU to packet file on VCID change
+  - Rename FILL packets to IDLE packets
+
+### Fixed
+  - Missing TrueType font exception
 </details>
 
 

@@ -75,9 +75,9 @@ for i in range(len(crcData)):
 # Compare CRC from file and calculated CRC
 print("Calculated CRC: 0x{0}".format(hex(crc)[2:].upper()))
 if int(crc) == int.from_bytes(kmCRC, byteorder='big'):
-    print("CRC Ok!\n")
+    print("CRC OK!\n")
 else:
-    print("CRC Error\n")
+    print("CRC ERROR\n")
     exit(0)
 
 # Add encrypted keys to list
@@ -103,9 +103,9 @@ for i in range(30):
     print("[{0}   ]: {1}".format(indexes[i][-1:].hex().upper(), decKeys[i].hex().upper()))
 
 # Write decrypted Key Message file to disk
-decKmFileName = "" + args.PATH + ".dec"
-print("\nOutput file: {0}".format(decKmFileName))
-decKmFile = open(decKmFileName, mode="wb")
+decPath = args.PATH.split("_" + args.MAC)[0] + ".bin"
+print("\nOutput file: {0}".format(decPath))
+decKmFile = open(decPath, mode="wb")
 
 decKmFile.write(b'\x00\x1E')  # Number of keys (30/0x1E, 2 bytes)
 for i in range(30):

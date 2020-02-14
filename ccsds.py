@@ -63,7 +63,7 @@ class VCDU:
         vcname[0] = "FULL DISK"
         vcname[4] = "ALPHA-NUMERIC TEXT"
         vcname[5] = "ADDITIONAL DATA"
-        vcname[63] = "FILL"
+        vcname[63] = "IDLE"
 
         try:
             return vcname[vcid]
@@ -508,6 +508,9 @@ class xRIT:
         # Parse Annotation Text header (type 4)
         athLen = self.get_header_len(offset)
         self.FILE_NAME = self.data[offset + 3 : offset + athLen].decode('utf-8')
+
+        # Get data field
+        self.DATA_FIELD = self.data[self.TOTAL_HEADER_LEN : self.TOTAL_HEADER_LEN + self.DATA_LEN]
     
     def get_next_header(self, offset):
         """
@@ -570,7 +573,7 @@ class xRIT:
         Prints information about the current xRIT file to the console
         """
 
-        print("  [NEW FILE] {}: \"{}\"".format(self.FILE_TYPE, self.FILE_NAME))
+        print("  [XRIT] \"{}\"".format(self.FILE_NAME))
 
 
 class Tools:

@@ -3,37 +3,37 @@ demuxer.py
 https://github.com/sam210723/xrit-rx
 """
 
-import ccsds as CCSDS
-from collections import deque
+from collections import deque, namedtuple
+import colorama
+from colorama import Fore, Back, Style
 from time import sleep
 from threading import Thread
 import sys
+
+import ccsds as CCSDS
+import products
+
 
 class Demuxer:
     """
     Coordinates demultiplexing of CCSDS virtual channels into xRIT files.
     """
 
-    def __init__(self, dl, v, d, o, b, k):
+    def __init__(self, config):
         """
         Initialises demuxer class
         """
 
         # Configure instance globals
+        self.config = config            # Configuration tuple
         self.rxq = deque()              # Data receive queue
         self.coreReady = False          # Core thread ready state
         self.coreStop = False           # Core thread stop flag
-        self.downlink = dl              # Downlink type (LRIT/HRIT)
-        self.verbose = v                # Verbose output flag
-        self.dumpPath = d               # VCDU dump file path
-        self.outputPath = o             # Output path root
-        self.blacklist = b              # VCID blacklist
-        self.keys = k                   # Decryption keys
-        self.channelHandlers = {}       # List of channel handlers
+        self.channels = {}              # List of channel handlers
 
-        if self.downlink == "LRIT":
+        if self.config.downlink == "LRIT":
             self.coreWait = 54          # Core loop delay in ms for LRIT (108.8ms per packet @ 64 kbps)
-        elif self.downlink == "HRIT":
+        elif self.config.downlink == "HRIT":
             self.coreWait = 1           # Core loop delay in ms for HRIT (2.2ms per packet @ 3 Mbps)
 
         # Start core demuxer thread
@@ -55,9 +55,9 @@ class Demuxer:
         crclut = CCSDS.CP_PDU.CCITT_LUT(None)   # CP_PDU CRC LUT
         
         # Open VCDU dump file
-        dumpFile = None
-        if self.dumpPath != None:
-            dumpFile = open(self.dumpPath, 'wb+')
+        dumpf = None
+        if self.config.dump != None:
+            dumpf = open(self.config.dump, 'wb+')
 
         # Thread loop
         while not self.coreStop:
@@ -70,51 +70,59 @@ class Demuxer:
                 vcdu = CCSDS.VCDU(packet)
 
                 # Dump raw VCDU to file
-                if dumpFile != None and vcdu.VCID != 63:
-                    dumpFile.write(packet)
+                if dumpf != None:
+                    # Write packet to file if not fill
+                    if vcdu.VCID != 63:
+                        dumpf.write(packet)
+                    else:
+                        # Write single fill packet to file (forces VCDU change on playback)
+                        if lastVCID != 63:
+                            dumpf.write(packet)
 
                 # Check spacecraft is supported
                 if vcdu.SC != "GK-2A":
-                    if self.verbose: print("SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
+                    if self.config.verbose:
+                        print(Fore.WHITE + Back.RED + Style.BRIGHT + "SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
                     continue
 
                 # Check for VCID change
                 if lastVCID != vcdu.VCID:
                     # Notify channel handlers of VCID change
-                    for chan in self.channelHandlers:
-                        self.channelHandlers[chan].notify(vcdu.VCID)
+                    for c in self.channels:
+                        self.channels[c].notify(vcdu.VCID)
                     
                     # Print VCID info
-                    if self.verbose: print()
+                    if self.config.verbose: print()
                     vcdu.print_info()
-                    if vcdu.VCID in self.blacklist: print("  IGNORING DATA (CHANNEL IS BLACKLISTED)")
+                    if vcdu.VCID in self.config.blacklist:
+                        print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "IGNORING DATA (CHANNEL IS BLACKLISTED)")
                     lastVCID = vcdu.VCID
 
                 # Discard fill packets
                 if vcdu.VCID == 63: continue
                 
                 # Discard VCDUs in blacklisted VCIDs
-                if vcdu.VCID in self.blacklist: continue
-                
+                if vcdu.VCID in self.config.blacklist: continue
+
                 # Check channel handler for current VCID exists
                 try:
-                    self.channelHandlers[vcdu.VCID]
+                    self.channels[vcdu.VCID]
                 except KeyError:
                     # Create new channel handler instance
-                    self.channelHandlers[vcdu.VCID] = Channel(vcdu.VCID, self.verbose, crclut, self.outputPath, self.keys)
-                    if self.verbose: print("  CREATED NEW CHANNEL HANDLER\n")
+                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
+                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crclut))
+                    if self.config.verbose: print("  " + Fore.GREEN + Style.BRIGHT + "CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
-                self.channelHandlers[vcdu.VCID].data_in(vcdu)
+                self.channels[vcdu.VCID].data_in(vcdu)
             else:
                 # No packet available, sleep thread
                 sleep(self.coreWait / 1000)
         
         # Gracefully exit core thread
         if self.coreStop:
-            if dumpFile != None:
-                dumpFile.close()
-            
+            if dumpf != None:
+                dumpf.close()
             return
 
     def push(self, packet):
@@ -142,10 +150,7 @@ class Demuxer:
         Checks if receive queue is empty
         """
 
-        if len(self.rxq) == 0:
-            return True
-        else:
-            return False
+        return len(self.rxq) == 0
 
     def stop(self):
         """
@@ -160,24 +165,16 @@ class Channel:
     Virtual channel data handler
     """
 
-    def __init__(self, vcid, v, crclut, output, k):
+    def __init__(self, config):
         """
         Initialises virtual channel data handler
-        :param vcid: Virtual Channel ID
-        :param v: Verbose output flag
-        :param crclut: CP_PDU CRC LUT
-        :param output: xRIT file output path root
-        :param k: Decryption keys
         """
 
-        self.VCID = vcid            # VCID for this handler
+        self.config = config        # Configuration tuple
         self.counter = -1           # VCDU continuity counter
-        self.verbose = v            # Verbose output flag
-        self.crclut = crclut        # CP_PDU CRC LUT
-        self.outputPath = output    # xRIT file output path root
-        self.keys = k               # Decryption keys
         self.cCPPDU = None          # Current CP_PDU object
         self.cTPFile = None         # Current TP_File object
+        self.cProduct = None        # Current product object
 
 
     def data_in(self, vcdu):
@@ -200,15 +197,14 @@ class Channel:
                 preptr = mpdu.PACKET[:mpdu.POINTER]
 
                 try:
-                    lenok, crcok = self.cCPPDU.finish(preptr, self.crclut)
-                    if self.verbose: self.check_CPPDU(lenok, crcok)
+                    lenok, crcok = self.cCPPDU.finish(preptr, self.config.lut)
+                    if self.config.verbose: self.check_CPPDU(lenok, crcok)
 
                     # Handle finished CP_PDU
                     self.handle_CPPDU(self.cCPPDU)
                 except AttributeError:
-                    if self.verbose: print("  NO CP_PDU TO FINISH (DROPPED PACKETS?)")
-
-                #TODO: Check CP_PDU continuity
+                    if self.config.verbose:
+                        print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO CP_PDU TO FINISH (DROPPED PACKETS?)")
 
                 # Create new CP_PDU
                 postptr = mpdu.PACKET[mpdu.POINTER:]
@@ -224,13 +220,14 @@ class Channel:
                     self.cCPPDU.PAYLOAD = self.cCPPDU.PAYLOAD[:self.cCPPDU.LENGTH]
                     
                     try:
-                        lenok, crcok = self.cCPPDU.finish(b'', self.crclut)
-                        if self.verbose: self.check_CPPDU(lenok, crcok)
+                        lenok, crcok = self.cCPPDU.finish(b'', self.config.lut)
+                        if self.config.verbose: self.check_CPPDU(lenok, crcok)
 
                         # Handle finished CP_PDU
                         self.handle_CPPDU(self.cCPPDU)
                     except AttributeError:
-                        if self.verbose: print("  NO CP_PDU TO FINISH (DROPPED PACKETS?)")
+                        if self.config.verbose:
+                            print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO CP_PDU TO FINISH (DROPPED PACKETS?)")
 
             else:
                 # First CP_PDU in TP_File
@@ -240,9 +237,10 @@ class Channel:
             # Handle special EOF CP_PDU
             if self.cCPPDU.is_EOF():
                 self.cCPPDU = None
-                if self.verbose: print("  [CP_PDU] EOF MARKER")
+                if self.config.verbose:
+                    print("  " + Fore.GREEN + Style.BRIGHT + "[CP_PDU] EOF MARKER")
             else:
-                if self.verbose:
+                if self.config.verbose:
                     self.cCPPDU.print_info()
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
                     print("    OFFSET:     0x{}\n    ".format(hex(mpdu.POINTER)[2:].upper()), end="")
@@ -251,15 +249,16 @@ class Channel:
             try:
                 wasparsed = self.cCPPDU.PARSED
                 self.cCPPDU.append(mpdu.PACKET)
-                if wasparsed != self.cCPPDU.PARSED and self.verbose:
+                if wasparsed != self.cCPPDU.PARSED and self.config.verbose:
                     self.cCPPDU.print_info()
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
                     print("    OFFSET:     SPANS MULTIPLE M_PDUs\n", end="")
             except AttributeError:
-                if self.verbose: print("  NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
+                if self.config.verbose:
+                    print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
         
         # VCDU indicator
-        if self.verbose: print(".", end="")
+        if self.config.verbose: print(".", end="")
         sys.stdout.flush()
     
 
@@ -277,10 +276,10 @@ class Channel:
             
             diff = vcdu.COUNTER - self.counter - 1
             if diff > 0:
-                if self.verbose:
-                    print("  DROPPED {} PACKETS    (CURRENT: {}   LAST: {}   VCID: {})".format(diff, vcdu.COUNTER, self.counter, vcdu.VCID))
+                if self.config.verbose:
+                    print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "DROPPED {} PACKET{}    (CURRENT: {}   LAST: {}   VCID: {})".format(diff, "S" if diff > 1 else "", vcdu.COUNTER, self.counter, vcdu.VCID))
                 else:
-                    print("  DROPPED {} PACKETS".format(diff))
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "DROPPED {} PACKET{}".format(diff, "S" if diff > 1 else ""))
         
         self.counter = vcdu.COUNTER
     
@@ -292,18 +291,18 @@ class Channel:
 
         # Show length error
         if lenok:
-            print("\n    LENGTH:     OK")
+            print("\n    " + Fore.GREEN + Style.BRIGHT + "LENGTH:     OK")
         else:
             ex = self.cCPPDU.LENGTH
             ac = len(self.cCPPDU.PAYLOAD)
             diff = ac - ex
-            print("\n    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
+            print("\n    " + Fore.WHITE + Back.RED + Style.BRIGHT + "LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
 
         # Show CRC error
         if crcok:
-            print("    CRC:        OK")
+            print("    " + Fore.GREEN + Style.BRIGHT + "CRC:        OK")
         else:
-            print("    CRC:        ERROR")
+            print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "CRC:        ERROR")
         print()
 
 
@@ -324,35 +323,65 @@ class Channel:
             # Close current TP_File
             lenok = self.cTPFile.finish(cppdu.PAYLOAD[:-2])
 
-            if self.verbose: self.cTPFile.print_info()
+            if self.config.verbose: self.cTPFile.print_info()
             if lenok:
-                if self.verbose: print("    LENGTH:     OK\n")
+                if self.config.verbose: print("    " + Fore.GREEN + Style.BRIGHT + "LENGTH:     OK\n")
                 
                 # Handle S_PDU (decryption)
-                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.keys)
+                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.config.keys)
 
-                # Create new xRIT file
-                xrit = CCSDS.xRIT(spdu.PLAINTEXT)
-                xrit.save(self.outputPath)
-                xrit.print_info()
+                # Handle xRIT file
+                self.handle_xRIT(spdu)
 
             elif not lenok:
                 ex = self.cTPFile.LENGTH
                 ac = len(self.cTPFile.PAYLOAD)
                 diff = ac - ex
 
-                if self.verbose: print("    LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
-                print("  SKIPPING FILE (DROPPED PACKETS?)")
+                if self.config.verbose:
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "LENGTH:     ERROR (EXPECTED: {}, ACTUAL: {}, DIFF: {})".format(ex, ac, diff))
+                print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING FILE DUE TO DROPPED PACKETS")
             
             # Clear finished TP_File
             self.cTPFile = None
         
-        if self.verbose:
+        if self.config.verbose:
             ac = len(self.cTPFile.PAYLOAD)
             ex = self.cTPFile.LENGTH
             p = round((ac/ex) * 100)
             diff = ex - ac
             print("    [TP_File]  CURRENT LEN: {} ({}%)     EXPECTED LEN: {}     DIFF: {}\n\n\n".format(ac, p, ex, diff))
+
+
+    def handle_xRIT(self, spdu):
+        """
+        Processes complete S_PDUs to build xRIT and Image files
+        """
+
+        # Create new xRIT object
+        xrit = CCSDS.xRIT(spdu.PLAINTEXT)
+
+        # Save xRIT file if enabled
+        if self.config.xrit:
+            xrit.save(self.config.output)
+
+        # Save image file if enabled
+        if self.config.images:
+            # Create new product
+            if self.cProduct == None:
+                self.cProduct = products.new(self.config, xrit.FILE_NAME)
+                self.cProduct.print_info()
+            
+            # Add data to current product
+            self.cProduct.add(xrit)
+
+            # Save and clear complete product
+            if self.cProduct.complete:
+                self.cProduct.save()
+                self.cProduct = None
+        else:
+            # Print XRIT file info
+            xrit.print_info()
 
 
     def notify(self, vcid):
@@ -361,23 +390,25 @@ class Channel:
         """
 
         # No longer the active channel handler  
-        if vcid != self.VCID:
+        if vcid != self.config.VCID:
             # Channel has unfinished TP_File
             if self.cTPFile != None:
                 # Handle S_PDU (decryption)
-                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.keys)
+                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.config.keys)
 
-                # Create new xRIT file
-                xrit = CCSDS.xRIT(spdu.PLAINTEXT)
-                xrit.save(self.outputPath)
-                xrit.print_info()
+                # Handle xRIT file
+                self.handle_xRIT(spdu)
 
                 if len(self.cTPFile.PAYLOAD) < self.cTPFile.LENGTH:
-                    print("    FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
                     ac = len(self.cTPFile.PAYLOAD)
                     ex = self.cTPFile.LENGTH
                     p = round((ac/ex) * 100)
-                    print("    {}% OF EXPECTED LENGTH".format(p))
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "{}% OF EXPECTED LENGTH".format(p))
 
                 # Clear finished TP_File
                 self.cTPFile = None
+            elif self.cProduct != None:
+                # Save and clear current product
+                self.cProduct.save()
+                self.cProduct = None
