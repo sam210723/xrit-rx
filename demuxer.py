@@ -271,9 +271,9 @@ class Channel:
             diff = vcdu.COUNTER - self.counter - 1
             if diff > 0:
                 if self.config.verbose:
-                    print("  DROPPED {} PACKETS    (CURRENT: {}   LAST: {}   VCID: {})".format(diff, vcdu.COUNTER, self.counter, vcdu.VCID))
+                    print("  DROPPED {} PACKET{}    (CURRENT: {}   LAST: {}   VCID: {})".format(diff, "S" if diff > 1 else "", vcdu.COUNTER, self.counter, vcdu.VCID))
                 else:
-                    print("  DROPPED {} PACKETS".format(diff))
+                    print("  DROPPED {} PACKET{}".format(diff, "S" if diff > 1 else ""))
         
         self.counter = vcdu.COUNTER
     
