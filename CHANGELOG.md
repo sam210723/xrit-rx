@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - 
+
+### Changed
+  - 
+
+### Fixed
+  - 
+</details>
+
+
+## [v1.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.1) - 2020-02-14
+Products (images/text) are now output directly from xrit-rx rather than relying on ``lrit-img.py`` and ``lrit-add.py``.
+Progress bar for multi-segment images and colour-coded success/failure messages were also added.
+
+<details>
+<summary>Details</summary>
+
+### Added
   - Output products (images/text) directly from demuxer
   - Transparent enhanced image output option
   - Added check for encrypted LRIT files in ``lrit-img.py`` and ``lrit-add.py``
