@@ -573,7 +573,7 @@ class xRIT:
         Prints information about the current xRIT file to the console
         """
 
-        print("    [XRIT] \"{}\"".format(self.FILE_NAME))
+        print("  [XRIT] \"{}\"".format(self.FILE_NAME))
 
 
 class Tools:

@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
   - Channel handler configuration tuple
   - Detect GK-2A LRIT Daily Operation Plan
   - Console output colours
+  - Progress bar for multi-segment images
 
 ### Changed
   - Default key file name **(check when upgrading from an old version)**

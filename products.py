@@ -148,13 +148,28 @@ class MultiSegmentImage(Product):
         buf = io.BytesIO(xrit.DATA_FIELD)
         img = Image.open(buf)
         self.segi[segn] = img
-
-        # Increment counter and indicator
         self.segc += 1
-        #print(".", end="", flush=True)
+
+        # Clear line and update indicator
+        print("\33[2K\r", end="", flush=True)
+        print("    {}{}{}{}{}{}{}{}{}{} {}/{}".format(
+            "\u2588\u2588" if 1 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 2 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 3 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 4 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 5 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 6 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 7 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 8 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 9 in self.segi.keys() else "\u2591\u2591",
+            "\u2588\u2588" if 10 in self.segi.keys() else "\u2591\u2591",
+            len(self.segi),
+            10
+        ), end="", flush=True)
         
         # Mark as complete after 10 segments or 10th segment
         if self.segc == 10 or segn == 10:
+            print()
             self.complete = True
 
     def save(self):

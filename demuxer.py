@@ -362,7 +362,8 @@ class Channel:
         xrit = CCSDS.xRIT(spdu.PLAINTEXT)
 
         # Save xRIT file if enabled
-        if self.config.xrit: xrit.save(self.config.output)
+        if self.config.xrit:
+            xrit.save(self.config.output)
 
         # Save image file if enabled
         if self.config.images:
@@ -373,7 +374,6 @@ class Channel:
             
             # Add data to current product
             self.cProduct.add(xrit)
-            xrit.print_info()
 
             # Save and clear complete product
             if self.cProduct.complete:
