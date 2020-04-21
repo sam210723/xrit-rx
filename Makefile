@@ -10,6 +10,8 @@ release:
 	copy /Y requirements.txt release
 
 clean:
-	rmdir /S /Q release
+	if exist release rmdir /S /Q release
+	if exist src\__pycache__ rmdir /S /Q src\__pycache__
+	if exist src\received rmdir /S /Q src\received
 
 .PHONY: all clean
