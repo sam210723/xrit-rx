@@ -107,3 +107,4 @@ venv.bak/
 *desktop.ini
 EncryptionKeyMessage.bin
 received/*
+release/*
