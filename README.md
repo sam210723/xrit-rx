@@ -21,10 +21,10 @@ Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-r
 pip3 install -r requirements.txt
 ```
 
-Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](tools/decryption.md).
+Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](src/tools/decryption.md).
 
 ### Configuring xrit-rx
-All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
+All user-configurable options are found in the [`xrit-rx.ini`](src/xrit-rx.ini) file. The default configuration will work for most situations.
 
 If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
 
