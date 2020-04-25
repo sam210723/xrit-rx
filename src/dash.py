@@ -21,7 +21,7 @@ class Dashboard:
         self.httpd_thread.name = "HTTP SERVER"
         self.httpd_thread.run = self.http_server
         self.httpd_thread.start()
-    
+
 
     def http_server(self):
         """
@@ -51,15 +51,27 @@ class Server(http.server.SimpleHTTPRequestHandler):
         """
 
         self.send_response(200)
-        #self.send_header('Content-type', 'text/html')
-        #self.end_headers()
+        if self.path == "/": self.path = "index.html"
         
-        # Root path to index.html
-        path = self.path
-        if path == "/": path = "index.html"
+        # Handle API endpoints and local files
+        if self.path.startswith("/api"):
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            
+            content = self.handle_api(self.path)
+        else:
+            content = open(f"html\\{self.path}", 'rb').read()
 
-        # Respond with file contents
-        self.wfile.write(open(f"html\\{path}", 'rb').read())
+        # Respond with file contents or API body
+        self.wfile.write(content)
+    
+
+    def handle_api(self, path):
+        """
+        Handle API endpoint request
+        """
+
+        return path.encode('utf-8')
 
 
     def log_message(self, format, *args):
