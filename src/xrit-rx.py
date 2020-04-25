@@ -17,6 +17,7 @@ from time import time, sleep
 
 from demuxer import Demuxer
 import ccsds as CCSDS
+from dash import Dashboard
 
 
 # Globals
@@ -36,6 +37,8 @@ keys = {}               # Decryption keys
 sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
+dash = None             # Dashboard class object
+dashp = None            # Dashboard HTTP port
 ver = "1.1"             # xrit-rx version
 
 
@@ -50,11 +53,9 @@ def init():
     global args
     global config
     global stime
-    global downlink
     global output
-    global blacklist
     global demux
-    global keys
+    global dash
 
     # Handle arguments and config file
     args = parse_args()
@@ -75,6 +76,9 @@ def init():
     dcfg = namedtuple('dcfg', 'spacecraft downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
     demux = Demuxer(dcfg(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
+
+    # Start dashboard server
+    dash = Dashboard(dashp)
 
     # Check demuxer thread is ready
     if not demux.coreReady:
@@ -150,6 +154,7 @@ def loop():
                     
                     # Stop core thread
                     demux.stop()
+                    dash.stop()
                     exit()
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
@@ -334,6 +339,7 @@ def parse_config(path):
     global output_xrit
     global blacklist
     global keypath
+    global dashp
 
     cfgp = ConfigParser()
     cfgp.read(path)
@@ -350,6 +356,7 @@ def parse_config(path):
     output_xrit = cfgp.getboolean('output', 'xrit')
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
+    dashp = cfgp.get('dashboard', 'port')
 
     # If VCID blacklist is not empty
     if bl != "":
@@ -416,5 +423,6 @@ try:
     init()
 except KeyboardInterrupt:
     demux.stop()
+    dash.stop()
     print("Exiting...")
     exit()
