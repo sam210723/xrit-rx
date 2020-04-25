@@ -20,7 +20,7 @@
             "type": "shell",
             "command": "make release",
             "problemMatcher": []
-        }
+        },
         {
             "label": "Clean (make)",
             "type": "shell",
