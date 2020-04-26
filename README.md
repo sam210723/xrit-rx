@@ -43,8 +43,8 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `path` | Root output path for `.lrit` files | *Absolute or relative file path* | `"received"` |
-| `images` | Enable/Disable saving Image files to disk | `True` or `False` | `True` |
-| `xrit` | Enable/Disable saving xRIT files to disk | `True` or `False` | `False` |
+| `images` | Enable/Disable saving Image files to disk | `true` or `false` | `true` |
+| `xrit` | Enable/Disable saving xRIT files to disk | `true` or `false` | `false` |
 | `channel_blacklist` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
 #### `goesrecv` section
@@ -60,6 +60,14 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
+
+#### `dashboard` section
+
+| Setting | Description | Options | Default |
+| ------- | ----------- | ------- | ------- |
+| `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
+| `port` | Port number for server to listen on | *Any TCP port number* | `80` |
+| `interval` | Update interval in seconds | `integer` | `1` |
 
 
 ## Acknowledgments
