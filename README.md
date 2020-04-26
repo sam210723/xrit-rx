@@ -28,7 +28,7 @@ All user-configurable options are found in the [`xrit-rx.ini`](src/xrit-rx.ini) 
 
 If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
 
-### List of options
+## List of options
 
 #### `rx` section
 | Setting | Description | Options | Default |
@@ -68,6 +68,37 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
 | `port` | Port number for server to listen on | *Any TCP port number* | `80` |
 | `interval` | Update interval in seconds | `integer` | `1` |
+
+
+## HTTP API
+**xrit-rx** has a basic API accessible via HTTP primarily to support its web-based monitoring dashboard.
+This may be useful for integrating **xrit-rx** with other applications so here is an overview of how the API works.
+
+The API only supports `GET` requests and will return either `200 OK` or `404 Not Found`.
+The root endpoint is located at `/api` which returns information about the current xrit-rx configuration (example below).
+```json
+{
+  "version": 1.1,
+  "spacecraft": "GK-2A",
+  "downlink": "LRIT",
+  "vcid_blacklist": [
+    4,
+    5
+  ],
+  "output_path": "received/LRIT/",
+  "images": true,
+  "xrit": false,
+  "interval": 1
+}
+```
+
+### List of Endpoints
+| URL | Description | Example | MIME |
+| --- | ----------- | ------- | ---- |
+| `/api` | General configuration information | *see above* | `application/json` |
+| `/api/current/vcid` | Currently active virtual channel number | `{ "vcid": 63 }` | `application/json` |
+| `/api/last/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
+| `/api/last/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
 
 
 ## Acknowledgments
