@@ -31,6 +31,8 @@ class Demuxer:
         self.coreStop = False           # Core thread stop flag
         self.channels = {}              # List of channel handlers
         self.currentVCID = None         # Current Virtual Channel ID
+        self.lastImage = None           # Last image output by demuxer
+        self.lastXRIT = None            # Last xRIT file output by demuxer
 
         if self.config.downlink == "LRIT":
             self.coreWait = 54          # Core loop delay in ms for LRIT (108.8ms per packet @ 64 kbps)
@@ -114,7 +116,7 @@ class Demuxer:
                 except KeyError:
                     # Create new channel handler instance
                     ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
-                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crclut))
+                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crclut), self)
                     if self.config.verbose: print("  " + Fore.GREEN + Style.BRIGHT + "CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
@@ -169,7 +171,7 @@ class Channel:
     Virtual channel data handler
     """
 
-    def __init__(self, config):
+    def __init__(self, config, parent):
         """
         Initialises virtual channel data handler
         """
@@ -179,6 +181,7 @@ class Channel:
         self.cCPPDU = None          # Current CP_PDU object
         self.cTPFile = None         # Current TP_File object
         self.cProduct = None        # Current product object
+        self.demuxer = parent       # Demuxer class instance (parent)
 
 
     def data_in(self, vcdu):
@@ -368,6 +371,7 @@ class Channel:
         # Save xRIT file if enabled
         if self.config.xrit:
             xrit.save(self.config.output)
+            self.demuxer.lastXRIT = xrit.get_save_path(self.config.output)
 
         # Save image file if enabled
         if self.config.images:
@@ -382,6 +386,7 @@ class Channel:
             # Save and clear complete product
             if self.cProduct.complete:
                 self.cProduct.save()
+                self.demuxer.lastImage = self.cProduct.get_save_path(self.cProduct.ext)
                 self.cProduct = None
         else:
             # Print XRIT file info
