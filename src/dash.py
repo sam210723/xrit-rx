@@ -7,6 +7,7 @@ Dashboard HTTP server
 
 from colorama import Fore, Back, Style
 import http.server
+import json
 import os
 import socketserver
 from threading import Thread
@@ -75,7 +76,31 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         Handle API endpoint request
         """
 
-        return path.encode('utf-8')
+        path = path.replace("/api", "")
+
+        # Base response object
+        content = {
+            'version': ''
+        }
+
+        # Handle requests based on path
+        if path == "":              # Root API endpoint
+            content.update({
+                'interval': 1,
+                'status': 200
+            })
+        elif path == "/xrit-rx":    # xrit-rx info endpoint
+            content.update({
+                'satellite': 'GK-2A',
+                'status': 200
+            })
+        else:                       # Catch invalid endpoints
+            content.update({
+                'status': 404
+            })
+
+        # Convert response object to UTF-8 encoded JSON string
+        return json.dumps(content).encode('utf-8'), content['status']
 
 
     def log_message(self, format, *args):
