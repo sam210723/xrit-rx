@@ -93,10 +93,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         # Requested endpoint path
         path = path.replace("/api", "").split("/")
-        if path == ['']:
-            path = None
-        else: 
-            path = path[1:]
+        path = None if len(path) == 1 else path[1:]
 
         if path == None:            # Root API endpoint
             content.update({
