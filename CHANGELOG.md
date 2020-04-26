@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - 
+  - Web-based monitoring dashboard
+  - JSON API for updating dashboard
+  - Access received data over HTTP
 
 ### Changed
   - 
