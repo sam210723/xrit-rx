@@ -55,20 +55,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         Respond to GET requests
         """
 
-        self.send_response(200)
+        # Respond with index.html content on root path requests
         if self.path == "/": self.path = "index.html"
         
-        # Handle API endpoints and local files
-        if self.path.startswith("/api"):
+        if self.path.startswith("/api"):        # API endpoint requests
+            content, status = self.handle_api(self.path)
+
+            self.send_response(status)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
-            content = self.handle_api(self.path)
-        else:
-            content = open(f"html\\{self.path}", 'rb').read()
+            self.wfile.write(content)
+        else:                                   # Local file requests
+            path = "html/{}".format(self.path)
 
-        # Respond with file contents or API body
-        self.wfile.write(content)
+            if os.path.isfile(path):            # Requested file exists (HTTP 200)
+                self.send_response(200)
+                self.end_headers()
+
+                self.wfile.write(
+                    open(path, 'rb').read()
+                )
+            else:                               # Requested file not found (HTTP 404)
+                self.send_response(404)
+                self.end_headers()
     
 
     def handle_api(self, path):
