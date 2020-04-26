@@ -66,10 +66,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.path == "/": self.path = "index.html"
         
         if self.path.startswith("/api"):        # API endpoint requests
-            content, status = self.handle_api(self.path)
+            content, status, mime = self.handle_api(self.path)
 
             self.send_response(status)
-            self.send_header('Content-type', 'application/json')
+            self.send_header('Content-type', mime)
             self.end_headers()
             self.wfile.write(content)
         else:                                   # Local file requests
