@@ -30,6 +30,7 @@ class Demuxer:
         self.coreReady = False          # Core thread ready state
         self.coreStop = False           # Core thread stop flag
         self.channels = {}              # List of channel handlers
+        self.currentVCID = None         # Current Virtual Channel ID
 
         if self.config.downlink == "LRIT":
             self.coreWait = 54          # Core loop delay in ms for LRIT (108.8ms per packet @ 64 kbps)
@@ -68,6 +69,9 @@ class Demuxer:
             if packet != None:
                 # Parse VCDU
                 vcdu = CCSDS.VCDU(packet)
+
+                # Set current VCID
+                self.currentVCID = vcdu.VCID
 
                 # Dump raw VCDU to file
                 if dumpf != None:

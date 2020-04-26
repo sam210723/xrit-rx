@@ -175,6 +175,7 @@ def loop():
                 
                 # Push VCDU to demuxer
                 demux.push(data)
+                sleep(0.01) #FIXME
             else:
                 # Demuxer has all VCDUs from file, wait for processing
                 if demux.complete():
@@ -182,6 +183,7 @@ def loop():
                     print("\nFINISHED PROCESSING FILE ({}s)\nExiting...".format(runTime))
                     
                     # Stop core thread
+                    while True: sleep(1) #FIXME
                     demux.stop()
                     dash.stop()
                     exit()
