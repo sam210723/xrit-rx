@@ -7,6 +7,7 @@ Dashboard HTTP server
 
 import http.server
 import json
+import mimetypes
 import os
 import socketserver
 from threading import Thread
@@ -94,6 +95,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Base response object
         content = b''
         status = 404
+        mime = "application/json"
 
         # Requested endpoint path
         path = path.replace("/api", "").split("/")
@@ -110,6 +112,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 'xrit': dash_config.xrit,
                 'interval': int(dash_config.interval)
             }
+        
+        elif "/".join(path).startswith(dash_config.output):     # Endpoint starts with demuxer output root path
+            path = "/".join(path)
+            if (os.path.isfile(path)):
+                mime = mimetypes.guess_type(path)[0]
+                content = open(path, 'rb').read()
 
         elif path[0] == "current" and len(path) == 2:
             if path[1] == "vcid":
@@ -130,8 +138,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Send HTTP 200 OK if content has been updated
         if content != b'': status = 200
 
-        # Convert response object to UTF-8 encoded JSON string
-        return json.dumps(content, sort_keys=False).encode('utf-8'), status
+        # Convert Python dict into JSON string
+        if type(content) is dict:
+            content = json.dumps(content, sort_keys=False).encode('utf-8')
+
+        # Return response bytes, HTTP status code and content MIME type
+        return content, status, mime
 
 
     def log_message(self, format, *args):
