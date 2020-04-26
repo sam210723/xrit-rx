@@ -12,9 +12,9 @@ import socketserver
 from threading import Thread
 
 class Dashboard:
-    def __init__(self, port):
-        self.port = port
-        self.socket = socketserver.TCPServer(("", int(self.port)), Server)
+    def __init__(self, config):
+        self.config = config
+        self.socket = socketserver.TCPServer(("", int(self.config.port)), Handler)
 
         # Start HTTP server thread
         self.httpd_thread = Thread()
@@ -40,7 +40,7 @@ class Dashboard:
         self.socket.shutdown()
 
 
-class Server(http.server.SimpleHTTPRequestHandler):
+class Handler(http.server.SimpleHTTPRequestHandler):
     """
     Custom HTTP request handler
     """
