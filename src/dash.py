@@ -12,11 +12,15 @@ import socketserver
 from threading import Thread
 
 dash_config = None
+demuxer_instance = None
 
 class Dashboard:
-    def __init__(self, config):
+    def __init__(self, config, demuxer):
         global dash_config
+        global demuxer_instance
+
         dash_config = config
+        demuxer_instance = demuxer
 
         self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
 
@@ -106,19 +110,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 'xrit': dash_config.xrit,
                 'interval': int(dash_config.interval)
             })
+
         elif path[0] == "current" and len(path) == 2:
             if path[1] == "vcid":
                 content.update({
-                    'vcid': None
+                    'vcid': demuxer_instance.currentVCID
                 })
+
         elif path[0] == "last" and len(path) == 2:
             if path[1] == "image":
                 content.update({
-                    'image': None
+                    'image': demuxer_instance.lastImage
                 })
             elif path[1] == "xrit":
                 content.update({
-                    'xrit': None
+                    'xrit': demuxer_instance.lastXRIT
                 })
         
         # Send HTTP 200 OK if content has been updated
