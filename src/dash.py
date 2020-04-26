@@ -45,6 +45,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     Custom HTTP request handler
     """
 
+    def __init__(self, request, client_address, server):
+        super().__init__(request, client_address, server)
+
+
     def do_GET(self):
         """
         Respond to GET requests
@@ -78,4 +82,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         """
         Silence HTTP server log messages
         """
+
+        #super().log_message(format, *args)
         return
