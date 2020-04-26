@@ -95,7 +95,7 @@ class Product:
 
         return (h, m ,s)
 
-    def get_path(self, ext=None):
+    def get_save_path(self, ext=None):
         """
         Get save path of product (without extension)
         """
@@ -135,6 +135,7 @@ class MultiSegmentImage(Product):
         # Product specific setup
         self.segc = 0                       # Segment counter
         self.segi = {}                      # Segment image object list
+        self.ext = "jpg"                    # Output file extension
 
     def add(self, xrit):
         """
@@ -186,7 +187,7 @@ class MultiSegmentImage(Product):
             outI.paste(i, (0, i.size[1] * (s-1)))
 
         # Save image to disk
-        path = self.get_path("jpg")
+        path = self.get_save_path(self.ext)
         outI.save(path, format='JPEG', subsampling=0, quality=100)
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
     
@@ -228,8 +229,8 @@ class SingleSegmentImage(Product):
         Save product to disk
         """
 
-        ext = self.get_ext()
-        path = self.get_path(ext)
+        self.ext = self.get_ext()
+        path = self.get_save_path(self.ext)
 
         outf = open(path, mode="wb")
         outf.write(self.payload)
@@ -262,6 +263,7 @@ class AlphanumericText(Product):
         
         # Product specific setup
         self.payload = None
+        self.ext = "txt"
 
     def add(self, xrit):
         """
@@ -276,7 +278,7 @@ class AlphanumericText(Product):
         Save product to disk
         """
 
-        path = self.get_path("txt")
+        path = self.get_save_path(self.ext)
         
         outf = open(path, mode="wb")
         outf.write(self.payload)
