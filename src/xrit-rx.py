@@ -38,6 +38,7 @@ sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
 dash = None             # Dashboard class object
+dashe = None            # Dashboard enabled flag
 dashp = None            # Dashboard HTTP port
 dashi = None            # Dashboard refresh interval (sec)
 ver = "1.1"             # xrit-rx version
@@ -79,8 +80,9 @@ def init():
     demux = Demuxer(demux_config(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
 
     # Start dashboard server
-    dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
-    dash = Dashboard(dash_config(dashp, dashi, spacecraft, downlink, output, output_images, output_xrit, blacklist, ver))
+    if dashe:
+        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
+        dash = Dashboard(dash_config(dashp, dashi, spacecraft, downlink, output, output_images, output_xrit, blacklist, ver))
 
     # Check demuxer thread is ready
     if not demux.coreReady:
@@ -341,6 +343,7 @@ def parse_config(path):
     global output_xrit
     global blacklist
     global keypath
+    global dashe
     global dashp
     global dashi
 
@@ -359,6 +362,7 @@ def parse_config(path):
     output_xrit = cfgp.getboolean('output', 'xrit')
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
+    dashe = cfgp.getboolean('dashboard', 'enabled')
     dashp = cfgp.get('dashboard', 'port')
     dashi = cfgp.get('dashboard', 'interval')
 
@@ -412,7 +416,12 @@ def print_config():
         print("IGNORED VCIDs:    {}".format(blacklist_str))
     
     print("KEY FILE:         {}".format(keypath))
-    print("DASHBOARD PORT:   {}".format(dashp))
+    
+    if dashe:
+        print("DASHBOARD:        RUNNING (port {})".format(dashp))
+    else:
+        print("DASHBOARD:        DISABLED")
+    
     print("VERSION:          {}\n".format(ver))
     
     if args.dump:
