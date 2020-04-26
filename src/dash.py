@@ -92,15 +92,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         """
 
         # Base response object
-        content = {}
+        content = b''
         status = 404
 
         # Requested endpoint path
         path = path.replace("/api", "").split("/")
         path = None if len(path) == 1 else path[1:]
 
-        if path == None:            # Root API endpoint
-            content.update({
+        if path == None:                                        # Root API endpoint
+            content = {
                 'version': float(dash_config.version),
                 'spacecraft': dash_config.spacecraft,
                 'downlink': dash_config.downlink,
@@ -109,26 +109,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 'images': dash_config.images,
                 'xrit': dash_config.xrit,
                 'interval': int(dash_config.interval)
-            })
+            }
 
         elif path[0] == "current" and len(path) == 2:
             if path[1] == "vcid":
-                content.update({
+                content = {
                     'vcid': demuxer_instance.currentVCID
-                })
+                }
 
         elif path[0] == "last" and len(path) == 2:
             if path[1] == "image":
-                content.update({
+                content = {
                     'image': demuxer_instance.lastImage
-                })
+                }
             elif path[1] == "xrit":
-                content.update({
+                content = {
                     'xrit': demuxer_instance.lastXRIT
-                })
+                }
         
         # Send HTTP 200 OK if content has been updated
-        if content != {}: status = 200
+        if content != b'': status = 200
 
         # Convert response object to UTF-8 encoded JSON string
         return json.dumps(content, sort_keys=False).encode('utf-8'), status
