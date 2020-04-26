@@ -5,7 +5,6 @@ https://github.com/sam210723/xrit-rx
 Dashboard HTTP server
 """
 
-from colorama import Fore, Back, Style
 import http.server
 import json
 import os
@@ -29,7 +28,6 @@ class Dashboard:
         HTTP server and request handler thread
         """
 
-        #print(Fore.GREEN + Style.BRIGHT + f"DASHBOARD SERVER RUNNING (127.0.0.1:{self.port})")
         self.socket.serve_forever()
     
 
@@ -69,7 +67,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.path = "html/{}".format(self.path)
 
             if os.path.isfile(self.path):       # Requested file exists (HTTP 200)
-                print("found")
                 self.send_response(200)
                 self.end_headers()
 
