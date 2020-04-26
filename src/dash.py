@@ -100,7 +100,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             })
 
         # Convert response object to UTF-8 encoded JSON string
-        return json.dumps(content).encode('utf-8'), content['status']
+        return json.dumps(content, sort_keys=True).encode('utf-8'), content['status']
 
 
     def log_message(self, format, *args):
