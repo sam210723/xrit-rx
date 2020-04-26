@@ -65,24 +65,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Respond with index.html content on root path requests
         if self.path == "/": self.path = "index.html"
         
-        if self.path.startswith("/api"):        # API endpoint requests
+        if self.path.startswith("/api/") or self.path == "/api":    # API endpoint requests
             content, status, mime = self.handle_api(self.path)
 
             self.send_response(status)
             self.send_header('Content-type', mime)
             self.end_headers()
             self.wfile.write(content)
-        else:                                   # Local file requests
+        else:                                                       # Local file requests
             self.path = "html/{}".format(self.path)
 
-            if os.path.isfile(self.path):       # Requested file exists (HTTP 200)
+            if os.path.isfile(self.path):                           # Requested file exists (HTTP 200)
                 self.send_response(200)
                 self.end_headers()
 
                 self.wfile.write(
                     open(self.path, 'rb').read()
                 )
-            else:                               # Requested file not found (HTTP 404)
+            else:                                                   # Requested file not found (HTTP 404)
                 self.send_response(404)
                 self.end_headers()
     
