@@ -39,7 +39,20 @@ function configure()
     // Write config object to console
     console.log(config);
 
+    // Set window title
+    document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
+
+    // Setup polling loop
+    setInterval(poll, config.interval * 1000);
+
     return true;
 }
 
+
+/**
+ * Poll xrit-rx API for updated data
+ */
+function poll()
+{
+    
 }
