@@ -66,14 +66,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(content)
         else:                                   # Local file requests
-            path = "html/{}".format(self.path)
+            self.path = "html/{}".format(self.path)
 
-            if os.path.isfile(path):            # Requested file exists (HTTP 200)
+            if os.path.isfile(self.path):       # Requested file exists (HTTP 200)
+                print("found")
                 self.send_response(200)
                 self.end_headers()
 
                 self.wfile.write(
-                    open(path, 'rb').read()
+                    open(self.path, 'rb').read()
                 )
             else:                               # Requested file not found (HTTP 404)
                 self.send_response(404)
