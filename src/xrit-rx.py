@@ -77,12 +77,37 @@ def init():
     # Create demuxer instance
     demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
-    demux = Demuxer(demux_config(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
+    demux = Demuxer(
+        demux_config(
+            spacecraft,
+            downlink,
+            args.v,
+            args.dump,
+            output,
+            output_images,
+            output_xrit,
+            blacklist,
+            keys
+        )
+    )
 
     # Start dashboard server
     if dashe:
         dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
-        dash = Dashboard(dash_config(dashp, dashi, spacecraft, downlink, output, output_images, output_xrit, blacklist, ver))
+        dash = Dashboard(
+            dash_config(
+                dashp,
+                dashi,
+                spacecraft,
+                downlink,
+                output,
+                output_images,
+                output_xrit,
+                blacklist,
+                ver
+            ),
+            demux
+        )
 
     # Check demuxer thread is ready
     if not demux.coreReady:
