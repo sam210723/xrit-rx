@@ -11,10 +11,14 @@ import os
 import socketserver
 from threading import Thread
 
+dash_config = None
+
 class Dashboard:
     def __init__(self, config):
-        self.config = config
-        self.socket = socketserver.TCPServer(("", int(self.config.port)), Handler)
+        global dash_config
+        dash_config = config
+
+        self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
 
         # Start HTTP server thread
         self.httpd_thread = Thread()
@@ -83,31 +87,48 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         Handle API endpoint request
         """
 
-        path = path.replace("/api", "")
-
         # Base response object
-        content = {
-            'version': ''
-        }
+        content = {}
+        status = 404
 
-        # Handle requests based on path
-        if path == "":              # Root API endpoint
+        # Requested endpoint path
+        path = path.replace("/api", "").split("/")
+        if path == ['']:
+            path = None
+        else: 
+            path = path[1:]
+
+        if path == None:            # Root API endpoint
             content.update({
-                'interval': 1,
-                'status': 200
+                'version': float(dash_config.version),
+                'spacecraft': dash_config.spacecraft,
+                'downlink': dash_config.downlink,
+                'vcid_blacklist': dash_config.blacklist,
+                'output_path': dash_config.output,
+                'images': dash_config.images,
+                'xrit': dash_config.xrit,
+                'interval': int(dash_config.interval)
             })
-        elif path == "/xrit-rx":    # xrit-rx info endpoint
-            content.update({
-                'satellite': 'GK-2A',
-                'status': 200
-            })
-        else:                       # Catch invalid endpoints
-            content.update({
-                'status': 404
-            })
+        elif path[0] == "current" and len(path) == 2:
+            if path[1] == "vcid":
+                content.update({
+                    'vcid': None
+                })
+        elif path[0] == "last" and len(path) == 2:
+            if path[1] == "image":
+                content.update({
+                    'image': None
+                })
+            elif path[1] == "xrit":
+                content.update({
+                    'xrit': None
+                })
+        
+        # Send HTTP 200 OK if content has been updated
+        if content != {}: status = 200
 
         # Convert response object to UTF-8 encoded JSON string
-        return json.dumps(content, sort_keys=True).encode('utf-8'), content['status']
+        return json.dumps(content, sort_keys=False).encode('utf-8'), status
 
 
     def log_message(self, format, *args):
