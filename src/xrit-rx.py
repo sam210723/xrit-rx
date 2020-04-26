@@ -39,6 +39,7 @@ buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
 dash = None             # Dashboard class object
 dashp = None            # Dashboard HTTP port
+dashi = None            # Dashboard refresh interval (sec)
 ver = "1.1"             # xrit-rx version
 
 
@@ -340,6 +341,7 @@ def parse_config(path):
     global blacklist
     global keypath
     global dashp
+    global dashi
 
     cfgp = ConfigParser()
     cfgp.read(path)
@@ -357,6 +359,7 @@ def parse_config(path):
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
     dashp = cfgp.get('dashboard', 'port')
+    dashi = cfgp.get('dashboard', 'interval')
 
     # If VCID blacklist is not empty
     if bl != "":
@@ -373,11 +376,6 @@ def print_config():
     """
     Prints configuration information
     """
-
-    global spacecraft
-    global downlink
-    global output
-    global keypath
 
     print("SPACECRAFT:       {}".format(spacecraft))
 
@@ -413,6 +411,7 @@ def print_config():
         print("IGNORED VCIDs:    {}".format(blacklist_str))
     
     print("KEY FILE:         {}".format(keypath))
+    print("DASHBOARD PORT:   {}".format(dashp))
     print("VERSION:          {}\n".format(ver))
     
     if args.dump:
