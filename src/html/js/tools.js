@@ -32,5 +32,10 @@ function http_get(url)
     xhttp.open("GET", url, false)
     xhttp.send();
 
-    return xhttp.responseText;
+    if (xhttp.status == 200) {
+        return xhttp.responseText;
+    }
+    else {
+        return false;
+    }
 }
