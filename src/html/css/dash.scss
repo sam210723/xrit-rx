@@ -1,6 +1,7 @@
 $text:   white;
 $page:   #111;
-$block:  #222;
+$blockh: #292929;
+$blockb: #222;
 $border: #555;
 
 html, body {
@@ -25,7 +26,7 @@ html, body {
 
     font-weight: normal;
 
-    background: $block;
+    background: $blockh;
 
     span {
         padding: 4px 13px 0 0;
@@ -48,7 +49,7 @@ html, body {
     vertical-align: top;
     text-align: center;
 
-    background: $block;
+    background: $blockb;
 
     &-heading {
         padding: 6px 0 9px 0;
@@ -58,6 +59,8 @@ html, body {
         text-align: center;
 
         border-bottom: 1px solid $border;
+
+        background: $blockh;
     }
 
     &-body {
