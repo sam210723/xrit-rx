@@ -1,5 +1,7 @@
 $text:   white;
 $page:   #111;
+$block:  #222;
+$border: #555;
 
 html, body {
     margin: 0;
@@ -11,13 +13,21 @@ html, body {
 }
 
 #container {
-    width: inherit;
-    height: inherit;
+    margin: 0 0 0 15px;
+}
 
-    color: white;
-    background: #111;
+.block {
+    display: inline-block;
+    margin: 10px;
 
-    font-family: Roboto;
+    box-shadow: 0 0 10px #000;
+    border: 1px solid $border;
+    border-radius: 4px;
+
+    text-align: center;
+
+    background: $block;
+}
 
 #heading {
     margin: 0 0 20px 0;
