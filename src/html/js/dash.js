@@ -40,7 +40,7 @@ function configure()
     console.log(config);
 
     // Set heading and window title
-    var heading = document.getElementById("heading");
+    var heading = document.getElementById("dash-heading");
     heading.innerHTML = `${config.spacecraft} ${config.downlink} <span>xrit-rx v${config.version}</span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 

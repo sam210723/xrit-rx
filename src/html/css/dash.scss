@@ -16,20 +16,7 @@ html, body {
     margin: 0 0 0 15px;
 }
 
-.block {
-    display: inline-block;
-    margin: 10px;
-
-    box-shadow: 0 0 10px #000;
-    border: 1px solid $border;
-    border-radius: 4px;
-
-    text-align: center;
-
-    background: $block;
-}
-
-#heading {
+#dash-heading {
     margin: 0 0 20px 0;
     padding: 10px 0 15px 20px;
 
@@ -38,10 +25,35 @@ html, body {
     background: $block;
 
     span {
-        padding: 0 0 0 15px;
+        padding: 4px 13px 0 0;
+        float: right;
 
         font-size: 18px;
 
         color: #777;
+    }
+}
+
+.block {
+    display: inline-block;
+    margin: 10px;
+
+    box-shadow: 0 0 10px #000;
+    border: 1px solid $border;
+    border-radius: 4px;
+
+    vertical-align: top;
+    text-align: center;
+
+    background: $block;
+
+    &-heading {
+        padding: 6px 0 9px 0;
+
+        font-size: 26px;
+        font-weight: bold;
+        text-align: center;
+
+        border-bottom: 1px solid $border;
     }
 }
