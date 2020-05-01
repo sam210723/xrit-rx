@@ -7,6 +7,32 @@
  */
 
 var config = {};
+var blocks = {
+    vchan:    {
+        width: 620,
+        height: 200,
+        title: "Virtual Channel",
+        update: block_vchan
+    },
+    time:     {
+        width: 390,
+        height: 200,
+        title: "Time",
+        update: block_time
+    },
+    lastimg:  {
+        width: 500,
+        height: 530,
+        title: "Last Image",
+        update: block_lastimg
+    },
+    schedule: {
+        width: 510,
+        height: 530,
+        title: "Schedule",
+        update: block_schedule
+    }
+};
 
 function init()
 {
@@ -44,6 +70,19 @@ function configure()
     heading.innerHTML = `${config.spacecraft} ${config.downlink} <span>xrit-rx v${config.version}</span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
+    // Build blocks
+    console.log(blocks);
+    for (var block in blocks) {
+        var el = document.getElementById(`block-${block}`);
+        
+        // Set block size
+        el.style.width  = `${blocks[block].width}px`;
+        el.style.height = `${blocks[block].height}px`;
+
+        // Set block heading
+        el.children[0].innerText = blocks[block].title;
+    }
+
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
 
@@ -55,6 +94,45 @@ function configure()
  * Poll xrit-rx API for updated data
  */
 function poll()
+{
+    // Call update function for each block
+    for (var block in blocks) {
+        blocks[block].update();
+    }
+}
+
+
+/**
+ * Update Virtual Channel block
+ */
+function block_vchan()
+{
+    
+}
+
+
+/**
+ * Update Time block
+ */
+function block_time()
+{
+    
+}
+
+
+/**
+ * Update Last Image block
+ */
+function block_lastimg()
+{
+    
+}
+
+
+/**
+ * Update Schedule block
+ */
+function block_schedule()
 {
     
 }
