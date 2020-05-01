@@ -22,13 +22,13 @@ var blocks = {
     },
     lastimg:  {
         width: 500,
-        height: 530,
+        height: 590,
         title: "Last Image",
         update: block_lastimg
     },
     schedule: {
         width: 510,
-        height: 530,
+        height: 590,
         title: "Schedule",
         update: block_schedule
     }
@@ -42,6 +42,7 @@ var vchans = {
     }
 }
 var current_vcid;
+var last_image;
 
 function init()
 {
@@ -98,6 +99,7 @@ function configure()
 
     // Initial poll() call
     poll();
+    poll();
 
     return true;
 }
@@ -108,13 +110,23 @@ function configure()
  */
 function poll()
 {
-    // Get Current VCID
+    // Get current VCID
     var res = http_get("/api/current/vcid");
     if (res) {
         current_vcid = JSON.parse(res)['vcid'];
     }
     else {
-        print("Failed to get current VCID", "CONF");
+        print("Failed to get current VCID", "POLL");
+        return false;
+    }
+
+    // Get last image
+    var res = http_get("/api/last/image");
+    if (res) {
+        last_image = JSON.parse(res)['image'];
+    }
+    else {
+        print("Failed to get last image", "POLL");
         return false;
     }
 
@@ -185,7 +197,25 @@ function block_time(element)
  */
 function block_lastimg(element)
 {
-    
+    if (last_image) {
+        var url = `/api/${last_image}`;
+        var fname = url.split('/');
+        fname = fname[fname.length - 1];
+        var ext = fname.split('.')[1];
+        fname = fname.split('.')[0];
+        
+        // Set <img> src attribute
+        if (ext != "txt") {
+            element.children[0].innerHTML = `<img class="lastimg" src="${url}" />`;
+            element.children[0].setAttribute("href", url);    
+        }
+        
+        // Set image file name caption
+        element.children[2].innerText = fname;
+    }
+    else {
+        element.children[2].innerText = "Waiting for image...";
+    }
 }
 
 
