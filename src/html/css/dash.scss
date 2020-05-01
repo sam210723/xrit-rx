@@ -13,4 +13,20 @@ html, body {
     background: #111;
 
     font-family: Roboto;
+
+#heading {
+    margin: 0 0 20px 0;
+    padding: 10px 0 15px 20px;
+
+    font-weight: normal;
+
+    background: $block;
+
+    span {
+        padding: 0 0 0 15px;
+
+        font-size: 18px;
+
+        color: #777;
+    }
 }

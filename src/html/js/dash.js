@@ -39,7 +39,9 @@ function configure()
     // Write config object to console
     console.log(config);
 
-    // Set window title
+    // Set heading and window title
+    var heading = document.getElementById("heading");
+    heading.innerHTML = `${config.spacecraft} ${config.downlink} <span>xrit-rx v${config.version}</span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
     // Setup polling loop
