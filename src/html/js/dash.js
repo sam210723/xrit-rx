@@ -33,6 +33,15 @@ var blocks = {
         update: block_schedule
     }
 };
+var vchans = {
+    "GK-2A": {
+        0:  ["FD", "Full Disk"],
+        4:  ["ANT", "Alpha-numeric Text"],
+        5:  ["ADD", "Additional Data"],
+        63: ["IDLE", "Fill Data"]
+    }
+}
+var current_vcid;
 
 function init()
 {
@@ -67,7 +76,7 @@ function configure()
 
     // Set heading and window title
     var heading = document.getElementById("dash-heading");
-    heading.innerHTML = `${config.spacecraft} ${config.downlink} <span>xrit-rx v${config.version}</span>`;
+    heading.innerHTML = `${config.spacecraft} ${config.downlink} Dashboard <span>xrit-rx v${config.version}</span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
     // Build blocks
@@ -99,6 +108,16 @@ function configure()
  */
 function poll()
 {
+    // Get Current VCID
+    var res = http_get("/api/current/vcid");
+    if (res) {
+        current_vcid = JSON.parse(res)['vcid'];
+    }
+    else {
+        print("Failed to get current VCID", "CONF");
+        return false;
+    }
+
     // Call update function for each block
     for (var block in blocks) {
         blocks[block].update(blocks[block].body);
@@ -111,7 +130,40 @@ function poll()
  */
 function block_vchan(element)
 {
-    
+    // Check block has been built
+    if (element.innerHTML == "") {
+        for (var ch in vchans[config.spacecraft]) {
+            var indicator = document.createElement("span");
+            indicator.className = "vchan";
+            indicator.id = `vcid-${ch}`
+            indicator.title = vchans[config.spacecraft][ch][1];
+
+            var name = vchans[config.spacecraft][ch][0];
+            indicator.innerHTML = `<span>${name}</span><p>VCID ${ch}</p>`;
+
+            // Set 'disabled' attribute on blacklisted VCIDs
+            if (config.vcid_blacklist.indexOf(parseInt(ch)) > -1) {
+                indicator.setAttribute("disabled", null);
+                indicator.title += " (blacklisted)";
+            }
+
+            element.appendChild(indicator);
+        }
+    }
+    else {  // Update block
+        for (var ch in vchans[config.spacecraft]) {
+            // Do not update blacklisted channels
+            if (config.vcid_blacklist.indexOf(parseInt(ch)) > -1) { continue; }
+
+            // Update active channel
+            if (ch == current_vcid) {
+                document.getElementById(`vcid-${ch}`).setAttribute("active", null);
+            }
+            else {
+                document.getElementById(`vcid-${ch}`).removeAttribute("active");
+            }
+        }
+    }
 }
 
 
