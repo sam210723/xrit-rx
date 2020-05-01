@@ -70,11 +70,20 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | `interval` | Update interval in seconds | `integer` | `1` |
 
 
+## Dashboard
+**xrit-rx** includes a web-based dashboard for easy monitoring and viewing of received data.
+The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved from [KMA NMSC](https://nmsc.kma.go.kr/enhome/html/main/main.do)).
+
+![Dashboard](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/dashboard.png)
+
+By default the dashboard is enabled and accessible on port 80 (HTTP only). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
+
+
 ## HTTP API
 **xrit-rx** has a basic API accessible via HTTP primarily to support its web-based monitoring dashboard.
-This may be useful for integrating **xrit-rx** with other applications so here is an overview of how the API works.
+This may be useful for integrating **xrit-rx** with other applications.
 
-The API only supports `GET` requests and will return either `200 OK` or `404 Not Found`.
+The API only supports `GET` requests and will return either a `200 OK` or `404 Not Found` status.
 The root endpoint is located at `/api` which returns information about the current xrit-rx configuration (example below).
 ```json
 {
