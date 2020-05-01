@@ -1,8 +1,9 @@
+'use strict';
 /**
  *  dash.js
  *  https://github.com/sam210723/xrit-rx
  *  
- *  Updates dashboard data through xrit-rx REST API
+ *  Updates dashboard data through xrit-rx API
  */
 
 var config = {};
@@ -12,8 +13,7 @@ function init()
     print("Starting xrit-rx dashboard...", "DASH");
 
     // Configure dashboard
-    ok = configure();
-    if (!ok) { return; }
+    if (!configure()) { return; }
     
     print("Ready", "DASH");
 }
@@ -27,7 +27,7 @@ function configure()
     print("Getting dashboard configuration...","CONF");
 
     // Get config object from xrit-rx
-    res = http_get("/api");
+    var res = http_get("/api");
     if (res) {
         config = JSON.parse(res);
     }
