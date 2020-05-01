@@ -1,8 +1,13 @@
+$text:   white;
+$page:   #111;
+
 html, body {
     margin: 0;
 
-    width: 100%;
-    height: 100%;
+    color: $text;
+    background: $page;
+
+    font-family: Roboto;
 }
 
 #container {
