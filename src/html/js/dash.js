@@ -10,13 +10,13 @@ var config = {};
 var blocks = {
     vchan:    {
         width: 620,
-        height: 200,
+        height: 180,
         title: "Virtual Channel",
         update: block_vchan
     },
     time:     {
         width: 390,
-        height: 200,
+        height: 180,
         title: "Time",
         update: block_time
     },
@@ -74,6 +74,7 @@ function configure()
     console.log(blocks);
     for (var block in blocks) {
         var el = document.getElementById(`block-${block}`);
+        blocks[block].body = el.children[1];
         
         // Set block size
         el.style.width  = `${blocks[block].width}px`;
@@ -86,6 +87,9 @@ function configure()
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
 
+    // Initial poll() call
+    poll();
+
     return true;
 }
 
@@ -97,7 +101,7 @@ function poll()
 {
     // Call update function for each block
     for (var block in blocks) {
-        blocks[block].update();
+        blocks[block].update(blocks[block].body);
     }
 }
 
@@ -105,7 +109,7 @@ function poll()
 /**
  * Update Virtual Channel block
  */
-function block_vchan()
+function block_vchan(element)
 {
     
 }
@@ -114,16 +118,20 @@ function block_vchan()
 /**
  * Update Time block
  */
-function block_time()
+function block_time(element)
 {
-    
+    var local = element.children[0];
+    var utc = element.children[1];
+
+    local.innerHTML = `${get_time_local()}<br><span title="UTC${get_time_utc_offset()}">LOCAL</span>`;
+    utc.innerHTML = `${get_time_utc()}<br><span>UTC</span>`;
 }
 
 
 /**
  * Update Last Image block
  */
-function block_lastimg()
+function block_lastimg(element)
 {
     
 }
@@ -132,7 +140,7 @@ function block_lastimg()
 /**
  * Update Schedule block
  */
-function block_schedule()
+function block_schedule(element)
 {
     
 }

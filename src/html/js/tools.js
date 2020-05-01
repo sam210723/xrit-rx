@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Print timestamped and sourced message to console
@@ -19,6 +19,52 @@ function print(msg, src=false)
     out += `  ${msg}`;
 
     console.log(out);
+}
+
+
+/**
+ * Returns local time as string
+ */
+function get_time_local()
+{
+    var d = new Date();
+
+    var hours = d.getHours().toString().padStart(2, '0');
+    var mins = d.getMinutes().toString().padStart(2, '0');
+    var secs = d.getSeconds().toString().padStart(2, '0');
+
+    return `${hours}:${mins}:${secs}`;
+}
+
+
+/**
+ * Returns UTC time as string
+ */
+function get_time_utc()
+{
+    var d = new Date();
+
+    var hours = d.getUTCHours().toString().padStart(2, '0');
+    var mins = d.getUTCMinutes().toString().padStart(2, '0');
+    var secs = d.getUTCSeconds().toString().padStart(2, '0');
+
+    return `${hours}:${mins}:${secs}`;
+}
+
+/**
+ * Returns timezone offset relative to UTC
+ */
+function get_time_utc_offset()
+{
+    var d = new Date();
+    var offset = d.getTimezoneOffset() / 60;
+
+    if (Math.sign(offset) == -1) {
+        return `+${Math.abs(offset)}`;
+    }
+    else {
+        return `-${Math.abs(offset)}`;
+    }
 }
 
 

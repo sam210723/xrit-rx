@@ -14,6 +14,7 @@ html, body {
 
 #container {
     margin: 0 0 0 15px;
+    text-align: center;
 }
 
 #dash-heading {
@@ -55,5 +56,23 @@ html, body {
         text-align: center;
 
         border-bottom: 1px solid $border;
+    }
+
+    &-body {
+        padding: 20px;
+    }
+}
+
+.time {
+    margin: 5px 15px 21px 15px;
+    
+    font-size: 35px;
+    font-weight: bold;
+
+    span {
+        font-size: 20px;
+        font-weight: normal;
+
+        color: #AAA;
     }
 }
