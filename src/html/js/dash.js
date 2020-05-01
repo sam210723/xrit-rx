@@ -143,7 +143,7 @@ function block_vchan(element)
 
             // Set 'disabled' attribute on blacklisted VCIDs
             if (config.vcid_blacklist.indexOf(parseInt(ch)) > -1) {
-                indicator.setAttribute("disabled", null);
+                indicator.setAttribute("disabled", "");
                 indicator.title += " (blacklisted)";
             }
 
@@ -157,7 +157,7 @@ function block_vchan(element)
 
             // Update active channel
             if (ch == current_vcid) {
-                document.getElementById(`vcid-${ch}`).setAttribute("active", null);
+                document.getElementById(`vcid-${ch}`).setAttribute("active", "");
             }
             else {
                 document.getElementById(`vcid-${ch}`).removeAttribute("active");
