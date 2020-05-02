@@ -187,7 +187,7 @@ function block_time(element)
     var local = element.children[0];
     var utc = element.children[1];
 
-    local.innerHTML = `${get_time_local()}<br><span title="UTC${get_time_utc_offset()}">LOCAL</span>`;
+    local.innerHTML = `${get_time_local()}<br><span title="UTC ${get_time_utc_offset()}">Local</span>`;
     utc.innerHTML = `${get_time_utc()}<br><span>UTC</span>`;
 }
 
@@ -203,7 +203,7 @@ function block_lastimg(element)
         fname = fname[fname.length - 1];
         var ext = fname.split('.')[1];
         fname = fname.split('.')[0];
-        
+
         // Set <img> src attribute
         if (ext != "txt") {
             element.children[0].innerHTML = `<img class="lastimg" src="${url}" />`;
