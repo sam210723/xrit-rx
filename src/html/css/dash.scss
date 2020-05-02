@@ -1,7 +1,7 @@
 $text:   white;
 $page:   #111;
 $blockh: #292929;
-$blockb: #222;
+$blockb: #1C1C1C;
 $border: #555;
 
 html, body {
@@ -149,5 +149,37 @@ html, body {
         margin: 13px 0 0 0;
 
         font-size: 20px;
+    }
+}
+
+.schedule {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    thead {
+        font-weight: bold;
+        background: #333;
+    }
+
+    td {
+        padding: 10px;
+        border: 1px solid #777;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+
+    &-track {
+        background: #050505; 
+    }
+
+    &-thumb {
+        background: #555; 
+    }
+
+    &-thumb:hover {
+        background: #FFF; 
     }
 }

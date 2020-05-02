@@ -40,7 +40,8 @@ var vchans = {
         5:  ["ADD", "Additional Data"],
         63: ["IDLE", "Fill Data"]
     }
-}
+};
+var sch = [];
 var current_vcid;
 var last_image;
 
@@ -94,6 +95,9 @@ function configure()
         el.children[0].innerText = blocks[block].title;
     }
 
+    // Parse and build schedule
+    schedule();
+
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
 
@@ -134,6 +138,88 @@ function poll()
     for (var block in blocks) {
         blocks[block].update(blocks[block].body);
     }
+}
+
+/**
+ * Download, parse and build schedule table
+ */
+function schedule()
+{
+    // Get UTC date
+    var d = new Date();
+    var date = `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`;
+
+    // Build request URL
+    var url = "https://vksdr.com/scripts/kma-dop.php";
+    var params = `?searchDate=${date}&searchType=${config.downlink}`;
+
+    // Setup XHTTP object
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var element = document.getElementById("block-schedule").children[1];           
+            var raw = JSON.parse(this.responseText)["data"];
+            var start = -1;
+            var end = -1;
+
+            // Find start and end of DOP
+            for (var i in raw) {
+                var line = raw[i].trim();
+
+                if (line.startsWith("TIME(UTC)")) {
+                    start = parseInt(i) + 1;
+                }
+
+                if (line.startsWith("ABBREVIATIONS:")) {
+                    end = parseInt(i) - 2;
+                }
+            }
+
+            // Loop through schedule entries
+            for (var i = start; i <= end; i++) {
+                var line = raw[i].trim().split('\t');
+                var entry = [];
+
+                entry[0] = line[0].substring(0, line[0].indexOf("-"));
+                entry[1] = line[0].substring(line[0].indexOf("-") + 1);
+                entry[2] = line[1].substring(0, line[1].length - 3);
+                entry[3] = line[1].substring(line[1].length - 3);
+                entry[4] = line[2];
+                entry[5] = line[3] == "O";
+
+                if (entry[2] == "EGMSG") { continue; }   // Skip EGMSG
+
+                sch.push(entry);
+            }
+            
+            var table = document.createElement("table");
+            table.className = "schedule";
+
+            // Table header
+            var header = table.createTHead();
+            var row = header.insertRow(0);
+            row.insertCell(0).innerHTML = "Time (UTC)";
+            row.insertCell(1).innerHTML = "Type";
+            row.insertCell(2).innerHTML = "ID";
+
+            // Schedule entries
+            var body = table.appendChild(document.createElement("tbody"));
+            for (var i in sch) {
+                var row = body.insertRow();
+                row.insertCell().innerHTML = `${sch[i][0]} - ${sch[i][1]}`;
+                row.insertCell().innerHTML = sch[i][2];
+                row.insertCell().innerHTML = sch[i][3];
+            }
+
+            // Add table to document
+            element.appendChild(table);
+            print("Ready", "SCHD");
+        }
+    };
+
+    // Download raw schedule
+    xhttp.open("GET", url + params, true);
+    xhttp.send();
 }
 
 
@@ -224,5 +310,8 @@ function block_lastimg(element)
  */
 function block_schedule(element)
 {
-    
+    // Check block has been built
+    if (element.innerHTML != "") {
+        
+    }
 }
