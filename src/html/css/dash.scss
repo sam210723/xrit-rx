@@ -166,6 +166,17 @@ html, body {
         padding: 10px;
         border: 1px solid #777;
     }
+
+    tr {
+        &[active] {
+            background: #090;
+        }
+
+        &[disabled] {
+            color: #999;
+            background: #333;
+        }
+    }
 }
 
 ::-webkit-scrollbar {

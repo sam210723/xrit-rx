@@ -96,7 +96,7 @@ function configure()
     }
 
     // Parse and build schedule
-    schedule();
+    if (config.spacecraft == "GK-2A") { schedule() };
 
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
@@ -216,6 +216,7 @@ function schedule()
             // Add table to document
             element.innerHTML = "";
             element.appendChild(table);
+
             print("Ready", "SCHD");
         }
     };
@@ -313,8 +314,29 @@ function block_lastimg(element)
  */
 function block_schedule(element)
 {
+    if (sch.length == 0) { return; }    // Check schedule has been loaded
+
+    // Get schedule table cells as list
+    var cells = element.children[0].children[1].children;
+
+    // Get current UTC time
+    var time = get_time_utc().replace(/:/g, "");
+
     // Check block has been built
     if (element.innerHTML != "") {
-        
+        for (var entry in sch) {
+            var start = sch[entry][0];
+            var end = sch[entry][1];
+
+            if (time > start) {
+                cells[entry].setAttribute("disabled", "");
+                cells[entry].scrollIntoView();
+
+            }
+
+            if (time > start && time < end) {
+                cells[entry].setAttribute("active", "");
+            }
+        }
     }
 }
