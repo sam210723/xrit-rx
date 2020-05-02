@@ -1,7 +1,6 @@
 all: release
 
-release:
-	if exist release rmdir /S /Q release
+release: clean
 	mkdir release
 	copy /Y src\*.py release
 	mkdir release\tools

@@ -17,6 +17,7 @@ from time import time, sleep
 
 from demuxer import Demuxer
 import ccsds as CCSDS
+from dash import Dashboard
 
 
 # Globals
@@ -36,6 +37,10 @@ keys = {}               # Decryption keys
 sck = None              # TCP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
+dash = None             # Dashboard class object
+dashe = None            # Dashboard enabled flag
+dashp = None            # Dashboard HTTP port
+dashi = None            # Dashboard refresh interval (sec)
 ver = "1.1"             # xrit-rx version
 
 
@@ -50,11 +55,9 @@ def init():
     global args
     global config
     global stime
-    global downlink
     global output
-    global blacklist
     global demux
-    global keys
+    global dash
 
     # Handle arguments and config file
     args = parse_args()
@@ -72,9 +75,39 @@ def init():
     load_keys()
 
     # Create demuxer instance
-    dcfg = namedtuple('dcfg', 'spacecraft downlink verbose dump output images xrit blacklist keys')
+    demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit blacklist keys')
     output += "/" + downlink + "/"
-    demux = Demuxer(dcfg(spacecraft, downlink, args.v, args.dump, output, output_images, output_xrit, blacklist, keys))
+    demux = Demuxer(
+        demux_config(
+            spacecraft,
+            downlink,
+            args.v,
+            args.dump,
+            output,
+            output_images,
+            output_xrit,
+            blacklist,
+            keys
+        )
+    )
+
+    # Start dashboard server
+    if dashe:
+        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
+        dash = Dashboard(
+            dash_config(
+                dashp,
+                dashi,
+                spacecraft,
+                downlink,
+                output,
+                output_images,
+                output_xrit,
+                blacklist,
+                ver
+            ),
+            demux
+        )
 
     # Check demuxer thread is ready
     if not demux.coreReady:
@@ -142,6 +175,7 @@ def loop():
                 
                 # Push VCDU to demuxer
                 demux.push(data)
+                sleep(0.01) #FIXME
             else:
                 # Demuxer has all VCDUs from file, wait for processing
                 if demux.complete():
@@ -149,7 +183,9 @@ def loop():
                     print("\nFINISHED PROCESSING FILE ({}s)\nExiting...".format(runTime))
                     
                     # Stop core thread
+                    while True: sleep(1) #FIXME
                     demux.stop()
+                    dash.stop()
                     exit()
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
@@ -334,6 +370,9 @@ def parse_config(path):
     global output_xrit
     global blacklist
     global keypath
+    global dashe
+    global dashp
+    global dashi
 
     cfgp = ConfigParser()
     cfgp.read(path)
@@ -350,6 +389,9 @@ def parse_config(path):
     output_xrit = cfgp.getboolean('output', 'xrit')
     bl = cfgp.get('output', 'channel_blacklist')
     keypath = cfgp.get('rx', 'keys')
+    dashe = cfgp.getboolean('dashboard', 'enabled')
+    dashp = cfgp.get('dashboard', 'port')
+    dashi = cfgp.get('dashboard', 'interval')
 
     # If VCID blacklist is not empty
     if bl != "":
@@ -366,11 +408,6 @@ def print_config():
     """
     Prints configuration information
     """
-
-    global spacecraft
-    global downlink
-    global output
-    global keypath
 
     print("SPACECRAFT:       {}".format(spacecraft))
 
@@ -406,6 +443,12 @@ def print_config():
         print("IGNORED VCIDs:    {}".format(blacklist_str))
     
     print("KEY FILE:         {}".format(keypath))
+    
+    if dashe:
+        print("DASHBOARD:        RUNNING (port {})".format(dashp))
+    else:
+        print("DASHBOARD:        DISABLED")
+    
     print("VERSION:          {}\n".format(ver))
     
     if args.dump:
@@ -416,5 +459,6 @@ try:
     init()
 except KeyboardInterrupt:
     demux.stop()
+    dash.stop()
     print("Exiting...")
     exit()

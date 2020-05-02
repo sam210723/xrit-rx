@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>xrit-rx</title>
+
+        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+        <link rel="stylesheet" href="css/dash.css" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    </head>
+
+    <body onload="init()">
+        <h2 id="dash-heading">&nbsp;</h2>
+
+        <div id="container">
+            <div class="block" id="block-vchan">
+                <div class="block-heading"></div>
+                <div class="block-body"></div>
+            </div>
+
+            <div class="block" id="block-time">
+                <div class="block-heading"></div>
+                <div class="block-body">
+                    <div class="time" style="float: left;"></div>
+                    <div class="time" style="float: right;"></div>
+                </div>
+            </div>
+            <br>
+            <div class="block" id="block-lastimg" style="background: black;">
+                <div class="block-heading"></div>
+                <div class="block-body">
+                    <a href="" target="_blank"></a><br>
+                    <p class="lastimg-name"></p>
+                </div>
+            </div>
+
+            <div class="block" id="block-schedule">
+                <div class="block-heading"></div>
+                <div class="block-body" style="overflow-y: hidden; overflow-x: hidden;">
+                    <p>Downloading schedule...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript -->
+        <script type="text/javascript" src="js/tools.js"></script>
+        <script type="text/javascript" src="js/dash.js"></script>
+    </body>
+</html>
