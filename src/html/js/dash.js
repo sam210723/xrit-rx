@@ -157,7 +157,9 @@ function schedule()
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            var element = document.getElementById("block-schedule").children[1];           
+            var element = document.getElementById("block-schedule").children[1];
+            element.style.height = `${blocks.schedule.height-95}px`;
+
             var raw = JSON.parse(this.responseText)["data"];
             var start = -1;
             var end = -1;
