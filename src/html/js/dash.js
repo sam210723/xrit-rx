@@ -158,7 +158,7 @@ function schedule()
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var element = document.getElementById("block-schedule").children[1];
-            element.style.height = `${blocks.schedule.height-95}px`;
+            element.style.height = `${blocks.schedule.height-90}px`;
 
             var raw = JSON.parse(this.responseText)["data"];
             var start = -1;
@@ -214,6 +214,7 @@ function schedule()
             }
 
             // Add table to document
+            element.innerHTML = "";
             element.appendChild(table);
             print("Ready", "SCHD");
         }
