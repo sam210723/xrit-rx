@@ -209,8 +209,12 @@ function schedule()
             var body = table.appendChild(document.createElement("tbody"));
             for (var i in sch) {
                 var  row = body.insertRow();
-                row.insertCell().innerHTML = sch[i][0];
-                row.insertCell().innerHTML = sch[i][1];
+
+                var start = `${sch[i][0].substr(0, 2)}:${sch[i][0].substr(2, 2)}:${sch[i][0].substr(4, 2)}`
+                var end = `${sch[i][1].substr(0, 2)}:${sch[i][1].substr(2, 2)}:${sch[i][1].substr(4, 2)}`
+
+                row.insertCell().innerHTML = start;
+                row.insertCell().innerHTML = end;
                 row.insertCell().innerHTML = sch[i][2];
                 row.insertCell().innerHTML = sch[i][3];
             }
