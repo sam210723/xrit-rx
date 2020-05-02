@@ -200,15 +200,17 @@ function schedule()
             // Table header
             var header = table.createTHead();
             var row = header.insertRow(0);
-            row.insertCell(0).innerHTML = "Time (UTC)";
-            row.insertCell(1).innerHTML = "Type";
-            row.insertCell(2).innerHTML = "ID";
+            row.insertCell(0).innerHTML = "Start (UTC)";
+            row.insertCell(1).innerHTML = "End (UTC)";
+            row.insertCell(2).innerHTML = "Type";
+            row.insertCell(3).innerHTML = "ID";
 
             // Schedule entries
             var body = table.appendChild(document.createElement("tbody"));
             for (var i in sch) {
-                var row = body.insertRow();
-                row.insertCell().innerHTML = `${sch[i][0]} - ${sch[i][1]}`;
+                var  row = body.insertRow();
+                row.insertCell().innerHTML = sch[i][0];
+                row.insertCell().innerHTML = sch[i][1];
                 row.insertCell().innerHTML = sch[i][2];
                 row.insertCell().innerHTML = sch[i][3];
             }
@@ -328,13 +330,18 @@ function block_schedule(element)
             var start = sch[entry][0];
             var end = sch[entry][1];
 
+            if (entry == sch.length-1) { continue; }
+
             if (time > start) {
+                cells[entry].removeAttribute("active", "");
                 cells[entry].setAttribute("disabled", "");
                 cells[entry].scrollIntoView();
+                element.scrollTop -= 100;
 
             }
 
             if (time > start && time < end) {
+                cells[entry].removeAttribute("disabled", "");
                 cells[entry].setAttribute("active", "");
             }
         }
