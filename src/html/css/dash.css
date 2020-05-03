@@ -1,0 +1,167 @@
+html, body {
+  margin: 0;
+  color: white;
+  background: #111;
+  font-family: Roboto;
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#container {
+  margin: 0 0 0 15px;
+  text-align: center;
+}
+
+#dash-heading {
+  margin: 0 0 20px 0;
+  padding: 10px 0 15px 20px;
+  font-weight: normal;
+  background: #292929;
+}
+
+#dash-heading span {
+  padding: 4px 13px 0 0;
+  float: right;
+  font-size: 18px;
+  color: #777;
+}
+
+.block {
+  display: inline-block;
+  margin: 10px;
+  -webkit-box-shadow: 0 0 10px #000;
+          box-shadow: 0 0 10px #000;
+  border: 2px solid #555;
+  border-radius: 8px;
+  vertical-align: top;
+  text-align: center;
+  background: #1C1C1C;
+}
+
+.block-heading {
+  padding: 6px 0 9px 0;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #555;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: #292929;
+}
+
+.block-body {
+  padding: 20px;
+}
+
+.vchan {
+  display: inline-block;
+  width: 100px;
+  margin: 4px 10px 0 10px;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid;
+  border-radius: 4px;
+  color: #777;
+  background: #333;
+  border-color: #777;
+  -webkit-box-shadow: 0 0 10px black;
+          box-shadow: 0 0 10px black;
+}
+
+.vchan span {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.vchan p {
+  margin: 0;
+  margin-top: 5px;
+  color: #AAA;
+}
+
+.vchan[active] {
+  color: white;
+  background: green;
+  border-color: limegreen;
+}
+
+.vchan[active] p {
+  color: white;
+}
+
+.vchan[disabled] {
+  color: #777;
+  background: #400;
+  border-color: #700;
+}
+
+.vchan[disabled] p {
+  color: #777;
+}
+
+.time {
+  margin: 5px 15px 21px 15px;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.time span {
+  font-size: 20px;
+  font-weight: normal;
+  color: #AAA;
+}
+
+.lastimg {
+  max-width: 100%;
+  height: auto;
+}
+
+.lastimg-name {
+  margin: 13px 0 0 0;
+  font-size: 20px;
+}
+
+.schedule {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.schedule thead {
+  font-weight: bold;
+  background: #333;
+}
+
+.schedule td {
+  padding: 10px;
+  border: 1px solid #777;
+}
+
+.schedule tr[active] {
+  background: #090;
+}
+
+.schedule tr[disabled] {
+  color: #999;
+  background: #333;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FFF;
+}
+/*# sourceMappingURL=dash.css.map */

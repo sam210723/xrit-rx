@@ -108,5 +108,5 @@ venv.bak/
 EncryptionKeyMessage.bin
 src/received/*
 release/*
-*.css
-*.map
+#*.css
+#*.map
