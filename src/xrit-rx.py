@@ -391,7 +391,10 @@ def parse_config(path):
     keypath = cfgp.get('rx', 'keys')
     dashe = cfgp.getboolean('dashboard', 'enabled')
     dashp = cfgp.get('dashboard', 'port')
-    dashi = cfgp.get('dashboard', 'interval')
+    dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
+
+    # Limit dashboard refresh interval
+    if dashi < 1: dashi = 1
 
     # If VCID blacklist is not empty
     if bl != "":
@@ -445,7 +448,7 @@ def print_config():
     print("KEY FILE:         {}".format(keypath))
     
     if dashe:
-        print("DASHBOARD:        RUNNING (port {})".format(dashp))
+        print("DASHBOARD:        ENABLED (port {})".format(dashp))
     else:
         print("DASHBOARD:        DISABLED")
     
