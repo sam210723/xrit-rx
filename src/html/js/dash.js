@@ -315,6 +315,7 @@ function block_lastimg(element)
             element.children[2].innerHTML = "Image output is disabled in xrit-rx<br><br>Check key file is present and <code>images = true</code> in <code>xrit-rx.ini</code> configuration file";
         }
         else {
+            element.children[0].innerHTML = "";
             element.children[2].innerText = "Waiting for image...";
         }
     }
