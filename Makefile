@@ -5,13 +5,16 @@ release: clean
 	copy /Y src\*.py release
 	mkdir release\tools
 	copy /Y src\tools\*.py release\tools
+	mkdir release\html
+	copy /Y src\html\* release\html
+	mkdir release\html\js
+	copy /Y src\html\js\*.js release\html\js
+	mkdir release\html\css
+	copy /Y src\html\css\*.css release\html\css
 	copy /Y src\*.ini release
 	copy /Y src\*.bat release
 	copy /Y src\*.sh release
 	copy /Y requirements.txt release
-	echo xrit-rx v?.? > release\README.txt
-	echo.>> release\README.txt
-	echo See https://github.com/sam210723/xrit-rx for documentation >> release\README.txt
 
 clean:
 	if exist release rmdir /S /Q release
