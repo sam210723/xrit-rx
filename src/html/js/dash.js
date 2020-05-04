@@ -301,6 +301,10 @@ function block_time(element)
  */
 function block_lastimg(element)
 {
+    var img = element.children[0].children[0];
+    var link = element.children[0];
+    var cap = element.children[2];
+
     if (last_image) {
         var url = `/api/${last_image}`;
         var fname = url.split('/');
@@ -310,21 +314,23 @@ function block_lastimg(element)
 
         // Set <img> src attribute
         if (ext != "txt") {
-            element.children[0].innerHTML = `<img class="lastimg" src="${url}" />`;
-            element.children[0].setAttribute("href", url);    
+            // Only update image element if URL has changed
+            if (img.getAttribute("src") != url) {
+                img.setAttribute("src", url);
+                link.setAttribute("href", url);
+                cap.innerText = fname;
+            }
         }
-        
-        // Set image file name caption
-        element.children[2].innerText = fname;
     }
     else {
         // Check image output is enabled
         if (config.images == false) {
-            element.children[2].innerHTML = "Image output is disabled in xrit-rx<br><br>Check key file is present and <code>images = true</code> in <code>xrit-rx.ini</code> configuration file";
+            cap.innerHTML = "Image output is disabled in xrit-rx<br><br>Check key file is present and <code>images = true</code> in <code>xrit-rx.ini</code> configuration file";
         }
         else {
-            element.children[0].innerHTML = "";
-            element.children[2].innerText = "Waiting for image...";
+            link.innerHTML = "<img class=\"lastimg\">";
+            link.setAttribute("href", "#");
+            cap.innerText = "Waiting for image...";
         }
     }
 }
