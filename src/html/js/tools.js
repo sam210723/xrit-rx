@@ -71,17 +71,14 @@ function get_time_utc_offset()
 /**
  * Send HTTP GET request to specified URL
  * @param {string} url URL to retrieve
+ * @param {function} callback Function to call on response
  */
-function http_get(url)
+function http_get(url, callback)
 {
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", url, false)
-    xhttp.send();
-
-    if (xhttp.status == 200) {
-        return xhttp.responseText;
-    }
-    else {
-        return false;
-    }
+    /* Fetch API */
+    fetch(url)
+        .then(callback)
+        .catch(function(err) {
+            print(`Error getting \"${url}\": ${err}`, "HTTP");
+        });
 }

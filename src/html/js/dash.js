@@ -49,10 +49,24 @@ function init()
 {
     print("Starting xrit-rx dashboard...", "DASH");
 
-    // Configure dashboard
-    if (!configure()) { return; }
-    
-    print("Ready", "DASH");
+    print("Getting dashboard configuration...","CONF");
+
+    // Get config object from xrit-rx
+    http_get("/api", (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                config = data;
+                
+                // Configure dashboard
+                if (!configure()) { return; }
+                print("Ready", "DASH");
+            })
+        }
+        else {
+            print("Failed to get configuration", "CONF");
+            return false;
+        }
+    });
 }
 
 
@@ -61,18 +75,6 @@ function init()
  */
 function configure()
 {
-    print("Getting dashboard configuration...","CONF");
-
-    // Get config object from xrit-rx
-    var res = http_get("/api");
-    if (res) {
-        config = JSON.parse(res);
-    }
-    else {
-        print("Failed to get configuration", "CONF");
-        return false;
-    }
-
     // Write config object to console
     console.log(config);
 
@@ -115,24 +117,30 @@ function configure()
 function poll()
 {
     // Get current VCID
-    var res = http_get("/api/current/vcid");
-    if (res) {
-        current_vcid = JSON.parse(res)['vcid'];
-    }
-    else {
-        print("Failed to get current VCID", "POLL");
-        return false;
-    }
+    http_get("/api/current/vcid", (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                current_vcid = data['vcid'];
+            });
+        }
+        else {
+            print("Failed to get current VCID", "POLL");
+            return false;
+        }
+    });
 
     // Get last image
-    var res = http_get("/api/last/image");
-    if (res) {
-        last_image = JSON.parse(res)['image'];
-    }
-    else {
-        print("Failed to get last image", "POLL");
-        return false;
-    }
+    http_get("/api/last/image", (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                last_image = data['image'];
+            });
+        }
+        else {
+            print("Failed to get last image", "POLL");
+            return false;
+        }
+    });
 
     // Call update function for each block
     for (var block in blocks) {
