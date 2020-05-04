@@ -360,7 +360,8 @@ function block_schedule(element)
             if (time > start) {
                 cells[entry].removeAttribute("active", "");
                 cells[entry].setAttribute("disabled", "");
-                cells[entry].scrollIntoView();
+                //cells[entry].scrollIntoView();
+                element.scrollTop = cells[entry].offsetTop;
                 element.scrollTop -= 100;
 
             }
