@@ -53,7 +53,10 @@ class Dashboard:
         Stops the HTTP server thread
         """
 
-        self.socket.shutdown()
+        try:
+            self.socket.shutdown()
+        except AttributeError:
+            return
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
