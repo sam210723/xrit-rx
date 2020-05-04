@@ -87,6 +87,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             if os.path.isfile(self.path):                           # Requested file exists (HTTP 200)
                 self.send_response(200)
+                mime = mimetypes.guess_type(self.path)[0]
+                self.send_header('Content-type', mime)
                 self.end_headers()
 
                 self.wfile.write(
