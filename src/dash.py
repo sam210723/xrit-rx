@@ -5,6 +5,7 @@ https://github.com/sam210723/xrit-rx
 Dashboard HTTP server
 """
 
+from colorama import Fore, Back, Style
 import http.server
 import json
 import mimetypes
@@ -23,7 +24,16 @@ class Dashboard:
         dash_config = config
         demuxer_instance = demuxer
 
-        self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
+        try:
+            self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
+        except OSError as e:
+            if e.errno == 10048:
+                print("\n" + Fore.WHITE + Back.RED + Style.BRIGHT + "DASHBOARD PORT ALREADY IN USE")
+            else:
+                print(e)
+            
+            print("Exiting...")
+            exit(1)
 
         # Start HTTP server thread
         self.httpd_thread = Thread()
