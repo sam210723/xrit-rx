@@ -101,6 +101,10 @@ The root endpoint is located at `/api` which returns information about the curre
 }
 ```
 
+The API also supports a special dynamic endpoint for retrieving image files over a network. This endpoint uses the start of the relative decoder output path found in the configuration object at the API root endpoint (``/api``).
+
+For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/api/received/LRIT``. From there the URL follows the folder structure created by xrit-rx for saving received images (e.g. ``/api/received/LRIT/20190722/FD/IMG_FD_047_IR105_20190722_075006.jpg``). The API does not currently support directory listing.
+
 ### List of Endpoints
 | URL | Description | Example | MIME |
 | --- | ----------- | ------- | ---- |
