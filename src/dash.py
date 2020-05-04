@@ -28,12 +28,10 @@ class Dashboard:
             self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
         except OSError as e:
             if e.errno == 10048:
-                print("\n" + Fore.WHITE + Back.RED + Style.BRIGHT + "DASHBOARD PORT ALREADY IN USE")
+                print("\n" + Fore.WHITE + Back.RED + Style.BRIGHT + "DASHBOARD NOT STARTED: PORT ALREADY IN USE")
             else:
                 print(e)
-            
-            print("Exiting...")
-            exit(1)
+            return
 
         # Start HTTP server thread
         self.httpd_thread = Thread()
