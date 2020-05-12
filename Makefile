@@ -12,8 +12,6 @@ release: clean
 	mkdir release\html\css
 	copy /Y src\html\css\*.css release\html\css
 	copy /Y src\*.ini release
-	copy /Y src\*.bat release
-	copy /Y src\*.sh release
 	copy /Y requirements.txt release
 
 clean:
