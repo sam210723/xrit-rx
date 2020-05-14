@@ -18,7 +18,7 @@ var blocks = {
         width: 390,
         height: 180,
         title: "Time",
-        update: block_time
+        update: null
     },
     lastimg:  {
         width: 500,
@@ -100,10 +100,14 @@ function configure()
     // Parse and build schedule
     if (config.spacecraft == "GK-2A") { schedule() };
 
+    // Setup clock loop
+    setInterval(() => {
+        block_time(blocks.time.body);
+    }, 100);
+    block_time(blocks.time.body);
+
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
-
-    // Initial poll() call
     poll();
     poll();
 
@@ -144,7 +148,9 @@ function poll()
 
     // Call update function for each block
     for (var block in blocks) {
-        blocks[block].update(blocks[block].body);
+        if (blocks[block].update != null) {
+            blocks[block].update(blocks[block].body);
+        }
     }
 }
 
