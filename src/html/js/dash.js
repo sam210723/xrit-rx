@@ -44,7 +44,7 @@ var vchans = {
 var sch = [];
 var current_vcid;
 var last_image;
-
+var utc_date;
 
 function init()
 {
@@ -161,7 +161,7 @@ function get_schedule()
 {
     // Get UTC date
     var d = new Date();
-    var date = `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`;
+    utc_date = `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`;
 
     /**
      * Schedule download is proxied through my web server at vksdr.com because KMA 
@@ -175,7 +175,7 @@ function get_schedule()
 
     // Build request URL
     var url = "https://vksdr.com/scripts/kma-dop.php";
-    var params = `?searchDate=${date}&searchType=${config.downlink}`;
+    var params = `?searchDate=${utc_date}&searchType=${config.downlink}`;
 
     http_get(url + params, (res) => {
         if (res.status == 200) {
@@ -346,6 +346,12 @@ function block_schedule(element)
     // Check schedule has been loaded
     if (sch.length == 0) { return; }
 
+    // Check UTC date
+    var d = new Date();
+    if (utc_date != `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`) {
+        location.reload();
+    }
+    
     // Get current UTC time
     var time = get_time_utc().replace(/:/g, "");
 
