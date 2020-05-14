@@ -16,19 +16,19 @@ The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https
 ### Installing xrit-rx
 Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
 
-[`numpy`](https://pypi.org/project/numpy), [`pillow`](https://pypi.org/project/Pillow/) and [`pycryptodome`](https://pypi.org/project/pycryptodome/) are required to run **xrit-rx**. Use the following command to download and install these packages:
+[`numpy`](https://pypi.org/project/numpy), [`pillow`](https://pypi.org/project/Pillow/), [`colorama`](https://pypi.org/project/colorama/) and [`pycryptodome`](https://pypi.org/project/pycryptodome/) are required to run **xrit-rx**. Use the following command to download and install these packages:
 ```
 pip3 install -r requirements.txt
 ```
 
-Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](tools/decryption.md).
+Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](src/tools/decryption.md).
 
 ### Configuring xrit-rx
-All user-configurable options are found in the [`xrit-rx.ini`](xrit-rx.ini) file. The default configuration will work for most situations.
+All user-configurable options are found in the [`xrit-rx.ini`](src/xrit-rx.ini) file. The default configuration will work for most situations.
 
 If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
 
-### List of options
+## List of options
 
 #### `rx` section
 | Setting | Description | Options | Default |
@@ -43,8 +43,8 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `path` | Root output path for `.lrit` files | *Absolute or relative file path* | `"received"` |
-| `images` | Enable/Disable saving Image files to disk | `True` or `False` | `True` |
-| `xrit` | Enable/Disable saving xRIT files to disk | `True` or `False` | `False` |
+| `images` | Enable/Disable saving Image files to disk | `true` or `false` | `true` |
+| `xrit` | Enable/Disable saving xRIT files to disk | `true` or `false` | `false` |
 | `channel_blacklist` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
 #### `goesrecv` section
@@ -60,6 +60,58 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
+
+#### `dashboard` section
+
+| Setting | Description | Options | Default |
+| ------- | ----------- | ------- | ------- |
+| `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
+| `port` | Port number for server to listen on | *Any TCP port number* | `80` |
+| `interval` | Update interval in seconds | `integer` | `1` |
+
+
+## Dashboard
+**xrit-rx** includes a web-based dashboard for easy monitoring and viewing of received data.
+The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved from [KMA NMSC](https://nmsc.kma.go.kr/enhome/html/main/main.do)).
+
+![Dashboard](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/dashboard.png)
+
+By default the dashboard is enabled and accessible on port <abbr title="Comes from the COMS-1/GK-2A LRIT frequency: 1692.14 MHz">1692</abbr> via HTTP (no HTTPS). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
+
+
+## HTTP API
+**xrit-rx** has a basic API accessible via HTTP primarily to support its web-based monitoring dashboard.
+This may be useful for integrating **xrit-rx** with other applications.
+
+The API only supports `GET` requests and will return either a `200 OK` or `404 Not Found` status.
+The root endpoint is located at `/api` which returns information about the current xrit-rx configuration (example below).
+```json
+{
+  "version": 1.1,
+  "spacecraft": "GK-2A",
+  "downlink": "LRIT",
+  "vcid_blacklist": [
+    4,
+    5
+  ],
+  "output_path": "received/LRIT/",
+  "images": true,
+  "xrit": false,
+  "interval": 1
+}
+```
+
+The API also supports a special dynamic endpoint for retrieving image files over a network. This endpoint uses the start of the relative decoder output path found in the configuration object at the API root endpoint (``/api``).
+
+For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/api/received/LRIT``. From there the URL follows the folder structure created by xrit-rx for saving received images (e.g. ``/api/received/LRIT/20190722/FD/IMG_FD_047_IR105_20190722_075006.jpg``). The API does not currently support directory listing.
+
+### List of Endpoints
+| URL | Description | Example | MIME |
+| --- | ----------- | ------- | ---- |
+| `/api` | General configuration information | *see above* | `application/json` |
+| `/api/current/vcid` | Currently active virtual channel number | `{ "vcid": 63 }` | `application/json` |
+| `/api/last/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
+| `/api/last/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
 
 
 ## Acknowledgments

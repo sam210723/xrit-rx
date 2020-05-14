@@ -6,13 +6,25 @@
         {
             "label": "Run xrit-rx (config)",
             "type": "shell",
-            "command": "python xrit-rx.py",
+            "command": "cd src; python xrit-rx.py",
             "problemMatcher": []
         },
         {
             "label": "Run xrit-rx (file)",
             "type": "shell",
-            "command": "python xrit-rx.py --file \"samples\\GK-2A LRIT VCDU TEST.bin\"",
+            "command": "cd src; python xrit-rx.py --file '..\\samples\\GK-2A LRIT VCDU TEST.bin'",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build release (make)",
+            "type": "shell",
+            "command": "make release",
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean (make)",
+            "type": "shell",
+            "command": "make clean",
             "problemMatcher": []
         }
     ]

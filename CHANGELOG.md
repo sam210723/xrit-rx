@@ -15,6 +15,19 @@ All notable changes to this project will be documented in this file.
 </details>
 
 
+## [v1.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.2) - 2020-05-14
+Added a monitoring dashboard and JSON API running from a built in web server.
+
+<details>
+<summary>Details</summary>
+
+### Added
+  - Web-based monitoring dashboard
+  - JSON API for updating dashboard
+  - Access of received data over HTTP
+</details>
+
+
 ## [v1.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.1) - 2020-02-14
 Products (images/text) are now output directly from xrit-rx rather than relying on ``lrit-img.py`` and ``lrit-add.py``.
 Progress bar for multi-segment images and colour-coded success/failure messages were also added.
