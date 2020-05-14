@@ -157,6 +157,16 @@ function schedule()
     var d = new Date();
     var date = `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`;
 
+    /**
+     * Schedule download is proxied through my web server at vksdr.com because KMA 
+     * have not included CORS headers in their API. Mordern browsers will disallow 
+     * cross-domain requests unless these headers are present. The PHP backend of 
+     * my web server will make the request to the KMA API then return the result to 
+     * the dashboard with the necesary CORS headers.
+     * 
+     * See https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+     */
+
     // Build request URL
     var url = "https://vksdr.com/scripts/kma-dop.php";
     var params = `?searchDate=${date}&searchType=${config.downlink}`;
