@@ -45,11 +45,10 @@ var sch = [];
 var current_vcid;
 var last_image;
 
+
 function init()
 {
     print("Starting xrit-rx dashboard...", "DASH");
-
-    print("Getting dashboard configuration...","CONF");
 
     // Get config object from xrit-rx
     http_get("/api", (res) => {
@@ -98,7 +97,7 @@ function configure()
     }
 
     // Parse and build schedule
-    if (config.spacecraft == "GK-2A") { schedule() };
+    if (config.spacecraft == "GK-2A") { get_schedule() };
 
     // Setup clock loop
     setInterval(() => {
@@ -154,10 +153,11 @@ function poll()
     }
 }
 
+
 /**
- * Download, parse and build schedule table
+ * Download and parse schedule
  */
-function schedule()
+function get_schedule()
 {
     // Get UTC date
     var d = new Date();
@@ -177,83 +177,69 @@ function schedule()
     var url = "https://vksdr.com/scripts/kma-dop.php";
     var params = `?searchDate=${date}&searchType=${config.downlink}`;
 
-    // Setup XHTTP object
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var element = document.getElementById("block-schedule").children[1];
-            element.style.height = `${blocks.schedule.height-90}px`;
+    http_get(url + params, (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                var raw = data['data'];
+                var start = -1;
+                var end = -1;
 
-            var raw = JSON.parse(this.responseText)["data"];
-            var start = -1;
-            var end = -1;
+                // Find start and end of DOP
+                for (var i in raw) {
+                    var line = raw[i].trim();
 
-            // Find start and end of DOP
-            for (var i in raw) {
-                var line = raw[i].trim();
+                    if (line.startsWith("TIME(UTC)")) {
+                        start = parseInt(i) + 1;
+                    }
 
-                if (line.startsWith("TIME(UTC)")) {
-                    start = parseInt(i) + 1;
+                    if (line.startsWith("ABBREVIATIONS:")) {
+                        end = parseInt(i) - 2;
+                    }
                 }
 
-                if (line.startsWith("ABBREVIATIONS:")) {
-                    end = parseInt(i) - 2;
+                // Loop through schedule entries
+                for (var i = start; i <= end; i++) {
+                    var line = raw[i].trim().split('\t');
+                    var entry = [];
+
+                    entry[0] = line[0].substring(0, line[0].indexOf("-"));
+                    entry[1] = line[0].substring(line[0].indexOf("-") + 1);
+                    entry[2] = line[1].substring(0, line[1].length - 3);
+                    entry[3] = line[1].substring(line[1].length - 3);
+                    entry[4] = line[2];
+                    entry[5] = line[3] == "O";
+
+                    if (entry[2] == "EGMSG") { continue; }   // Skip EGMSG
+
+                    sch.push(entry);
                 }
-            }
 
-            // Loop through schedule entries
-            for (var i = start; i <= end; i++) {
-                var line = raw[i].trim().split('\t');
-                var entry = [];
+                // Create schedule table
+                var table = document.createElement("table");
+                table.className = "schedule";
+                table.appendChild(document.createElement("tbody"));
 
-                entry[0] = line[0].substring(0, line[0].indexOf("-"));
-                entry[1] = line[0].substring(line[0].indexOf("-") + 1);
-                entry[2] = line[1].substring(0, line[1].length - 3);
-                entry[3] = line[1].substring(line[1].length - 3);
-                entry[4] = line[2];
-                entry[5] = line[3] == "O";
+                // Table header
+                var header = table.createTHead();
+                var row = header.insertRow(0);
+                row.insertCell(0).innerHTML = "Start (UTC)";
+                row.insertCell(1).innerHTML = "End (UTC)";
+                row.insertCell(2).innerHTML = "Type";
+                row.insertCell(3).innerHTML = "ID";
 
-                if (entry[2] == "EGMSG") { continue; }   // Skip EGMSG
+                // Add table to document
+                var element = blocks['schedule'].body;
+                element.innerHTML = "";
+                element.appendChild(table);
 
-                sch.push(entry);
-            }
-            
-            var table = document.createElement("table");
-            table.className = "schedule";
-
-            // Table header
-            var header = table.createTHead();
-            var row = header.insertRow(0);
-            row.insertCell(0).innerHTML = "Start (UTC)";
-            row.insertCell(1).innerHTML = "End (UTC)";
-            row.insertCell(2).innerHTML = "Type";
-            row.insertCell(3).innerHTML = "ID";
-
-            // Schedule entries
-            var body = table.appendChild(document.createElement("tbody"));
-            for (var i in sch) {
-                var  row = body.insertRow();
-
-                var start = `${sch[i][0].substr(0, 2)}:${sch[i][0].substr(2, 2)}:${sch[i][0].substr(4, 2)}`
-                var end = `${sch[i][1].substr(0, 2)}:${sch[i][1].substr(2, 2)}:${sch[i][1].substr(4, 2)}`
-
-                row.insertCell().innerHTML = start;
-                row.insertCell().innerHTML = end;
-                row.insertCell().innerHTML = sch[i][2];
-                row.insertCell().innerHTML = sch[i][3];
-            }
-
-            // Add table to document
-            element.innerHTML = "";
-            element.appendChild(table);
-
-            print("Ready", "SCHD");
+                print("Ready", "SCHD");
+            });
         }
-    };
-
-    // Download raw schedule
-    xhttp.open("GET", url + params, true);
-    xhttp.send();
+        else {
+            print("Failed to get schedule", "SCHD");
+            return false;
+        }
+    });
 }
 
 
@@ -357,35 +343,52 @@ function block_lastimg(element)
  */
 function block_schedule(element)
 {
-    if (sch.length == 0) { return; }    // Check schedule has been loaded
-
-    // Get schedule table cells as list
-    var cells = element.children[0].children[1].children;
+    // Check schedule has been loaded
+    if (sch.length == 0) { return; }
 
     // Get current UTC time
     var time = get_time_utc().replace(/:/g, "");
 
-    // Check block has been built
-    if (element.innerHTML != "") {
-        for (var entry in sch) {
-            var start = sch[entry][0];
-            var end = sch[entry][1];
+    // Get table body element
+    var body = element.children[0].children[1];
 
-            if (entry == sch.length-1) { continue; }
+    // Find first entry to add to table
+    var first;
+    for (var entry in sch) {
+        var start = sch[entry][0];
+        var end = sch[entry][1];
 
-            if (time > start) {
-                cells[entry].removeAttribute("active", "");
-                cells[entry].setAttribute("disabled", "");
-                //cells[entry].scrollIntoView();
-                element.scrollTop = cells[entry].offsetTop;
-                element.scrollTop -= 100;
+        if (time < start) {
+            first = Math.max(0, parseInt(entry) - 3);
+            break;
+        }
+    }
 
-            }
+    body.innerHTML = "";
+    for (var i = first; i < first + 12; i++) {
+        // Limit index
+        if (i >= sch.length) { break; }
 
-            if (time > start && time < end) {
-                cells[entry].removeAttribute("disabled", "");
-                cells[entry].setAttribute("active", "");
-            }
+        var start = sch[i][0];
+        var end = sch[i][1];
+        var row = body.insertRow();
+
+        // Add cells to row
+        row.insertCell().innerHTML = `${sch[i][0].substr(0, 2)}:${sch[i][0].substr(2, 2)}:${sch[i][0].substr(4, 2)}`;
+        row.insertCell().innerHTML = `${sch[i][1].substr(0, 2)}:${sch[i][1].substr(2, 2)}:${sch[i][1].substr(4, 2)}`;
+        row.insertCell().innerHTML = sch[i][2];
+        row.insertCell().innerHTML = sch[i][3];
+
+        // Set past entries as disabled (except last entry)
+        if (time > start && i != sch.length - 1) {
+            row.removeAttribute("active", "");
+            row.setAttribute("disabled", "");
+        }
+
+        // Set current entry as active
+        if (time > start && time < end) {
+            row.removeAttribute("disabled", "");
+            row.setAttribute("active", "");
         }
     }
 }
