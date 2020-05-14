@@ -132,12 +132,12 @@ html, body {
 
 .schedule thead {
   font-weight: bold;
-  background: #333;
+  background: #383838;
 }
 
 .schedule td {
   padding: 10px;
-  border: 1px solid #777;
+  border: 1px solid #666;
 }
 
 .schedule tr[active] {
@@ -146,7 +146,7 @@ html, body {
 
 .schedule tr[disabled] {
   color: #999;
-  background: #333;
+  background: #282828;
 }
 
 ::-webkit-scrollbar {

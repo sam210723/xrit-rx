@@ -159,12 +159,12 @@ html, body {
 
     thead {
         font-weight: bold;
-        background: #333;
+        background: #383838;
     }
 
     td {
         padding: 10px;
-        border: 1px solid #777;
+        border: 1px solid #666;
     }
 
     tr {
@@ -174,7 +174,7 @@ html, body {
 
         &[disabled] {
             color: #999;
-            background: #333;
+            background: #282828;
         }
     }
 }
