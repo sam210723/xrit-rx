@@ -331,22 +331,21 @@ class TP_File:
         """
 
         # Get image band based on file counter
-        #TODO: Update when GK-2A specification available
-        if 1 <= self.COUNTER <= 10:
-            band = "VIS"
-            num = self.COUNTER
-        elif 11 <= self.COUNTER <= 20:
-            band = "SWIR"
-            num = self.COUNTER - 10
-        elif 21 <= self.COUNTER <= 30:
-            band = "WV"
-            num = self.COUNTER - 20
-        elif 31 <= self.COUNTER <= 40:
-            band = "IR1"
-            num = self.COUNTER - 30
-        elif 41 <= self.COUNTER <= 50:
-            band = "IR2"
-            num = self.COUNTER - 40
+        if 0 <= self.COUNTER <= 9:
+            band = "VI006"
+            num = self.COUNTER + 1
+        elif 10 <= self.COUNTER <= 19:
+            band = "SW038"
+            num = self.COUNTER - 9
+        elif 20 <= self.COUNTER <= 29:
+            band = "WV069"
+            num = self.COUNTER - 19
+        elif 30 <= self.COUNTER <= 39:
+            band = "IR105"
+            num = self.COUNTER - 29
+        elif 40 <= self.COUNTER <= 49:
+            band = "IR123"
+            num = self.COUNTER - 39
         else:
             band = "Other"
             num = "?"
