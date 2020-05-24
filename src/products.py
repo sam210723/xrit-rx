@@ -23,6 +23,9 @@ def new(config, name):
             "LRIT": {
                 "FD": MultiSegmentImage,
                 "ANT": AlphanumericText
+            },
+            "HRIT": {
+                "FD": MultiSegmentImage
             }
         }
     }
