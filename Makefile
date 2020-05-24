@@ -10,7 +10,7 @@ release: clean
 	mkdir release\html\js
 	copy /Y src\html\js\*.js release\html\js
 	mkdir release\html\css
-	copy /Y src\html\css\*.css release\html\css
+	sass --no-source-map src\html\css:release\html\css
 	copy /Y src\*.ini release
 	copy /Y requirements.txt release
 
