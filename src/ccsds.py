@@ -412,13 +412,13 @@ class S_PDU:
 
         # Parse Key header (type 7)
         keyHLen = int.from_bytes(self.headerField[offset + 1 : offset + 3], byteorder='big')
-        index = self.headerField[offset + 5 : offset + keyHLen]
+        self.index = self.headerField[offset + 5 : offset + keyHLen]
 
         # Catch wrong key index
         try:
-            self.key = self.keys[index]
+            self.key = self.keys[self.index]
         except KeyError:
-            if index != b'\x00\x00': print("  UNKNOWN ENCRYPTION KEY INDEX")
+            if self.index != b'\x00\x00': print("  UNKNOWN ENCRYPTION KEY INDEX")
             self.key = 0
         
         # Check block length if encryption is applied

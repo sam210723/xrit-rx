@@ -340,6 +340,10 @@ class Channel:
                 # Handle xRIT file
                 self.handle_xRIT(spdu)
 
+                # Print key index
+                if self.config.verbose:
+                    print("    KEY INDEX: 0x{}\n".format(hex(int.from_bytes(spdu.index, byteorder="big"))[2:].upper()))
+
             elif not lenok:
                 ex = self.cTPFile.LENGTH
                 ac = len(self.cTPFile.PAYLOAD)
