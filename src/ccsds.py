@@ -567,12 +567,17 @@ class xRIT:
         outFile.write(self.data)
         outFile.close()
 
-    def print_info(self):
+    def print_info(self, verbose):
         """
         Prints information about the current xRIT file to the console
         """
 
         print("  [XRIT] \"{}\"".format(self.FILE_NAME))
+
+        if verbose:
+            print("    HEADER LEN: {}".format(self.TOTAL_HEADER_LEN))
+            print("    DATA LEN:   {}".format(self.DATA_LEN))
+            print("    TOTAL LEN:  {}".format(self.TOTAL_HEADER_LEN + self.DATA_LEN))
 
 
 class Tools:
