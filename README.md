@@ -4,14 +4,19 @@
 [![Github all releases](https://img.shields.io/github/downloads/sam210723/xrit-rx/total.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
 [![GitHub license](https://img.shields.io/github/license/sam210723/xrit-rx.svg)](https://github.com/sam210723/xrit-rx/blob/master/LICENSE)
 
-**xrit-rx** is a LRIT packet demultiplexer and xRIT file processor for geostationary meteorological satellite [GK-2A (GEO-KOMPSAT-2A)](https://nmsc.kma.go.kr/enhome/html/base/cmm/selectPage.do?page=satellite.gk2a.intro). It takes input in the form of VCDUs (Virtual Channel Data Units) from software such as [**goesrecv**](https://github.com/sam210723/goestools) (originally by [Pieter Noordhuis](https://twitter.com/pnoordhuis)), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
+**xrit-rx** is a packet demultiplexer and file processor for receiving images from geostationary weather satellite [GEO-KOMPSAT-2A (GK-2A)](https://nmsc.kma.go.kr/enhome/html/base/cmm/selectPage.do?page=satellite.gk2a.intro). It is designed for use with [**goesrecv**](https://github.com/sam210723/goestools) (originally by [Pieter Noordhuis](https://twitter.com/pnoordhuis)), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
 
-Demultiplexed data is output as ``.jpg``, ``.png`` or ``.gif`` files such as the ones below, and optionally as `.lrit` files.
+**xrit-rx** receives [Virtual Channel Data Units (VCDUs)](https://nmsc.kma.go.kr/resources/homepage/pdf/GK2A_LRIT_Mission_Specification_Document_v1.0.pdf#page=27) over the network from either **goesrecv** or **xritdecoder** and demultiplexes them into separate virtual channels, each containing a different type of image data.
+The demultiplexed packets are assembled into complete files which are output as images such as the ones below.
 
-![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths.png)
+![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths-alpha.png)
 
 ## Getting Started
-The [RTL-SDR Blog](https://www.rtl-sdr.com) has written a thorough [guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
+A guide for setting up the hardware and software components of a GK-2A LRIT receiver is [available on my site](https://vksdr.com/xrit-rx). It also covers the types of images that can be received, image post-processing techniques and data decryption.
+
+<a href="https://vksdr.com/xrit-rx" target="_blank"><p align="center"><img src="https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/guide-thumb-light.png" title="Receiving Images from Geostationary Weather Satellite GEO-KOMPSAT-2A"></p></a>
+
+The [RTL-SDR Blog](https://www.rtl-sdr.com) has also [written a guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
 Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
@@ -21,7 +26,8 @@ Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-r
 pip3 install -r requirements.txt
 ```
 
-Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**. For more information, see [decryption.md](src/tools/decryption.md).
+Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**.
+More information is [available in the setup guide](https://vksdr.com/xrit-rx#keys).
 
 ### Configuring xrit-rx
 All user-configurable options are found in the [`xrit-rx.ini`](src/xrit-rx.ini) file. The default configuration will work for most situations.
