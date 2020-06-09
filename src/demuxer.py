@@ -246,6 +246,7 @@ class Channel:
                 self.cCPPDU = None
                 if self.config.verbose:
                     print("  " + Fore.GREEN + Style.BRIGHT + "[CP_PDU] EOF MARKER")
+                    print("   " + Fore.GREEN + Style.BRIGHT + "[CP_PDU] EOF MARKER\n")
             else:
                 if self.config.verbose:
                     self.cCPPDU.print_info()
@@ -342,7 +343,7 @@ class Channel:
 
                 # Print key index
                 if self.config.verbose:
-                    print("    KEY INDEX: 0x{}\n".format(hex(int.from_bytes(spdu.index, byteorder="big"))[2:].upper()))
+                    print("    KEY INDEX:  0x{}\n".format(hex(int.from_bytes(spdu.index, byteorder="big"))[2:].upper()))
 
             elif not lenok:
                 ex = self.cTPFile.LENGTH
@@ -394,7 +395,7 @@ class Channel:
                 self.cProduct = None
         else:
             # Print XRIT file info
-            xrit.print_info()
+            xrit.print_info(self.config.verbose)
 
 
     def notify(self, vcid):
