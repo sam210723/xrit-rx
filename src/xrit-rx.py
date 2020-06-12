@@ -460,6 +460,7 @@ try:
     init()
 except KeyboardInterrupt:
     demux.stop()
-    dash.stop()
+    if dash != None: dash.stop()
+    
     print("Exiting...")
     exit()
