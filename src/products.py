@@ -9,6 +9,7 @@ import collections
 import colorama
 from colorama import Fore, Back, Style
 import io
+import subprocess
 import os
 from PIL import Image, ImageFile
 
@@ -148,9 +149,16 @@ class MultiSegmentImage(Product):
         # Get segment number
         segn = int(xrit.FILE_NAME.split(".")[0][-2:])
 
-        # Create image from xRIT data field
+        # Get xRIT data field
         buf = io.BytesIO(xrit.DATA_FIELD)
-        img = Image.open(buf)
+
+        # Create image from xRIT data field
+        if self.config.downlink == "LRIT":
+            img = Image.open(buf)
+        elif self.config.downlink == "HRIT":
+            return
+            
+        # Add image to segment list
         self.segi[segn] = img
         self.segc += 1
 
