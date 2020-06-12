@@ -195,13 +195,23 @@ class Channel:
 
         # Parse M_PDU
         mpdu = CCSDS.M_PDU(vcdu.MPDU)
-
+        
         # If M_PDU contains CP_PDU header
         if mpdu.HEADER:
-            # If data preceeds header
-            if mpdu.POINTER != 0:
-                # Finish previous CP_PDU
-                preptr = mpdu.PACKET[:mpdu.POINTER]
+            # No current TP_File and CP_PDU header is at the start of M_PDU
+            if self.cTPFile == None and mpdu.POINTER == 0:
+                # Create CP_PDU for new TP_File
+                self.cCPPDU = CCSDS.CP_PDU(mpdu.PACKET)
+            
+            # Continue unfinished TP_File
+            else:
+                # If M_PDU contains data from previous CP_PDU
+                if mpdu.POINTER != 0:
+                    # Finish previous CP_PDU
+                    preptr = mpdu.PACKET[:mpdu.POINTER]
+                else:
+                    # No data to append
+                    preptr = b''
 
                 try:
                     lenok, crcok = self.cCPPDU.finish(preptr, self.config.lut)
@@ -212,7 +222,7 @@ class Channel:
                 except AttributeError:
                     if self.config.verbose:
                         print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO CP_PDU TO FINISH (DROPPED PACKETS?)")
-
+                
                 # Create new CP_PDU
                 postptr = mpdu.PACKET[mpdu.POINTER:]
                 self.cCPPDU = CCSDS.CP_PDU(postptr)
@@ -236,12 +246,7 @@ class Channel:
                         if self.config.verbose:
                             print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO CP_PDU TO FINISH (DROPPED PACKETS?)")
 
-            else:
-                # First CP_PDU in TP_File
-                # Create new CP_PDU
-                self.cCPPDU = CCSDS.CP_PDU(mpdu.PACKET)
-
-            # Handle special EOF CP_PDU
+            # Handle special EOF CP_PDU (by ignoring it)
             if self.cCPPDU.is_EOF():
                 self.cCPPDU = None
                 if self.config.verbose:
@@ -252,10 +257,15 @@ class Channel:
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
                     print("    OFFSET:     0x{}\n    ".format(hex(mpdu.POINTER)[2:].upper()), end="")
         else:
-            # Append packet to current CP_PDU
+            # Append M_PDU payload to current CP_PDU
             try:
+                # Check if CP_PDU header has been parsed
                 wasparsed = self.cCPPDU.PARSED
+
+                # Add data from current M_PDU
                 self.cCPPDU.append(mpdu.PACKET)
+
+                # If CP_PDU header was just parsed, print CP_PDU header info
                 if wasparsed != self.cCPPDU.PARSED and self.config.verbose:
                     self.cCPPDU.print_info()
                     print("    HEADER:     0x{}".format(self.cCPPDU.header.hex().upper()))
@@ -355,16 +365,6 @@ class Channel:
             
             # Clear finished TP_File
             self.cTPFile = None
-        
-        # TEMP HRIT #442 CP_PDUs missing
-        if cppdu.COUNTER >= 438 and cppdu.COUNTER <= 444:
-            print("")
-            cppdu.print_info()
-            ac = len(self.cTPFile.PAYLOAD)
-            ex = self.cTPFile.LENGTH
-            p = round((ac/ex) * 100)
-            diff = ex - ac
-            print("    [TP_File]  CURRENT LEN: {} ({}%)     EXPECTED LEN: {}     DIFF: {}".format(ac, p, ex, diff))
 
         if self.config.verbose:
             ac = len(self.cTPFile.PAYLOAD)
