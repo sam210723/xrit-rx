@@ -138,8 +138,7 @@ def loop():
                 data = sck.recv(buflen + 8)
             except ConnectionResetError:
                 print("LOST CONNECTION TO GOESRECV\nExiting...")
-                demux.stop()
-                exit()
+                safe_stop(True)
 
             if len(data) == buflen + 8:
                 demux.push(data[8:])
@@ -149,8 +148,7 @@ def loop():
                 data = sck.recv(buflen)
             except ConnectionResetError:
                 print("LOST CONNECTION TO OPEN SATELLITE PROJECT\nExiting...")
-                demux.stop()
-                exit()
+                safe_stop(True)
             
             demux.push(data)
 
@@ -181,10 +179,7 @@ def loop():
                     runTime = round(time() - stime, 3)
                     print("\nFINISHED PROCESSING FILE ({}s)\nExiting...".format(runTime))
                     
-                    # Stop core thread
-                    demux.stop()
-                    dash.stop()
-                    exit()
+                    safe_stop(True)
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
                     sleep(0.5)
@@ -456,11 +451,19 @@ def print_config():
         print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
 
 
+def safe_stop(message=False):
+    """
+    Safely kill threads and exit
+    """
+
+    demux.stop()
+    if dash != None: dash.stop()
+
+    if message: print("\nExiting...")
+    exit()
+
+
 try:
     init()
 except KeyboardInterrupt:
-    demux.stop()
-    if dash != None: dash.stop()
-    
-    print("Exiting...")
-    exit()
+    safe_stop(True)
