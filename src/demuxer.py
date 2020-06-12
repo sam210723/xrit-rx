@@ -356,6 +356,16 @@ class Channel:
             # Clear finished TP_File
             self.cTPFile = None
         
+        # TEMP HRIT #442 CP_PDUs missing
+        if cppdu.COUNTER >= 438 and cppdu.COUNTER <= 444:
+            print("")
+            cppdu.print_info()
+            ac = len(self.cTPFile.PAYLOAD)
+            ex = self.cTPFile.LENGTH
+            p = round((ac/ex) * 100)
+            diff = ex - ac
+            print("    [TP_File]  CURRENT LEN: {} ({}%)     EXPECTED LEN: {}     DIFF: {}".format(ac, p, ex, diff))
+
         if self.config.verbose:
             ac = len(self.cTPFile.PAYLOAD)
             ex = self.cTPFile.LENGTH

@@ -135,8 +135,6 @@ class CP_PDU:
             self.header = data[:6]
             self.parse()
             
-            print(self.tools.to_hex(self.header))
-
             # Add post-header data to payload
             self.PAYLOAD = data[6:]
         else:
