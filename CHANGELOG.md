@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - 
+  - to_hex() utility method
 
 ### Changed
   - 
