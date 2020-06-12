@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - HRIT image parser script
+  - libjpeg binary
   - to_hex() utility method
 
 ### Changed
