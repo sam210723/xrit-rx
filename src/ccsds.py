@@ -135,9 +135,12 @@ class CP_PDU:
             self.header = data[:6]
             self.parse()
             
+            print(self.tools.to_hex(self.header))
+
             # Add post-header data to payload
             self.PAYLOAD = data[6:]
         else:
+            # Add bytes to header then wait for remaining bytes to be added via append()
             self.header = data
     
     def parse(self):
@@ -181,6 +184,7 @@ class CP_PDU:
             self.parse()
             self.PAYLOAD = data[rem:]
         else:
+            # Add data to payload if header already parsed
             self.PAYLOAD += data
 
     def finish(self, data, crclut):
@@ -616,3 +620,17 @@ class Tools:
         bits = self.get_bits(data, start, length, count)
 
         return int(bits, 2)
+
+
+    def to_hex(self, data):
+        """
+        Convert bytes to hex string
+
+        :param data: Bytes to convert
+        """
+
+        i = int.from_bytes(data, byteorder='big')
+        h = hex(i).upper()
+        s = "0x{}".format(h[2:])
+
+        return s
