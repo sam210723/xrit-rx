@@ -245,7 +245,6 @@ class Channel:
             if self.cCPPDU.is_EOF():
                 self.cCPPDU = None
                 if self.config.verbose:
-                    print("  " + Fore.GREEN + Style.BRIGHT + "[CP_PDU] EOF MARKER")
                     print("   " + Fore.GREEN + Style.BRIGHT + "[CP_PDU] EOF MARKER\n")
             else:
                 if self.config.verbose:
