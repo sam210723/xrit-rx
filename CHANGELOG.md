@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
   - 
 
 ### Fixed
-  - 
+  - Handling of safe exit cases
 </details>
 
 
