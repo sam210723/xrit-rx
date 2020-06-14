@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
   - CP_PDU header offset issue with large TP_Files
+  - Output directory checking
   - Handling of safe exit cases
 </details>
 

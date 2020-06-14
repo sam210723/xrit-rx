@@ -276,6 +276,12 @@ def dirs():
     if not path.isdir(absp):
         try:
             mkdir(absp)
+        except OSError as e:
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
+            safe_stop()
+    
+    if not path.isdir(absp + "/" + downlink + "/"):
+        try:
             mkdir(absp + "/" + downlink + "/")
 
             print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
