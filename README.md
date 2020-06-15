@@ -124,4 +124,5 @@ For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/a
   - [Lucas Teske](https://twitter.com/lucasteske) - Developer of [**Open Satellite Project**](https://github.com/opensatelliteproject) and writer of ["GOES Satellite Hunt"](https://www.teske.net.br/lucas/2016/10/goes-satellite-hunt-part-1-antenna-system/)
   - [Pieter Noordhuis](https://twitter.com/pnoordhuis) - Developer of [**goestools**](https://github.com/pietern/goestools)
   - [John Bell](https://twitter.com/eswnl) - Software testing and IQ recordings
+  - ["kisaa"](https://github.com/kisaa) - GK-2A HRIT debugging and packet recordings
   - [@Rasiel_J](https://twitter.com/Rasiel_J) - IQ recordings
