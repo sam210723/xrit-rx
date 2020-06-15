@@ -60,27 +60,33 @@ class Product:
         Parse file name into namedtuple
         """
 
-        name = collections.namedtuple("name", "type mode sequence channel date time full")
+        name = collections.namedtuple("name", "type mode sequence date time full")
+        parts = n.split("_")
+        full = n.split(".")[0][:-3]
 
-        if n.split("_")[0] == "IMG":
+        if parts[0] == "IMG":
+            # Generalise filename for multi-channel HRIT images
+            if self.config.downlink == "HRIT":
+                gen = n.split("_")
+                gen[3] = "<CHANNEL>"
+                full = "_".join(gen).split(".")[0][:-3]
+            
             tup = name(
-                n.split("_")[0],
-                n.split("_")[1],
-                int(n.split("_")[2]),
-                n.split("_")[3],
-                self.parse_date(n.split("_")[4]),
-                self.parse_time(n.split("_")[5]),
-                n.split(".")[0][:-3]
+                parts[0],
+                parts[1],
+                int(parts[2]),
+                self.parse_date(parts[4]),
+                self.parse_time(parts[5]),
+                full
             )
         else:
             tup = name(
-                n.split("_")[0],
-                n.split("_")[1],
-                int(n.split("_")[2]),
-                None,
-                self.parse_date(n.split("_")[3]),
-                self.parse_time(n.split("_")[4]),
-                n.split(".")[0][:-3]
+                parts[0],
+                parts[1],
+                int(parts[2]),
+                self.parse_date(parts[3]),
+                self.parse_time(parts[4]),
+                full
             )
         
         return tup
