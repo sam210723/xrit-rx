@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
   - Using `pathlib` over `os` module for some file operations
 
 ### Fixed
-  - TP_File triggering with M_PDU header offset (fixes large HRIT files)
+  - TP_File triggering with M_PDU header offset ([relevant issue comment](https://github.com/sam210723/xrit-rx/issues/15#issuecomment-643079493))
   - Output directory checking
   - Handling of safe exit cases
 </details>
