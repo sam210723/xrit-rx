@@ -201,18 +201,36 @@ class MultiSegmentImage(Product):
 
         # Create new image
         outI = Image.new("RGB", self.get_res())
+    def convert_to_img(self, path, name, data):
+        """
+        Converts J2K to Pillow Image object via PPM using libjpeg
 
-        # Combine segments into output image
-        for s in self.segi:
-            i = self.segi[s]
-            outI.paste(i, (0, i.size[1] * (s-1)))
+        Arguments:
+            path {string} -- Path for temporary files
+            data {bytes} -- JPEG2000 image
 
-        # Save image to disk
-        path = self.get_save_path(self.ext)
-        outI.save(path, format='JPEG', subsampling=0, quality=100)
-        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
+        Returns:
+            Pillow.Image -- Pillow Image object
+        """
+
+        # Save JP2 to disk
+        jp2Name = path + name + ".jp2"
+        f = open(jp2Name, "wb")
+        f.write(data)
+        f.close()
+
+        # Convert J2P to PPM
+        ppmName = path + name + ".ppm"
+        subprocess.call(["tools\\jpeg32.exe", jp2Name, ppmName], stdout=subprocess.DEVNULL)
+        pathlib.Path(jp2Name).unlink()
+        
+        # Load and convert 16-bit PPM to 8-bit image
+        img = Image.open(ppmName)
+        iarr = np.uint8(np.array(img) / 4)
+        img = Image.fromarray(iarr)
+        pathlib.Path(ppmName).unlink()
+        return img
     
-    def get_res(self):
     def get_res(self, channel):
         """
         Returns the horizontal and vertical resolution of the given satellte, downlink, observation mode and channel
