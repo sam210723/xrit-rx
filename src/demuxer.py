@@ -400,7 +400,7 @@ class Channel:
             # Save and clear complete product
             if self.cProduct.complete:
                 self.cProduct.save()
-                self.demuxer.lastImage = self.cProduct.get_save_path(self.cProduct.ext)
+                self.demuxer.lastImage = self.cProduct.last
                 self.cProduct = None
         else:
             # Print XRIT file info

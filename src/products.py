@@ -55,6 +55,7 @@ class Product:
         self.name = self.parse_name(name)   # Product name
         self.alias = "PRODUCT"              # Product type alias
         self.complete = False               # Completed product flag
+        self.last = None                    # Path to last file saved
     
     def parse_name(self, n):
         """
@@ -238,6 +239,7 @@ class MultiSegmentImage(Product):
             # Save final image
             img.save(channel_path, format='JPEG', subsampling=0, quality=100)
             print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(channel_path))
+            self.last = channel_path
     
     def convert_to_img(self, path, name, data):
         """
@@ -332,6 +334,7 @@ class SingleSegmentImage(Product):
         outf.close()
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
+        self.last = path
 
     def get_ext(self):
         """
@@ -384,3 +387,4 @@ class AlphanumericText(Product):
             print("    GK-2A LRIT Daily Operation Plan")
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
+        self.last = path
