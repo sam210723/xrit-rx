@@ -188,11 +188,15 @@ def process_single_segment(fpath):
 
 def convert_to_img(fpath, dataField):
     """
-    Converts J2K to Pillow Image object via PPM using libjpeg
+        Converts J2K to Pillow Image object via PPM using libjpeg
 
-    Returns:
-        Pillow.Image -- Pillow Image object
-    """
+        Arguments:
+            fpath {string} -- Path for temporary files
+            dataField {bytes} -- JPEG2000 image
+
+        Returns:
+            Pillow.Image -- Pillow Image object
+        """
 
     # Save JP2 to disk
     jp2Name = fpath.replace(".hrit", "") + ".jp2"
