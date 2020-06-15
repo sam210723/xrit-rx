@@ -198,9 +198,34 @@ class MultiSegmentImage(Product):
         """
         Save product to disk
         """
+        
+        path = self.get_save_path(filename=False)
 
-        # Create new image
-        outI = Image.new("RGB", self.get_res())
+        for c in self.images:
+            # Create output image
+            img = Image.new("RGB", self.get_res(c))
+
+            # Combine segments into final image
+            for s in self.images[c]:
+                height = self.images[c][s].size[1]
+                offset = height * (s - 1)
+                
+                img.paste(
+                    self.images[c][s],
+                    ( 0, offset )
+                )
+            
+            # Get image path for current channel
+            channel_path = "{}{}.{}".format(
+                path,
+                self.name.full.replace("<CHANNEL>", c),
+                self.ext
+            )
+
+            # Save final image
+            img.save(channel_path, format='JPEG', subsampling=0, quality=100)
+            print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(channel_path))
+    
     def convert_to_img(self, path, name, data):
         """
         Converts J2K to Pillow Image object via PPM using libjpeg
