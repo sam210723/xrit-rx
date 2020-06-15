@@ -9,8 +9,10 @@ import collections
 import colorama
 from colorama import Fore, Back, Style
 import io
+import numpy as np
 import pathlib
 from PIL import Image, ImageFile
+import subprocess
 
 
 def new(config, name):
@@ -147,8 +149,8 @@ class MultiSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.segc = 0                       # Segment counter
-        self.segi = {}                      # Segment image object list
+        self.counter = 0                    # Segment counter
+        self.images = {}                    # Image list
         self.ext = "jpg"                    # Output file extension
 
     def add(self, xrit):
@@ -156,23 +158,34 @@ class MultiSegmentImage(Product):
         Add data to product
         """
 
-        # Get segment number
-        segn = int(xrit.FILE_NAME.split(".")[0][-2:])
+        # Get channel and segment number
+        chan = xrit.FILE_NAME.split("_")[3]
+        num = int(xrit.FILE_NAME.split(".")[0][-2:])
 
-        # Get xRIT data field
-        buf = io.BytesIO(xrit.DATA_FIELD)
+        # Check object for current channel exists
+        try:
+            self.images[chan]
+        except:
+            self.images[chan] = {}
 
-        # Create image from xRIT data field
+        # Get file name
+        fname = xrit.FILE_NAME.split(".")[0]
+
         if self.config.downlink == "LRIT":
+            # Get image from JPG payload
+            buf = io.BytesIO(xrit.DATA_FIELD)
             img = Image.open(buf)
-        elif self.config.downlink == "HRIT":
-            return
-            
-        # Add image to segment list
-        self.segi[segn] = img
-        self.segc += 1
+        else:
+            # Get image from J2K payload
+            img = self.convert_to_img(self.get_save_path(filename=False), fname, xrit.DATA_FIELD)
 
+        # Add segment to channel object
+        self.images[chan][num] = img
+        self.counter += 1
+
+        #TODO: Progress bar
         # Clear line and update indicator
+        """
         print("\33[2K\r", end="", flush=True)
         print("    {}{}{}{}{}{}{}{}{}{} {}/{}".format(
             "\u2588\u2588" if 1 in self.segi.keys() else "\u2591\u2591",
@@ -188,11 +201,11 @@ class MultiSegmentImage(Product):
             len(self.segi),
             10
         ), end="", flush=True)
-        
-        # Mark as complete after 10 segments or 10th segment
-        if self.segc == 10 or segn == 10:
-            print()
-            self.complete = True
+        """
+
+        # Mark product as complete
+        total_segs = { "LRIT": 10, "HRIT": 50 }
+        if self.counter == total_segs[self.config.downlink]: self.complete = True
 
     def save(self):
         """
