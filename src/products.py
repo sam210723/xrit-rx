@@ -9,8 +9,7 @@ import collections
 import colorama
 from colorama import Fore, Back, Style
 import io
-import subprocess
-import os
+import pathlib
 from PIL import Image, ImageFile
 
 
@@ -105,29 +104,34 @@ class Product:
 
         return (h, m ,s)
 
-    def get_save_path(self, ext=None):
+    def get_save_path(self, ext="", filename=True):
         """
         Get save path of product (without extension)
         """
 
+        # Build file output path (root + date + observation mode)
+        root = self.config.output
         date = "{2}{1}{0}".format(*self.name.date)
-        path = "{}/{}/".format(date, self.name.mode)
+        path = "{}{}/{}/".format(root, date, self.name.mode)
 
         # Check output directories exist
-        if not os.path.exists("{}/{}".format(self.config.output, date)): os.mkdir(self.config.output + "/" + date)
-        if not os.path.exists("{}/{}/{}".format(self.config.output, date, self.name.mode)): os.mkdir(self.config.output + "/" + date + "/" + self.name.mode)
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
-        return "{}{}{}{}".format(self.config.output, path, self.name.full, "" if not ext else ".{}".format(ext))
+        # Assemble final file path and name
+        return "{}{}{}".format(
+            path,
+            "" if not filename else self.name.full,
+            "" if not ext else ".{}".format(ext)
+        )
 
     def print_info(self):
         """
         Print product info
         """
 
-        print("  [PRODUCT] {} #{}{}    {}:{}:{} UTC    {}/{}/{}".format(
+        print("  [PRODUCT] {} #{}    {}:{}:{} UTC    {}/{}/{}".format(
             self.name.mode,
             self.name.sequence,
-            "" if not self.name.channel else "    {}".format(self.name.channel),
             *self.name.time,
             *self.name.date
         ))
