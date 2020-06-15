@@ -41,7 +41,7 @@ dash = None             # Dashboard class object
 dashe = None            # Dashboard enabled flag
 dashp = None            # Dashboard HTTP port
 dashi = None            # Dashboard refresh interval (sec)
-ver = "1.2"             # xrit-rx version
+ver = "1.2+dev"         # xrit-rx version
 
 
 def init():
@@ -111,7 +111,7 @@ def init():
 
     # Check demuxer thread is ready
     if not demux.coreReady:
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START\nExiting...")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START")
         exit()
 
     print("──────────────────────────────────────────────────────────────────────────────────\n")
@@ -137,9 +137,8 @@ def loop():
             try:
                 data = sck.recv(buflen + 8)
             except ConnectionResetError:
-                print("LOST CONNECTION TO GOESRECV\nExiting...")
-                demux.stop()
-                exit()
+                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO GOESRECV")
+                safe_stop()
 
             if len(data) == buflen + 8:
                 demux.push(data[8:])
@@ -148,9 +147,8 @@ def loop():
             try:
                 data = sck.recv(buflen)
             except ConnectionResetError:
-                print("LOST CONNECTION TO OPEN SATELLITE PROJECT\nExiting...")
-                demux.stop()
-                exit()
+                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO OPEN SATELLITE PROJECT")
+                safe_stop()
             
             demux.push(data)
 
@@ -179,12 +177,8 @@ def loop():
                 # Demuxer has all VCDUs from file, wait for processing
                 if demux.complete():
                     runTime = round(time() - stime, 3)
-                    print("\nFINISHED PROCESSING FILE ({}s)\nExiting...".format(runTime))
-                    
-                    # Stop core thread
-                    demux.stop()
-                    dash.stop()
-                    exit()
+                    print("\nFINISHED PROCESSING FILE ({}s)".format(runTime))
+                    safe_stop()
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
                     sleep(0.5)
@@ -225,16 +219,14 @@ def config_input():
         # Check VCDU file exists
         if not path.exists(args.file):
             print(Fore.WHITE + Back.RED + Style.BRIGHT + "INPUT FILE DOES NOT EXIST")
-            print("Exiting...")
-            exit()
+            safe_stop()
         
         packetf = open(args.file, 'rb')
         print(Fore.GREEN + Style.BRIGHT + "OPENED PACKET FILE")
 
     else:
         print(Fore.WHITE + Back.RED + Style.BRIGHT + "UNKNOWN INPUT MODE: \"{}\"".format(source))
-        print("Exiting...")
-        exit()
+        safe_stop()
 
 
 def connect_socket(addr):
@@ -251,8 +243,7 @@ def connect_socket(addr):
         else:
             print(e)
     
-        print("\nExiting...")
-        exit()
+        safe_stop()
 
 
 def nanomsg_init():
@@ -267,8 +258,8 @@ def nanomsg_init():
 
     # Check nanomsg response
     if nmres != b'\x00\x53\x50\x00\x00\x20\x00\x00':
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
-        exit()
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)")
+        safe_stop()
 
 
 def dirs():
@@ -285,12 +276,18 @@ def dirs():
     if not path.isdir(absp):
         try:
             mkdir(absp)
+        except OSError as e:
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
+            safe_stop()
+    
+    if not path.isdir(absp + "/" + downlink + "/"):
+        try:
             mkdir(absp + "/" + downlink + "/")
 
             print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
         except OSError as e:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}\n\nExiting...".format(e))
-            exit()
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
+            safe_stop()
 
 
 def load_keys():
@@ -456,10 +453,19 @@ def print_config():
         print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
 
 
+def safe_stop(message=True):
+    """
+    Safely kill threads and exit
+    """
+
+    demux.stop()
+    if dash != None: dash.stop()
+
+    if message: print("\nExiting...")
+    exit()
+
+
 try:
     init()
 except KeyboardInterrupt:
-    demux.stop()
-    dash.stop()
-    print("Exiting...")
-    exit()
+    safe_stop()

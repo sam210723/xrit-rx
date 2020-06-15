@@ -9,8 +9,10 @@ import collections
 import colorama
 from colorama import Fore, Back, Style
 import io
-import os
+import numpy as np
+import pathlib
 from PIL import Image, ImageFile
+import subprocess
 
 
 def new(config, name):
@@ -23,6 +25,9 @@ def new(config, name):
             "LRIT": {
                 "FD": MultiSegmentImage,
                 "ANT": AlphanumericText
+            },
+            "HRIT": {
+                "FD": MultiSegmentImage
             }
         }
     }
@@ -50,33 +55,40 @@ class Product:
         self.name = self.parse_name(name)   # Product name
         self.alias = "PRODUCT"              # Product type alias
         self.complete = False               # Completed product flag
+        self.last = None                    # Path to last file saved
     
     def parse_name(self, n):
         """
         Parse file name into namedtuple
         """
 
-        name = collections.namedtuple("name", "type mode sequence channel date time full")
+        name = collections.namedtuple("name", "type mode sequence date time full")
+        parts = n.split("_")
+        full = n.split(".")[0][:-3]
 
-        if n.split("_")[0] == "IMG":
+        if parts[0] == "IMG":
+            # Generalise filename for multi-channel HRIT images
+            if self.config.downlink == "HRIT":
+                gen = n.split("_")
+                gen[3] = "<CHANNEL>"
+                full = "_".join(gen).split(".")[0][:-3]
+            
             tup = name(
-                n.split("_")[0],
-                n.split("_")[1],
-                int(n.split("_")[2]),
-                n.split("_")[3],
-                self.parse_date(n.split("_")[4]),
-                self.parse_time(n.split("_")[5]),
-                n.split(".")[0][:-3]
+                parts[0],
+                parts[1],
+                int(parts[2]),
+                self.parse_date(parts[4]),
+                self.parse_time(parts[5]),
+                full
             )
         else:
             tup = name(
-                n.split("_")[0],
-                n.split("_")[1],
-                int(n.split("_")[2]),
-                None,
-                self.parse_date(n.split("_")[3]),
-                self.parse_time(n.split("_")[4]),
-                n.split(".")[0][:-3]
+                parts[0],
+                parts[1],
+                int(parts[2]),
+                self.parse_date(parts[3]),
+                self.parse_time(parts[4]),
+                full
             )
         
         return tup
@@ -95,29 +107,34 @@ class Product:
 
         return (h, m ,s)
 
-    def get_save_path(self, ext=None):
+    def get_save_path(self, ext="", filename=True):
         """
         Get save path of product (without extension)
         """
 
+        # Build file output path (root + date + observation mode)
+        root = self.config.output
         date = "{2}{1}{0}".format(*self.name.date)
-        path = "{}/{}/".format(date, self.name.mode)
+        path = "{}{}/{}/".format(root, date, self.name.mode)
 
         # Check output directories exist
-        if not os.path.exists("{}/{}".format(self.config.output, date)): os.mkdir(self.config.output + "/" + date)
-        if not os.path.exists("{}/{}/{}".format(self.config.output, date, self.name.mode)): os.mkdir(self.config.output + "/" + date + "/" + self.name.mode)
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
-        return "{}{}{}{}".format(self.config.output, path, self.name.full, "" if not ext else ".{}".format(ext))
+        # Assemble final file path and name
+        return "{}{}{}".format(
+            path,
+            "" if not filename else self.name.full,
+            "" if not ext else ".{}".format(ext)
+        )
 
     def print_info(self):
         """
         Print product info
         """
 
-        print("  [PRODUCT] {} #{}{}    {}:{}:{} UTC    {}/{}/{}".format(
+        print("  [PRODUCT] {} #{}    {}:{}:{} UTC    {}/{}/{}".format(
             self.name.mode,
             self.name.sequence,
-            "" if not self.name.channel else "    {}".format(self.name.channel),
             *self.name.time,
             *self.name.date
         ))
@@ -133,75 +150,175 @@ class MultiSegmentImage(Product):
         Product.__init__(self, config, name)
         
         # Product specific setup
-        self.segc = 0                       # Segment counter
-        self.segi = {}                      # Segment image object list
+        self.counter = 0                    # Segment counter
+        self.images = {}                    # Image list
         self.ext = "jpg"                    # Output file extension
+        self.lastproglen = 0                # Last number of lines in progress indicator
 
     def add(self, xrit):
         """
         Add data to product
         """
 
-        # Get segment number
-        segn = int(xrit.FILE_NAME.split(".")[0][-2:])
+        # Get channel and segment number
+        chan = xrit.FILE_NAME.split("_")[3]
+        num = int(xrit.FILE_NAME.split(".")[0][-2:])
 
-        # Create image from xRIT data field
-        buf = io.BytesIO(xrit.DATA_FIELD)
-        img = Image.open(buf)
-        self.segi[segn] = img
-        self.segc += 1
+        # Check object for current channel exists
+        try:
+            self.images[chan]
+        except:
+            self.images[chan] = {}
 
-        # Clear line and update indicator
-        print("\33[2K\r", end="", flush=True)
-        print("    {}{}{}{}{}{}{}{}{}{} {}/{}".format(
-            "\u2588\u2588" if 1 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 2 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 3 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 4 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 5 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 6 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 7 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 8 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 9 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 10 in self.segi.keys() else "\u2591\u2591",
-            len(self.segi),
-            10
-        ), end="", flush=True)
-        
-        # Mark as complete after 10 segments or 10th segment
-        if self.segc == 10 or segn == 10:
-            print()
-            self.complete = True
+        # Get file name
+        fname = xrit.FILE_NAME.split(".")[0]
+
+        if self.config.downlink == "LRIT":
+            # Get image from JPG payload
+            buf = io.BytesIO(xrit.DATA_FIELD)
+            img = Image.open(buf)
+        else:
+            # Get image from J2K payload
+            img = self.convert_to_img(self.get_save_path(filename=False), fname, xrit.DATA_FIELD)
+
+        # Add segment to channel object
+        self.images[chan][num] = img
+        self.counter += 1
+
+        # Update progress bar
+        if not self.config.verbose:
+            self.progress()
+
+        # Mark product as complete
+        total_segs = { "LRIT": 10, "HRIT": 50 }
+        if self.counter == total_segs[self.config.downlink]: self.complete = True
 
     def save(self):
         """
         Save product to disk
         """
-
-        # Create new image
-        outI = Image.new("RGB", self.get_res())
-
-        # Combine segments into output image
-        for s in self.segi:
-            i = self.segi[s]
-            outI.paste(i, (0, i.size[1] * (s-1)))
-
-        # Save image to disk
-        path = self.get_save_path(self.ext)
-        outI.save(path, format='JPEG', subsampling=0, quality=100)
-        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
-    
-    def get_res(self):
-        """
-        Returns the horizontal and vertical resolution of the given observation mode
-        """
-
-        if self.config.spacecraft == "GK-2A":
-            if self.name.mode == "FD": outH = outV = 2200
-        else:
-            outH = outV = None
         
-        return outH, outV
+        print()
+        path = self.get_save_path(filename=False)
+
+        for c in self.images:
+            # Create output image
+            img = Image.new("RGB", self.get_res(c))
+
+            # Combine segments into final image
+            for s in self.images[c]:
+                height = self.images[c][s].size[1]
+                offset = height * (s - 1)
+                
+                img.paste(
+                    self.images[c][s],
+                    ( 0, offset )
+                )
+            
+            # Get image path for current channel
+            channel_path = "{}{}.{}".format(
+                path,
+                self.name.full.replace("<CHANNEL>", c),
+                self.ext
+            )
+
+            # Save final image
+            img.save(channel_path, format='JPEG', subsampling=0, quality=100)
+            print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(channel_path))
+            self.last = channel_path
+    
+    def convert_to_img(self, path, name, data):
+        """
+        Converts J2K to Pillow Image object via PPM using libjpeg
+
+        Arguments:
+            path {string} -- Path for temporary files
+            data {bytes} -- JPEG2000 image
+
+        Returns:
+            Pillow.Image -- Pillow Image object
+        """
+
+        # Save JP2 to disk
+        jp2Name = path + name + ".jp2"
+        f = open(jp2Name, "wb")
+        f.write(data)
+        f.close()
+
+        # Convert J2P to PPM
+        ppmName = path + name + ".ppm"
+        subprocess.call(["tools\\jpeg32.exe", jp2Name, ppmName], stdout=subprocess.DEVNULL)
+        pathlib.Path(jp2Name).unlink()
+        
+        # Load and convert 16-bit PPM to 8-bit image
+        img = Image.open(ppmName)
+        iarr = np.uint8(np.array(img) / 4)
+        img = Image.fromarray(iarr)
+        pathlib.Path(ppmName).unlink()
+        return img
+    
+    def get_res(self, channel):
+        """
+        Returns the horizontal and vertical resolution of the given satellte, downlink, observation mode and channel
+        """
+
+        res = {
+            "GK-2A": {
+                "LRIT": {
+                    "FD": {
+                        "IR105": (2200, 2200)
+                    }
+                },
+                "HRIT": {
+                    "FD": {
+                        "IR105": (2750, 2750),
+                        "IR123": (2750, 2750),
+                        "SW038": (2750, 2750),
+                        "WV069": (2750, 2750),
+                        "VI006": (11000, 11000)
+                    }
+                }
+            }
+        }
+
+        try:
+            return res[self.config.spacecraft][self.config.downlink][self.name.mode][channel]
+        except:
+            return (None, None)
+
+    def progress(self):
+        """
+        Renders progress bar for multi-segment mult-wavelength images
+        """
+
+        # Clear previous console lines
+        for i in range(self.lastproglen):
+            print("\33[2K\r", end="", flush=True)
+            print("\033[1A", end="", flush=True)
+
+        line = ""
+        self.lastproglen = 0
+
+        # Loop through channels
+        for c in self.images:
+            line += "    {}  {}{}{}{}{}{}{}{}{}{}  {}/{}\n".format(
+                c,
+                "\u2588\u2588" if 1 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 2 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 3 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 4 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 5 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 6 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 7 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 8 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 9 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 10 in self.images[c].keys() else "\u2591\u2591",
+                len(self.images[c]),
+                10
+            )
+            self.lastproglen += 1
+        
+        print(line, end="", flush=True)
 
 
 class SingleSegmentImage(Product):
@@ -237,6 +354,7 @@ class SingleSegmentImage(Product):
         outf.close()
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
+        self.last = path
 
     def get_ext(self):
         """
@@ -289,3 +407,4 @@ class AlphanumericText(Product):
             print("    GK-2A LRIT Daily Operation Plan")
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
+        self.last = path

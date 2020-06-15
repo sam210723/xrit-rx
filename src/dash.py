@@ -122,7 +122,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == None:                                        # Root API endpoint
             content = {
-                'version': float(dash_config.version),
+                'version': dash_config.version,
                 'spacecraft': dash_config.spacecraft,
                 'downlink': dash_config.downlink,
                 'vcid_blacklist': dash_config.blacklist,
