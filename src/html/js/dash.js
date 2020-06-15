@@ -346,6 +346,10 @@ function block_schedule(element)
     // Check schedule has been loaded
     if (sch.length == 0) { return; }
 
+    // Add spacecraft and downlink to block header
+    var header = element.parentNode.children[0];
+    header.innerHTML = `${config.spacecraft} ${config.downlink} Schedule`;
+
     // Check UTC date
     var d = new Date();
     if (utc_date != `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`) {
