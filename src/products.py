@@ -213,16 +213,34 @@ class MultiSegmentImage(Product):
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
     
     def get_res(self):
+    def get_res(self, channel):
         """
-        Returns the horizontal and vertical resolution of the given observation mode
+        Returns the horizontal and vertical resolution of the given satellte, downlink, observation mode and channel
         """
 
-        if self.config.spacecraft == "GK-2A":
-            if self.name.mode == "FD": outH = outV = 2200
-        else:
-            outH = outV = None
-        
-        return outH, outV
+        res = {
+            "GK-2A": {
+                "LRIT": {
+                    "FD": {
+                        "IR105": (2200, 2200)
+                    }
+                },
+                "HRIT": {
+                    "FD": {
+                        "IR105": (2750, 2750),
+                        "IR123": (2750, 2750),
+                        "SW038": (2750, 2750),
+                        "WV069": (2750, 2750),
+                        "VI006": (11000, 11000)
+                    }
+                }
+            }
+        }
+
+        try:
+            return res[self.config.spacecraft][self.config.downlink][self.name.mode][channel]
+        except:
+            return (None, None)
 
 
 class SingleSegmentImage(Product):
