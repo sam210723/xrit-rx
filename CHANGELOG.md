@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
   - to_hex() debugging utility method
 
 ### Changed
+  - Indicate multi-segment progress per-wavelength rather than for the entire product
   - Using `pathlib` over `os` module for some file operations
   - Include spacecraft and downlink in dashboard schedule title
 
