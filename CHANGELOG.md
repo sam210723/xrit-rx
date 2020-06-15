@@ -5,15 +5,16 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
-  - HRIT image parser script
-  - libjpeg binary
-  - to_hex() utility method
+  - Support for HRIT full disk imagery (see [HRIT Decoding - J2K and missing CPPDUs](https://github.com/sam210723/xrit-rx/issues/15))
+  - HRIT image processing tool ([tools\hrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/hrit-img.py))
+  - JP2 (JPEG2000) to PPM converstion ([libjpeg](https://github.com/thorfdbg/libjpeg))
+  - to_hex() debugging utility method
 
 ### Changed
-  - 
+  - Using `pathlib` over `os` module for some file operations
 
 ### Fixed
-  - CP_PDU header offset issue with large TP_Files
+  - TP_File triggering with M_PDU header offset (fixes large HRIT files)
   - Output directory checking
   - Handling of safe exit cases
 </details>
@@ -69,7 +70,7 @@ Added work-around for ``COMSFOG`` and ``COMSIR1`` transmission issue, an infrare
 <summary>Details</summary>
 
 ### Added
-  - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/tree/master/tools/enhance-ir.py))
+  - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/enhance-ir.py))
   - Extra demuxer info in verbose mode
 
 ### Changed
@@ -91,8 +92,8 @@ Added decryption tools, an option to blacklist individual virtual channels, and 
 
 ### Added
   - Virtual channel (VCID) blacklist
-  - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/xrit-decrypt.py))
-  - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/keymsg-decrypt.py))
+  - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/xrit-decrypt.py))
+  - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/keymsg-decrypt.py))
 
 ### Fixed
   - VCDU continuity counter
@@ -109,8 +110,8 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 ### Added
   - GK-2A virtual channel names
   - GK-2A file type names
-  - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-img.py))
-  - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-add.py))
+  - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/lrit-img.py))
+  - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/lrit-add.py))
 
 ### Changed
   - Enum for CP_PDU sequence
