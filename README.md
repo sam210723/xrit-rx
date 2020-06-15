@@ -1,4 +1,4 @@
-# :satellite: xrit-rx - LRIT Downlink Processor
+# :satellite: &nbsp;&nbsp; xrit-rx - LRIT/HRIT Downlink Processor
 
 [![GitHub release](https://img.shields.io/github/release/sam210723/xrit-rx.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
 [![Github all releases](https://img.shields.io/github/downloads/sam210723/xrit-rx/total.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
