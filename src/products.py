@@ -153,6 +153,7 @@ class MultiSegmentImage(Product):
         self.counter = 0                    # Segment counter
         self.images = {}                    # Image list
         self.ext = "jpg"                    # Output file extension
+        self.lastproglen = 0                # Last number of lines in progress indicator
 
     def add(self, xrit):
         """
@@ -184,25 +185,9 @@ class MultiSegmentImage(Product):
         self.images[chan][num] = img
         self.counter += 1
 
-        #TODO: Progress bar
-        # Clear line and update indicator
-        """
-        print("\33[2K\r", end="", flush=True)
-        print("    {}{}{}{}{}{}{}{}{}{} {}/{}".format(
-            "\u2588\u2588" if 1 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 2 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 3 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 4 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 5 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 6 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 7 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 8 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 9 in self.segi.keys() else "\u2591\u2591",
-            "\u2588\u2588" if 10 in self.segi.keys() else "\u2591\u2591",
-            len(self.segi),
-            10
-        ), end="", flush=True)
-        """
+        # Update progress bar
+        if not self.config.verbose:
+            self.progress()
 
         # Mark product as complete
         total_segs = { "LRIT": 10, "HRIT": 50 }
@@ -213,6 +198,7 @@ class MultiSegmentImage(Product):
         Save product to disk
         """
         
+        print()
         path = self.get_save_path(filename=False)
 
         for c in self.images:
@@ -299,6 +285,40 @@ class MultiSegmentImage(Product):
             return res[self.config.spacecraft][self.config.downlink][self.name.mode][channel]
         except:
             return (None, None)
+
+    def progress(self):
+        """
+        Renders progress bar for multi-segment mult-wavelength images
+        """
+
+        # Clear previous console lines
+        for i in range(self.lastproglen):
+            print("\33[2K\r", end="", flush=True)
+            print("\033[1A", end="", flush=True)
+
+        line = ""
+        self.lastproglen = 0
+
+        # Loop through channels
+        for c in self.images:
+            line += "    {}  {}{}{}{}{}{}{}{}{}{}  {}/{}\n".format(
+                c,
+                "\u2588\u2588" if 1 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 2 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 3 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 4 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 5 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 6 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 7 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 8 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 9 in self.images[c].keys() else "\u2591\u2591",
+                "\u2588\u2588" if 10 in self.images[c].keys() else "\u2591\u2591",
+                len(self.images[c]),
+                10
+            )
+            self.lastproglen += 1
+        
+        print(line, end="", flush=True)
 
 
 class SingleSegmentImage(Product):
