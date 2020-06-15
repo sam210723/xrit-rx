@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
   - Using `pathlib` over `os` module for some file operations
+  - Include spacecraft and downlink in dashboard schedule title
 
 ### Fixed
   - TP_File triggering with M_PDU header offset ([relevant issue comment](https://github.com/sam210723/xrit-rx/issues/15#issuecomment-643079493))
