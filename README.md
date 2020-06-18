@@ -40,7 +40,7 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
-| `mode` | Type of downlink being received | `lrit` | `lrit` |
+| `mode` | Type of downlink being received | `lrit` | `lrit` or `hrit` |
 | `input` | Input source | `goesrecv` or `osp` | `goesrecv` |
 | `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
