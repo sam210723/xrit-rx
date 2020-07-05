@@ -11,7 +11,7 @@ from colorama import Fore, Back, Style
 import io
 import numpy as np
 import pathlib
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, UnidentifiedImageError
 import subprocess
 
 
@@ -176,7 +176,12 @@ class MultiSegmentImage(Product):
         if self.config.downlink == "LRIT":
             # Get image from JPG payload
             buf = io.BytesIO(xrit.DATA_FIELD)
-            img = Image.open(buf)
+            
+            try:
+                img = Image.open(buf)
+            except UnidentifiedImageError:
+                print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO IMAGE FOUND IN XRIT FILE")
+                return
         else:
             # Get image from J2K payload
             img = self.convert_to_img(self.get_save_path(filename=False), fname, xrit.DATA_FIELD)
