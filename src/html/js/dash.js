@@ -79,7 +79,8 @@ function configure()
 
     // Set heading and window title
     var heading = document.getElementById("dash-heading");
-    heading.innerHTML = `${config.spacecraft} ${config.downlink} Dashboard <span>xrit-rx v${config.version}</span>`;
+    heading.innerHTML =  `${config.spacecraft} ${config.downlink} Dashboard`;
+    heading.innerHTML += `<span>xrit-rx <a href="https://github.com/sam210723/xrit-rx/releases/tag/v${config.version}" target="_blank" title="Release notes on GitHub">v${config.version}</a></span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
     // Build blocks
