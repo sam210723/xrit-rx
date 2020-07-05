@@ -206,7 +206,7 @@ def convert_to_img(fpath, dataField):
 
     # Convert J2P to PPM
     ppmName = fpath.replace(".hrit", "") + ".ppm"
-    subprocess.call(["tools\jpeg32.exe", jp2Name, ppmName], stdout=subprocess.DEVNULL)
+    subprocess.call(["tools\\jpeg.exe", jp2Name, ppmName], stdout=subprocess.DEVNULL)
     os.remove(jp2Name)
     
     # Load and convert 16-bit PPM to 8-bit image
