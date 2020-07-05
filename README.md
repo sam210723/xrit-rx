@@ -67,12 +67,19 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
 
+#### `udp` section
+
+| Setting | Description | Options | Default |
+| ------- | ----------- | ------- | ------- |
+| `ip` | IP Address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
+| `vchan` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
+
 #### `dashboard` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
-| `port` | Port number for server to listen on | *Any TCP port number* | `80` |
+| `port` | Port number for server to listen on | *Any TCP port number* | `1692` |
 | `interval` | Update interval in seconds | `integer` | `1` |
 
 

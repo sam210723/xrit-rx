@@ -34,7 +34,7 @@ blacklist = []          # VCID blacklist
 packetf = None          # Packet file object
 keypath = None          # Decryption key file path
 keys = {}               # Decryption keys
-sck = None              # TCP socket object
+sck = None              # TCP/UDP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
 dash = None             # Dashboard class object
@@ -151,6 +151,15 @@ def loop():
                 safe_stop()
             
             demux.push(data)
+        
+        elif source == "UDP":
+            try:
+                data, address = sck.recvfrom(buflen)
+            except Exception as e:
+                print(e)
+                safe_stop()
+            
+            demux.push(data)
 
         elif source == "FILE":
             global packetf
@@ -212,6 +221,22 @@ def config_input():
 
         print("Connecting to Open Satellite Project ({})...".format(ip), end='')
         connect_socket(addr)
+    
+    elif source == "UDP":
+        sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        ip = config.get('udp', 'ip')
+        port = int(config.get('udp', 'vchan'))
+        addr = (ip, port)
+        
+        print("Binding UDP socket ({}:{})...".format(ip, port), end='')
+        try:
+            sck.bind(addr)
+            print(Fore.GREEN + Style.BRIGHT + "SUCCESS")
+        except socket.error as e:
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "FAILED")
+            print(e)
+            safe_stop()
 
     elif source == "FILE":
         global packetf

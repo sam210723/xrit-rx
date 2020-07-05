@@ -5,9 +5,27 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - 
+
+### Changed
+  - 
+
+### Fixed
+  - 
+</details>
+
+
+## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - 2020-07-06
+Added support for multi-channel HRIT imagery using [libjpeg](https://github.com/thorfdbg/libjpeg) for JPEG2000 conversion.
+
+<details>
+<summary>Details</summary>
+
+### Added
   - Support for HRIT full disk imagery (see [HRIT Decoding - J2K and missing CPPDUs](https://github.com/sam210723/xrit-rx/issues/15))
   - HRIT image processing tool ([tools\hrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/hrit-img.py))
   - JP2 (JPEG2000) to PPM converstion using [libjpeg](https://github.com/thorfdbg/libjpeg) (licensed under [GPLv3](https://github.com/thorfdbg/libjpeg/blob/master/README.license.gpl))
+  - UDP socket for receiving VCDUs from hardware modems such as the ETRA D8L
   - to_hex() debugging utility method
   - Link to GitHub release page on dashboard
 
