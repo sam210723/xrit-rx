@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 import colorama
 from colorama import Fore, Back, Style
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import mkdir, path
 import socket
 from time import time, sleep
@@ -59,13 +59,13 @@ def init():
     global demux
     global dash
 
+    # Initialise Colorama
+    colorama.init(autoreset=True)
+
     # Handle arguments and config file
     args = parse_args()
     config = parse_config(args.config)
     print_config()
-
-    # Initialise Colorama
-    colorama.init(autoreset=True)
 
     # Configure directories and input source
     dirs()
@@ -377,16 +377,20 @@ def parse_config(path):
     else:
         source = "FILE"
     
-    spacecraft = cfgp.get('rx', 'spacecraft').upper()
-    downlink = cfgp.get('rx', 'mode').upper()
-    output = cfgp.get('output', 'path')
-    output_images = cfgp.getboolean('output', 'images')
-    output_xrit = cfgp.getboolean('output', 'xrit')
-    bl = cfgp.get('output', 'channel_blacklist')
-    keypath = cfgp.get('rx', 'keys')
-    dashe = cfgp.getboolean('dashboard', 'enabled')
-    dashp = cfgp.get('dashboard', 'port')
-    dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
+    try:
+        spacecraft = cfgp.get('rx', 'spacecraft').upper()
+        downlink = cfgp.get('rx', 'mode').upper()
+        output = cfgp.get('output', 'path')
+        output_images = cfgp.getboolean('output', 'images')
+        output_xrit = cfgp.getboolean('output', 'xrit')
+        bl = cfgp.get('output', 'channel_blacklist')
+        keypath = cfgp.get('rx', 'keys')
+        dashe = cfgp.getboolean('dashboard', 'enabled')
+        dashp = cfgp.get('dashboard', 'port')
+        dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
+    except (NoSectionError, NoOptionError) as e:
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR PARSING CONFIG FILE: " + str(e).upper())
+        safe_stop()
 
     # Limit dashboard refresh interval
     if dashi < 1: dashi = 1
@@ -458,7 +462,7 @@ def safe_stop(message=True):
     Safely kill threads and exit
     """
 
-    demux.stop()
+    if demux != None: demux.stop()
     if dash != None: dash.stop()
 
     if message: print("\nExiting...")

@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
   - Output directory checking
   - Handling of safe exit cases
   - Handling of `PIL.UnidentifiedImageError`
+  - Handling of missing configuration sections and options
 </details>
 
 
