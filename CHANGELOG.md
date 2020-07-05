@@ -7,18 +7,22 @@ All notable changes to this project will be documented in this file.
 ### Added
   - Support for HRIT full disk imagery (see [HRIT Decoding - J2K and missing CPPDUs](https://github.com/sam210723/xrit-rx/issues/15))
   - HRIT image processing tool ([tools\hrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/hrit-img.py))
-  - JP2 (JPEG2000) to PPM converstion ([libjpeg](https://github.com/thorfdbg/libjpeg))
+  - JP2 (JPEG2000) to PPM converstion using [libjpeg](https://github.com/thorfdbg/libjpeg) (licensed under [GPLv3](https://github.com/thorfdbg/libjpeg/blob/master/README.license.gpl))
   - to_hex() debugging utility method
+  - Link to GitHub release page on dashboard
 
 ### Changed
   - Indicate multi-segment progress per-wavelength rather than for the entire product
   - Using `pathlib` over `os` module for some file operations
   - Include spacecraft and downlink in dashboard schedule title
+  - Renamed "Last Image" dashboard block to "Latest Image"
+  - Renamed `last/image` and `last/xrit` API endpoints to `latest/image` and `latest/xrit`
 
 ### Fixed
   - TP_File triggering with M_PDU header offset ([relevant issue comment](https://github.com/sam210723/xrit-rx/issues/15#issuecomment-643079493))
   - Output directory checking
   - Handling of safe exit cases
+  - Handling of `PIL.UnidentifiedImageError`
 </details>
 
 
