@@ -116,8 +116,8 @@ For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/a
 | --- | ----------- | ------- | ---- |
 | `/api` | General configuration information | *see above* | `application/json` |
 | `/api/current/vcid` | Currently active virtual channel number | `{ "vcid": 63 }` | `application/json` |
-| `/api/last/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
-| `/api/last/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
+| `/api/latest/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
+| `/api/latest/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
 
 
 ## Acknowledgments

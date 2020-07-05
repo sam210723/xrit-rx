@@ -144,7 +144,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     'vcid': demuxer_instance.currentVCID
                 }
 
-        elif path[0] == "last" and len(path) == 2:
+        elif path[0] == "latest" and len(path) == 2:
             if path[1] == "image":
                 content = {
                     'image': demuxer_instance.lastImage
