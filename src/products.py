@@ -251,7 +251,7 @@ class MultiSegmentImage(Product):
 
         # Convert J2P to PPM
         ppmName = path + name + ".ppm"
-        subprocess.call(["tools\\jpeg.exe", jp2Name, ppmName], stdout=subprocess.DEVNULL)
+        subprocess.call(["tools\\jpeg", jp2Name, ppmName], stdout=subprocess.DEVNULL)
         pathlib.Path(jp2Name).unlink()
         
         # Load and convert 16-bit PPM to 8-bit image
