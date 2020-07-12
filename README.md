@@ -1,4 +1,4 @@
-# :satellite: xrit-rx - LRIT Downlink Processor
+# :satellite: &nbsp;&nbsp; xrit-rx - LRIT/HRIT Downlink Processor
 
 [![GitHub release](https://img.shields.io/github/release/sam210723/xrit-rx.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
 [![Github all releases](https://img.shields.io/github/downloads/sam210723/xrit-rx/total.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
@@ -40,7 +40,7 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
-| `mode` | Type of downlink being received | `lrit` | `lrit` |
+| `mode` | Type of downlink being received | `lrit` | `lrit` or `hrit` |
 | `input` | Input source | `goesrecv` or `osp` | `goesrecv` |
 | `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
@@ -67,12 +67,19 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
 | `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
 
+#### `udp` section
+
+| Setting | Description | Options | Default |
+| ------- | ----------- | ------- | ------- |
+| `ip` | IP Address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
+| `vchan` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
+
 #### `dashboard` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
-| `port` | Port number for server to listen on | *Any TCP port number* | `80` |
+| `port` | Port number for server to listen on | *Any TCP port number* | `1692` |
 | `interval` | Update interval in seconds | `integer` | `1` |
 
 
@@ -116,12 +123,20 @@ For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/a
 | --- | ----------- | ------- | ---- |
 | `/api` | General configuration information | *see above* | `application/json` |
 | `/api/current/vcid` | Currently active virtual channel number | `{ "vcid": 63 }` | `application/json` |
-| `/api/last/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
-| `/api/last/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
+| `/api/latest/image` | Path to most recently received product | `{ "image": "received/LRIT/[...].jpg" }` | `application/json` |
+| `/api/latest/xrit` | Path to most recently received xRIT file | `{ "xrit": "received/LRIT/[...].lrit" }` | `application/json` |
 
 
 ## Acknowledgments
   - [Lucas Teske](https://twitter.com/lucasteske) - Developer of [**Open Satellite Project**](https://github.com/opensatelliteproject) and writer of ["GOES Satellite Hunt"](https://www.teske.net.br/lucas/2016/10/goes-satellite-hunt-part-1-antenna-system/)
   - [Pieter Noordhuis](https://twitter.com/pnoordhuis) - Developer of [**goestools**](https://github.com/pietern/goestools)
   - [John Bell](https://twitter.com/eswnl) - Software testing and IQ recordings
+  - ["kisaa"](https://github.com/kisaa) - GK-2A HRIT debugging and packet recordings
   - [@Rasiel_J](https://twitter.com/Rasiel_J) - IQ recordings
+
+
+## libjpeg
+**xrit-rx** uses [**libjpeg**](https://github.com/thorfdbg/libjpeg) for converting JPEG2000 (J2K/JP2) images to Portable Pixmap Format (PPM) images.
+A compiled 32-bit binary for Windows is included in **xrit-rx** releases along with the **libjpeg** [LICENSE](https://github.com/sam210723/xrit-rx/blob/master/src/tools/libjpeg/LICENSE) (GPLv3) and [README](https://github.com/sam210723/xrit-rx/blob/master/src/tools/libjpeg/README).
+
+The source code for **libjpeg** can be found at https://github.com/thorfdbg/libjpeg.

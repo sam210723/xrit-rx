@@ -138,6 +138,7 @@ class CP_PDU:
             # Add post-header data to payload
             self.PAYLOAD = data[6:]
         else:
+            # Add bytes to header then wait for remaining bytes to be added via append()
             self.header = data
     
     def parse(self):
@@ -181,6 +182,7 @@ class CP_PDU:
             self.parse()
             self.PAYLOAD = data[rem:]
         else:
+            # Add data to payload if header already parsed
             self.PAYLOAD += data
 
     def finish(self, data, crclut):
@@ -331,22 +333,21 @@ class TP_File:
         """
 
         # Get image band based on file counter
-        #TODO: Update when GK-2A specification available
-        if 1 <= self.COUNTER <= 10:
-            band = "VIS"
-            num = self.COUNTER
-        elif 11 <= self.COUNTER <= 20:
-            band = "SWIR"
-            num = self.COUNTER - 10
-        elif 21 <= self.COUNTER <= 30:
-            band = "WV"
-            num = self.COUNTER - 20
-        elif 31 <= self.COUNTER <= 40:
-            band = "IR1"
-            num = self.COUNTER - 30
-        elif 41 <= self.COUNTER <= 50:
-            band = "IR2"
-            num = self.COUNTER - 40
+        if 0 <= self.COUNTER <= 9:
+            band = "VI006"
+            num = self.COUNTER + 1
+        elif 10 <= self.COUNTER <= 19:
+            band = "SW038"
+            num = self.COUNTER - 9
+        elif 20 <= self.COUNTER <= 29:
+            band = "WV069"
+            num = self.COUNTER - 19
+        elif 30 <= self.COUNTER <= 39:
+            band = "IR105"
+            num = self.COUNTER - 29
+        elif 40 <= self.COUNTER <= 49:
+            band = "IR123"
+            num = self.COUNTER - 39
         else:
             band = "Other"
             num = "?"
@@ -412,13 +413,13 @@ class S_PDU:
 
         # Parse Key header (type 7)
         keyHLen = int.from_bytes(self.headerField[offset + 1 : offset + 3], byteorder='big')
-        index = self.headerField[offset + 5 : offset + keyHLen]
+        self.index = self.headerField[offset + 5 : offset + keyHLen]
 
         # Catch wrong key index
         try:
-            self.key = self.keys[index]
+            self.key = self.keys[self.index]
         except KeyError:
-            if index != b'\x00\x00': print("  UNKNOWN ENCRYPTION KEY INDEX")
+            if self.index != b'\x00\x00': print("  UNKNOWN ENCRYPTION KEY INDEX")
             self.key = 0
         
         # Check block length if encryption is applied
@@ -568,12 +569,17 @@ class xRIT:
         outFile.write(self.data)
         outFile.close()
 
-    def print_info(self):
+    def print_info(self, verbose):
         """
         Prints information about the current xRIT file to the console
         """
 
         print("  [XRIT] \"{}\"".format(self.FILE_NAME))
+
+        if verbose:
+            print("    HEADER LEN: {}".format(self.TOTAL_HEADER_LEN))
+            print("    DATA LEN:   {}".format(self.DATA_LEN))
+            print("    TOTAL LEN:  {}".format(self.TOTAL_HEADER_LEN + self.DATA_LEN))
 
 
 class Tools:
@@ -612,3 +618,17 @@ class Tools:
         bits = self.get_bits(data, start, length, count)
 
         return int(bits, 2)
+
+
+    def to_hex(self, data):
+        """
+        Convert bytes to hex string
+
+        :param data: Bytes to convert
+        """
+
+        i = int.from_bytes(data, byteorder='big')
+        h = hex(i).upper()
+        s = "0x{}".format(h[2:])
+
+        return s

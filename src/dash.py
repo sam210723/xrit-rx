@@ -122,7 +122,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == None:                                        # Root API endpoint
             content = {
-                'version': float(dash_config.version),
+                'version': dash_config.version,
                 'spacecraft': dash_config.spacecraft,
                 'downlink': dash_config.downlink,
                 'vcid_blacklist': dash_config.blacklist,
@@ -144,7 +144,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     'vcid': demuxer_instance.currentVCID
                 }
 
-        elif path[0] == "last" and len(path) == 2:
+        elif path[0] == "latest" and len(path) == 2:
             if path[1] == "image":
                 content = {
                     'image': demuxer_instance.lastImage

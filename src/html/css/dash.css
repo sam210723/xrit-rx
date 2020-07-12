@@ -11,6 +11,10 @@ html, body {
   user-select: none;
 }
 
+a {
+  color: cornflowerblue;
+}
+
 #container {
   margin: 0 0 0 15px;
   text-align: center;
@@ -115,12 +119,12 @@ html, body {
   color: #AAA;
 }
 
-.lastimg {
+.latestimg {
   max-width: 100%;
   height: auto;
 }
 
-.lastimg-name {
+.latestimg-name {
   margin: 13px 0 0 0;
   font-size: 20px;
 }

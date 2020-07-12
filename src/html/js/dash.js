@@ -20,11 +20,11 @@ var blocks = {
         title: "Time",
         update: null
     },
-    lastimg:  {
+    latestimg:  {
         width: 500,
         height: 590,
-        title: "Last Image",
-        update: block_lastimg
+        title: "Latest Image",
+        update: block_latestimg
     },
     schedule: {
         width: 510,
@@ -43,7 +43,7 @@ var vchans = {
 };
 var sch = [];
 var current_vcid;
-var last_image;
+var latest_image;
 var utc_date;
 
 function init()
@@ -79,7 +79,8 @@ function configure()
 
     // Set heading and window title
     var heading = document.getElementById("dash-heading");
-    heading.innerHTML = `${config.spacecraft} ${config.downlink} Dashboard <span>xrit-rx v${config.version}</span>`;
+    heading.innerHTML =  `${config.spacecraft} ${config.downlink} Dashboard`;
+    heading.innerHTML += `<span>xrit-rx <a href="https://github.com/sam210723/xrit-rx/releases/tag/v${config.version}" target="_blank" title="Release notes on GitHub">v${config.version}</a></span>`;
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
     // Build blocks
@@ -133,10 +134,10 @@ function poll()
     });
 
     // Get last image
-    http_get("/api/last/image", (res) => {
+    http_get("/api/latest/image", (res) => {
         if (res.status == 200) {
             res.json().then((data) => {
-                last_image = data['image'];
+                latest_image = data['image'];
             });
         }
         else {
@@ -299,16 +300,16 @@ function block_time(element)
 
 
 /**
- * Update Last Image block
+ * Update Latest Image block
  */
-function block_lastimg(element)
+function block_latestimg(element)
 {
     var img = element.children[0].children[0];
     var link = element.children[0];
     var cap = element.children[2];
 
-    if (last_image) {
-        var url = `/api/${last_image}`;
+    if (latest_image) {
+        var url = `/api/${latest_image}`;
         var fname = url.split('/');
         fname = fname[fname.length - 1];
         var ext = fname.split('.')[1];
@@ -330,7 +331,7 @@ function block_lastimg(element)
             cap.innerHTML = "Image output is disabled in xrit-rx<br><br>Check key file is present and <code>images = true</code> in <code>xrit-rx.ini</code> configuration file";
         }
         else {
-            link.innerHTML = "<img class=\"lastimg\">";
+            link.innerHTML = "<img class=\"latestimg\">";
             link.setAttribute("href", "#");
             cap.innerText = "Waiting for image...";
         }
@@ -345,6 +346,10 @@ function block_schedule(element)
 {
     // Check schedule has been loaded
     if (sch.length == 0) { return; }
+
+    // Add spacecraft and downlink to block header
+    var header = element.parentNode.children[0];
+    header.innerHTML = `${config.spacecraft} ${config.downlink} Schedule`;
 
     // Check UTC date
     var d = new Date();

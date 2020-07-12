@@ -15,6 +15,36 @@ All notable changes to this project will be documented in this file.
 </details>
 
 
+## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - 2020-07-12
+Added support for multi-channel HRIT imagery using [libjpeg](https://github.com/thorfdbg/libjpeg) for JPEG2000 conversion.
+
+<details>
+<summary>Details</summary>
+
+### Added
+  - Support for HRIT full disk imagery (see [HRIT Decoding - J2K and missing CPPDUs](https://github.com/sam210723/xrit-rx/issues/15))
+  - HRIT image processing tool ([tools\hrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/hrit-img.py))
+  - JP2 (JPEG2000) to PPM converstion using [libjpeg](https://github.com/thorfdbg/libjpeg) (licensed under [GPLv3](https://github.com/thorfdbg/libjpeg/blob/master/README.license.gpl))
+  - UDP socket for receiving VCDUs from hardware modems such as the ETRA D8L
+  - to_hex() debugging utility method
+  - Link to GitHub release page on dashboard
+
+### Changed
+  - Indicate multi-segment progress per-wavelength rather than for the entire product
+  - Using `pathlib` over `os` module for some file operations
+  - Include spacecraft and downlink in dashboard schedule title
+  - Renamed "Last Image" dashboard block to "Latest Image"
+  - Renamed `last/image` and `last/xrit` API endpoints to `latest/image` and `latest/xrit`
+
+### Fixed
+  - TP_File triggering with M_PDU header offset ([relevant issue comment](https://github.com/sam210723/xrit-rx/issues/15#issuecomment-643079493))
+  - Output directory checking
+  - Handling of safe exit cases
+  - Handling of `PIL.UnidentifiedImageError`
+  - Handling of missing configuration sections and options
+</details>
+
+
 ## [v1.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.2) - 2020-05-14
 Added a monitoring dashboard and JSON API running from a built in web server.
 
@@ -65,7 +95,7 @@ Added work-around for ``COMSFOG`` and ``COMSIR1`` transmission issue, an infrare
 <summary>Details</summary>
 
 ### Added
-  - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/tree/master/tools/enhance-ir.py))
+  - IR enhancement tool ([tools\enhance-ir.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/enhance-ir.py))
   - Extra demuxer info in verbose mode
 
 ### Changed
@@ -87,8 +117,8 @@ Added decryption tools, an option to blacklist individual virtual channels, and 
 
 ### Added
   - Virtual channel (VCID) blacklist
-  - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/xrit-decrypt.py))
-  - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/tree/master/tools/keymsg-decrypt.py))
+  - xRIT file decryption tool ([tools\xrit-decrypt.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/xrit-decrypt.py))
+  - Key file decryption tool ([tools\keymsg-decrypt.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/keymsg-decrypt.py))
 
 ### Fixed
   - VCDU continuity counter
@@ -105,8 +135,8 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 ### Added
   - GK-2A virtual channel names
   - GK-2A file type names
-  - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-img.py))
-  - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/tree/master/tools/lrit-add.py))
+  - LRIT image file processor ([tools\lrit-img.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/lrit-img.py))
+  - LRIT additional data processor ([tools\lrit-add.py](https://github.com/sam210723/xrit-rx/blob/master/src/tools/lrit-add.py))
 
 ### Changed
   - Enum for CP_PDU sequence

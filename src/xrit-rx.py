@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 import colorama
 from colorama import Fore, Back, Style
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import mkdir, path
 import socket
 from time import time, sleep
@@ -34,14 +34,14 @@ blacklist = []          # VCID blacklist
 packetf = None          # Packet file object
 keypath = None          # Decryption key file path
 keys = {}               # Decryption keys
-sck = None              # TCP socket object
+sck = None              # TCP/UDP socket object
 buflen = 892            # Input buffer length (1 VCDU)
 demux = None            # Demuxer class object
 dash = None             # Dashboard class object
 dashe = None            # Dashboard enabled flag
 dashp = None            # Dashboard HTTP port
 dashi = None            # Dashboard refresh interval (sec)
-ver = "1.2"             # xrit-rx version
+ver = "1.3"             # xrit-rx version
 
 
 def init():
@@ -59,13 +59,13 @@ def init():
     global demux
     global dash
 
+    # Initialise Colorama
+    colorama.init(autoreset=True)
+
     # Handle arguments and config file
     args = parse_args()
     config = parse_config(args.config)
     print_config()
-
-    # Initialise Colorama
-    colorama.init(autoreset=True)
 
     # Configure directories and input source
     dirs()
@@ -111,7 +111,7 @@ def init():
 
     # Check demuxer thread is ready
     if not demux.coreReady:
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START\nExiting...")
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START")
         exit()
 
     print("──────────────────────────────────────────────────────────────────────────────────\n")
@@ -137,9 +137,8 @@ def loop():
             try:
                 data = sck.recv(buflen + 8)
             except ConnectionResetError:
-                print("LOST CONNECTION TO GOESRECV\nExiting...")
-                demux.stop()
-                exit()
+                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO GOESRECV")
+                safe_stop()
 
             if len(data) == buflen + 8:
                 demux.push(data[8:])
@@ -148,9 +147,17 @@ def loop():
             try:
                 data = sck.recv(buflen)
             except ConnectionResetError:
-                print("LOST CONNECTION TO OPEN SATELLITE PROJECT\nExiting...")
-                demux.stop()
-                exit()
+                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO OPEN SATELLITE PROJECT")
+                safe_stop()
+            
+            demux.push(data)
+        
+        elif source == "UDP":
+            try:
+                data, address = sck.recvfrom(buflen)
+            except Exception as e:
+                print(e)
+                safe_stop()
             
             demux.push(data)
 
@@ -179,12 +186,8 @@ def loop():
                 # Demuxer has all VCDUs from file, wait for processing
                 if demux.complete():
                     runTime = round(time() - stime, 3)
-                    print("\nFINISHED PROCESSING FILE ({}s)\nExiting...".format(runTime))
-                    
-                    # Stop core thread
-                    demux.stop()
-                    dash.stop()
-                    exit()
+                    print("\nFINISHED PROCESSING FILE ({}s)".format(runTime))
+                    safe_stop()
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
                     sleep(0.5)
@@ -218,6 +221,22 @@ def config_input():
 
         print("Connecting to Open Satellite Project ({})...".format(ip), end='')
         connect_socket(addr)
+    
+    elif source == "UDP":
+        sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        ip = config.get('udp', 'ip')
+        port = int(config.get('udp', 'vchan'))
+        addr = (ip, port)
+        
+        print("Binding UDP socket ({}:{})...".format(ip, port), end='')
+        try:
+            sck.bind(addr)
+            print(Fore.GREEN + Style.BRIGHT + "SUCCESS")
+        except socket.error as e:
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "FAILED")
+            print(e)
+            safe_stop()
 
     elif source == "FILE":
         global packetf
@@ -225,16 +244,14 @@ def config_input():
         # Check VCDU file exists
         if not path.exists(args.file):
             print(Fore.WHITE + Back.RED + Style.BRIGHT + "INPUT FILE DOES NOT EXIST")
-            print("Exiting...")
-            exit()
+            safe_stop()
         
         packetf = open(args.file, 'rb')
         print(Fore.GREEN + Style.BRIGHT + "OPENED PACKET FILE")
 
     else:
         print(Fore.WHITE + Back.RED + Style.BRIGHT + "UNKNOWN INPUT MODE: \"{}\"".format(source))
-        print("Exiting...")
-        exit()
+        safe_stop()
 
 
 def connect_socket(addr):
@@ -251,8 +268,7 @@ def connect_socket(addr):
         else:
             print(e)
     
-        print("\nExiting...")
-        exit()
+        safe_stop()
 
 
 def nanomsg_init():
@@ -267,8 +283,8 @@ def nanomsg_init():
 
     # Check nanomsg response
     if nmres != b'\x00\x53\x50\x00\x00\x20\x00\x00':
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)\n  Exiting...\n")
-        exit()
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)")
+        safe_stop()
 
 
 def dirs():
@@ -285,12 +301,18 @@ def dirs():
     if not path.isdir(absp):
         try:
             mkdir(absp)
+        except OSError as e:
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
+            safe_stop()
+    
+    if not path.isdir(absp + "/" + downlink + "/"):
+        try:
             mkdir(absp + "/" + downlink + "/")
 
             print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
         except OSError as e:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}\n\nExiting...".format(e))
-            exit()
+            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
+            safe_stop()
 
 
 def load_keys():
@@ -380,16 +402,20 @@ def parse_config(path):
     else:
         source = "FILE"
     
-    spacecraft = cfgp.get('rx', 'spacecraft').upper()
-    downlink = cfgp.get('rx', 'mode').upper()
-    output = cfgp.get('output', 'path')
-    output_images = cfgp.getboolean('output', 'images')
-    output_xrit = cfgp.getboolean('output', 'xrit')
-    bl = cfgp.get('output', 'channel_blacklist')
-    keypath = cfgp.get('rx', 'keys')
-    dashe = cfgp.getboolean('dashboard', 'enabled')
-    dashp = cfgp.get('dashboard', 'port')
-    dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
+    try:
+        spacecraft = cfgp.get('rx', 'spacecraft').upper()
+        downlink = cfgp.get('rx', 'mode').upper()
+        output = cfgp.get('output', 'path')
+        output_images = cfgp.getboolean('output', 'images')
+        output_xrit = cfgp.getboolean('output', 'xrit')
+        bl = cfgp.get('output', 'channel_blacklist')
+        keypath = cfgp.get('rx', 'keys')
+        dashe = cfgp.getboolean('dashboard', 'enabled')
+        dashp = cfgp.get('dashboard', 'port')
+        dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
+    except (NoSectionError, NoOptionError) as e:
+        print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR PARSING CONFIG FILE: " + str(e).upper())
+        safe_stop()
 
     # Limit dashboard refresh interval
     if dashi < 1: dashi = 1
@@ -456,10 +482,19 @@ def print_config():
         print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
 
 
+def safe_stop(message=True):
+    """
+    Safely kill threads and exit
+    """
+
+    if demux != None: demux.stop()
+    if dash != None: dash.stop()
+
+    if message: print("\nExiting...")
+    exit()
+
+
 try:
     init()
 except KeyboardInterrupt:
-    demux.stop()
-    dash.stop()
-    print("Exiting...")
-    exit()
+    safe_stop()
