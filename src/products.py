@@ -203,7 +203,6 @@ class MultiSegmentImage(Product):
         Save product to disk
         """
         
-        print()
         path = self.get_save_path(filename=False)
 
         for c in self.images:

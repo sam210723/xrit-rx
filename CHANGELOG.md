@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 </details>
 
 
-## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - 2020-07-06
+## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - 2020-07-12
 Added support for multi-channel HRIT imagery using [libjpeg](https://github.com/thorfdbg/libjpeg) for JPEG2000 conversion.
 
 <details>
