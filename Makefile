@@ -5,7 +5,8 @@ release: clean
 	copy /Y src\*.py release
 	mkdir release\tools
 	copy /Y src\tools\*.py release\tools
-	copy /Y src\tools\jpeg.exe release\tools
+	mkdir release\tools\libjpeg
+	copy /Y src\tools\libjpeg\* release\tools\libjpeg
 	mkdir release\html
 	copy /Y src\html\* release\html
 	mkdir release\html\js
