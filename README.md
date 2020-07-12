@@ -133,3 +133,10 @@ For example, if ``output_path`` is ``"received/LRIT"`` the endpoint will be ``/a
   - [John Bell](https://twitter.com/eswnl) - Software testing and IQ recordings
   - ["kisaa"](https://github.com/kisaa) - GK-2A HRIT debugging and packet recordings
   - [@Rasiel_J](https://twitter.com/Rasiel_J) - IQ recordings
+
+
+## libjpeg
+**xrit-rx** uses [**libjpeg**](https://github.com/thorfdbg/libjpeg) for converting JPEG2000 (J2K/JP2) images to Portable Pixmap Format (PPM) images.
+A compiled 32-bit binary for Windows is included in **xrit-rx** releases along with the **libjpeg** [LICENSE](https://github.com/sam210723/xrit-rx/blob/master/src/tools/libjpeg/LICENSE) (GPLv3) and [README](https://github.com/sam210723/xrit-rx/blob/master/src/tools/libjpeg/README).
+
+The source code for **libjpeg** can be found at https://github.com/thorfdbg/libjpeg.
