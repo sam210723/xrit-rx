@@ -1,6 +1,7 @@
 all: release
 
 release: clean
+	@echo. && @echo ====== Building release package ======
 	mkdir release
 	copy /Y src\*.py release
 	mkdir release\tools
@@ -15,10 +16,14 @@ release: clean
 	sass --no-source-map src\html\css:release\html\css
 	copy /Y src\*.ini release
 	copy /Y requirements.txt release
+	7z a xrit-rx.zip ./release/*
+	rmdir /S /Q release
 
 clean:
+	@echo. && @echo ====== Cleaning development environment ======
 	if exist release rmdir /S /Q release
 	if exist src\__pycache__ rmdir /S /Q src\__pycache__
 	if exist src\received rmdir /S /Q src\received
+	if exist xrit-rx.zip del /Q xrit-rx.zip
 
 .PHONY: all clean release
