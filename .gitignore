@@ -110,3 +110,4 @@ src/received/*
 release/*
 #*.css
 #*.map
+*.zip
