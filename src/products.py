@@ -214,10 +214,13 @@ class MultiSegmentImage(Product):
                 height = self.images[c][s].size[1]
                 offset = height * (s - 1)
                 
-                img.paste(
-                    self.images[c][s],
-                    ( 0, offset )
-                )
+                try:
+                    img.paste(
+                        self.images[c][s],
+                        ( 0, offset )
+                    )
+                except OSError:
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING TRUNCATED IMAGE SEGMENT")
             
             # Get image path for current channel
             channel_path = "{}{}.{}".format(
