@@ -423,11 +423,12 @@ class Channel:
                 self.handle_xRIT(spdu)
 
                 if len(self.cTPFile.PAYLOAD) < self.cTPFile.LENGTH:
-                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "FILE IS INCOMPLETE (Known issue with COMSFOG / COMSIR images)")
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "FILE IS INCOMPLETE")
                     ac = len(self.cTPFile.PAYLOAD)
                     ex = self.cTPFile.LENGTH
                     p = round((ac/ex) * 100)
                     print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "{}% OF EXPECTED LENGTH".format(p))
+                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING FILE DUE TO MISSING DATA")
 
                 # Clear finished TP_File
                 self.cTPFile = None
