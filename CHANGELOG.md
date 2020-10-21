@@ -15,7 +15,20 @@ All notable changes to this project will be documented in this file.
 </details>
 
 
-## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - 2020-07-12
+## [v1.3.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.3.1) - Truncated Image Bugfix (2020-10-21)
+Improves handling of truncated image errors for multi-segment products.
+
+<details>
+<summary>Details</summary>
+
+### Changed
+  - Clean up truncated file warning message
+
+### Fixed
+  - Handling of truncated image file exceptions in multi-segment product
+</details>
+
+
 ## [v1.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.3) - GK-2A HRIT Imagery (2020-07-12)
 Added support for multi-channel HRIT imagery using [libjpeg](https://github.com/thorfdbg/libjpeg) for JPEG2000 conversion.
 
