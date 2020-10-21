@@ -45,7 +45,7 @@ Added support for multi-channel HRIT imagery using [libjpeg](https://github.com/
 </details>
 
 
-## [v1.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.2) - 2020-05-14
+## [v1.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.2) - Monitoring Dashboard <span style="font-size: 17px; float: right;">2020-05-14</span>
 Added a monitoring dashboard and JSON API running from a built in web server.
 
 <details>
@@ -58,7 +58,7 @@ Added a monitoring dashboard and JSON API running from a built in web server.
 </details>
 
 
-## [v1.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.1) - 2020-02-14
+## [v1.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.1) - Automatic Product Generation <span style="font-size: 17px; float: right;">2020-02-14</span>
 Products (images/text) are now output directly from xrit-rx rather than relying on ``lrit-img.py`` and ``lrit-add.py``.
 Progress bar for multi-segment images and colour-coded success/failure messages were also added.
 
@@ -88,7 +88,7 @@ Progress bar for multi-segment images and colour-coded success/failure messages 
 </details>
 
 
-## [v1.0.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.3) - 2019-12-09
+## [v1.0.3](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.3) - Infrared Enhancement Tool <span style="font-size: 17px; float: right;">2019-12-09</span>
 Added work-around for ``COMSFOG`` and ``COMSIR1`` transmission issue, an infrared imagery enhancement tool, and fixed some demuxer bugs.
 
 <details>
@@ -109,7 +109,7 @@ Added work-around for ``COMSFOG`` and ``COMSIR1`` transmission issue, an infrare
 </details>
 
 
-## [v1.0.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.2) - 2019-08-31
+## [v1.0.2](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.2) - Decryption Tools <span style="font-size: 17px; float: right;">2019-08-31</span>
 Added decryption tools, an option to blacklist individual virtual channels, and fixed some demuxer bugs.
 
 <details>
@@ -126,7 +126,7 @@ Added decryption tools, an option to blacklist individual virtual channels, and 
 </details>
 
 
-## [v1.0.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.1) - 2019-07-29
+## [v1.0.1](https://github.com/sam210723/xrit-rx/releases/tag/v1.0.1) - Data Processing Tools <span style="font-size: 17px; float: right;">2019-07-29</span>
 Added tools for bulk processing LRIT IMG and ADD files, plus some minor code refactoring.
 
 <details>
@@ -148,5 +148,5 @@ Added tools for bulk processing LRIT IMG and ADD files, plus some minor code ref
 </details>
 
 
-## [v1.0](https://github.com/sam210723/xrit-rx/releases/tag/v1.0) - 2019-07-23
+## [v1.0](https://github.com/sam210723/xrit-rx/releases/tag/v1.0) - Initial Release <span style="font-size: 17px; float: right;">2019-07-23</span>
 Initial release based on the [COMS-1 project](https://github.com/sam210723/COMS-1).
