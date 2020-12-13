@@ -31,9 +31,21 @@ Images downlinked from GK-2A are encrypted by the [Korean Meteorological Adminis
 More information is [available in the setup guide](https://vksdr.com/xrit-rx#keys).
 
 ### Configuring xrit-rx
-All user-configurable options are found in the [`xrit-rx.ini`](src/xrit-rx.ini) file. The default configuration will work for most situations.
+All user-configurable options are found in [`xrit-rx.ini`](src/xrit-rx.ini). The default configuration will work for most situations.
 
 If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
+
+[Click here for a full list of configuration options](#list-of-options)
+
+
+## Dashboard
+**xrit-rx** includes a web-based dashboard for easy monitoring and viewing of received data.
+The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved from [KMA NMSC](https://nmsc.kma.go.kr/enhome/html/main/main.do)).
+
+![Dashboard](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/dashboard.png)
+
+By default the dashboard is enabled and accessible on port <abbr title="Comes from the COMS-1/GK-2A LRIT frequency: 1692.14 MHz">1692</abbr> via HTTP (no HTTPS). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
+
 
 ## List of options
 
@@ -83,14 +95,6 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 | `port` | Port number for server to listen on | *Any TCP port number* | `1692` |
 | `interval` | Update interval in seconds | `integer` | `1` |
 
-
-## Dashboard
-**xrit-rx** includes a web-based dashboard for easy monitoring and viewing of received data.
-The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved from [KMA NMSC](https://nmsc.kma.go.kr/enhome/html/main/main.do)).
-
-![Dashboard](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/dashboard.png)
-
-By default the dashboard is enabled and accessible on port <abbr title="Comes from the COMS-1/GK-2A LRIT frequency: 1692.14 MHz">1692</abbr> via HTTP (no HTTPS). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
 
 
 ## HTTP API
