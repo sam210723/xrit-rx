@@ -238,6 +238,11 @@ function get_schedule()
         }
         else {
             print("Failed to get schedule", "SCHD");
+
+            var element = blocks['schedule'].body;
+            element.children[0].innerHTML = "" +
+                `Failed to download ${config.downlink} schedule from ` +
+                `<a href="https://nmsc.kma.go.kr/enhome/html/satellite/plan/selectDailyOperPlan.do" target="_blank">KMA NMSC</a><br><br>`;
             return false;
         }
     });

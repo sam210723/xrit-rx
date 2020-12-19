@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - Dashboard schedule download failue message
   - Flag to pause main loop after processing (`--no-exit`)
 
 ### Changed

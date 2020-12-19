@@ -80,5 +80,6 @@ function http_get(url, callback)
         .then(callback)
         .catch(function(err) {
             print(`Error getting \"${url}\": ${err}`, "HTTP");
+            callback(false);
         });
 }
