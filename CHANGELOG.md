@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 <summary>Unreleased changes</summary>
 
 ### Added
+  - Offline schedule loading when online schedule fails
   - Dashboard schedule download failue message
-  - Flag to pause main loop after processing (`--no-exit`)
+  - Flag to pause main thread after processing (`--no-exit`)
 
 ### Changed
   - 

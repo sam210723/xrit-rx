@@ -78,6 +78,30 @@ a {
     &-body {
         padding: 20px;
     }
+
+    button {
+        margin: 10px;
+        padding: 5px 10px 5px 10px;
+
+        font-family: Roboto;
+        font-size: 14px;
+
+        border: 1px solid $border;
+        border-radius: 4px;
+
+        color: white;
+        background: #111;
+
+        &:hover {
+            border: 1px solid #777;
+            
+            background: #292929;
+        }
+    }
+
+    h3 {
+        letter-spacing: 1px;
+    }
 }
 
 .vchan {

@@ -160,6 +160,10 @@ function poll()
  */
 function get_schedule()
 {
+    sch = [];
+    var element = blocks['schedule'].body;
+    element.innerHTML = "<p>Downloading schedule...</p>";
+
     // Get UTC date
     var d = new Date();
     utc_date = `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`;
@@ -178,74 +182,65 @@ function get_schedule()
     var url = "https://vksdr.com/scripts/kma-dop.php";
     var params = `?searchDate=${utc_date}&searchType=${config.downlink}`;
 
+    // Get online schedule
     http_get(url + params, (res) => {
         if (res.status == 200) {
             res.json().then((data) => {
-                var raw = data['data'];
-                var start = -1;
-                var end = -1;
-
-                // Find start and end of DOP
-                for (var i in raw) {
-                    var line = raw[i].trim();
-
-                    if (line.startsWith("TIME(UTC)")) {
-                        start = parseInt(i) + 1;
-                    }
-
-                    if (line.startsWith("ABBREVIATIONS:")) {
-                        end = parseInt(i) - 2;
-                    }
-                }
-
-                // Loop through schedule entries
-                for (var i = start; i <= end; i++) {
-                    var line = raw[i].trim().split('\t');
-                    var entry = [];
-
-                    entry[0] = line[0].substring(0, line[0].indexOf("-"));
-                    entry[1] = line[0].substring(line[0].indexOf("-") + 1);
-                    entry[2] = line[1].substring(0, line[1].length - 3);
-                    entry[3] = line[1].substring(line[1].length - 3);
-                    entry[4] = line[2];
-                    entry[5] = line[3] == "O";
-
-                    if (entry[2] == "EGMSG") { continue; }   // Skip EGMSG
-
-                    sch.push(entry);
-                }
-
-                // Create schedule table
-                var table = document.createElement("table");
-                table.className = "schedule";
-                table.appendChild(document.createElement("tbody"));
-
-                // Table header
-                var header = table.createTHead();
-                var row = header.insertRow(0);
-                row.insertCell(0).innerHTML = "Start (UTC)";
-                row.insertCell(1).innerHTML = "End (UTC)";
-                row.insertCell(2).innerHTML = "Type";
-                row.insertCell(3).innerHTML = "ID";
-
-                // Add table to document
-                var element = blocks['schedule'].body;
-                element.innerHTML = "";
-                element.appendChild(table);
-
-                print("Ready", "SCHD");
+                sch = parse_schedule(data['data']);
+                build_schedule();
+                
+                print("Ready (online)", "SCHD");
             });
         }
         else {
-            print("Failed to get schedule", "SCHD");
+            print("Failed to get online schedule", "SCHD");
+            
+            http_get("/schedule.txt", (res) => {
+                if (res.status == 200) {
+                    res.text().then((data) => {
+                        data = data.split('\n');
+                        sch = parse_schedule(data);
+                        build_schedule();
 
-            var element = blocks['schedule'].body;
-            element.children[0].innerHTML = "" +
-                `Failed to download ${config.downlink} schedule from ` +
-                `<a href="https://nmsc.kma.go.kr/enhome/html/satellite/plan/selectDailyOperPlan.do" target="_blank">KMA NMSC</a><br><br>`;
-            return false;
+                        //TODO: Check for stale offline schedule
+
+                        print("Ready (offline)", "SCHD");
+                    });
+                }
+                else {
+                    print("Failed to get offline schedule", "SCHD");
+                    sch.push("failed");
+
+                    return false;
+                }
+            });
         }
     });
+}
+
+
+/**
+ * Build schedule table DOM element
+ */
+function build_schedule()
+{
+    // Create schedule table
+    var table = document.createElement("table");
+    table.className = "schedule";
+    table.appendChild(document.createElement("tbody"));
+
+    // Table header
+    var header = table.createTHead();
+    var row = header.insertRow(0);
+    row.insertCell(0).innerHTML = "Start (UTC)";
+    row.insertCell(1).innerHTML = "End (UTC)";
+    row.insertCell(2).innerHTML = "Type";
+    row.insertCell(3).innerHTML = "ID";
+
+    // Add table to document
+    var element = blocks['schedule'].body;
+    element.innerHTML = "";
+    element.appendChild(table);
 }
 
 
@@ -352,6 +347,35 @@ function block_schedule(element)
     // Check schedule has been loaded
     if (sch.length == 0) { return; }
 
+    // If schedule failed to download
+    if (sch[0] == "failed") {
+        // Calculate time until next schedule is transmitted
+        var schedule_time = new Date();
+        schedule_time.setUTCHours(3, 29, 15);
+        schedule_time.setUTCDate(schedule_time.getUTCDate() + 1);
+        var time_remaining = get_time_until(schedule_time);
+
+        if (time_remaining == 0) {
+            time_remaining = "<b>right now</b>";
+        }
+        else {
+            time_remaining = `in <b>${time_remaining}</b>`;
+        }
+
+        element.children[0].innerHTML = "" +
+            `<p>Failed to download online ${config.downlink} schedule from ` +
+            `<a href="https://nmsc.kma.go.kr/enhome/html/satellite/plan/selectDailyOperPlan.do" target="_blank">KMA NMSC</a><br>` +
+            `<button onclick="get_schedule()">Retry download</button></p><br><br><br><br>` +
+            `<p><h3>Offline Schedule</h3>` +
+            `Each day a schedule is transmitted via the ${config.downlink} downlink at 03:29:15 UTC. ` +
+            `It will be displayed here once received.</p>` +
+            `<p>Next schedule expected ${time_remaining}</p>`;
+        
+        return;
+    }
+
+    //TODO: Indicate schedule is offline
+
     // Add spacecraft and downlink to block header
     var header = element.parentNode.children[0];
     header.innerHTML = `${config.spacecraft} ${config.downlink} Schedule`;
@@ -380,6 +404,7 @@ function block_schedule(element)
         }
     }
 
+    // Loop through schedule items
     body.innerHTML = "";
     for (var i = first; i < first + 12; i++) {
         // Limit index

@@ -111,3 +111,4 @@ release/*
 #*.css
 #*.map
 *.zip
+src/html/schedule.txt
