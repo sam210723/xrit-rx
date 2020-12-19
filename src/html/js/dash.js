@@ -162,7 +162,7 @@ function get_schedule()
 {
     sch = [];
     var element = blocks['schedule'].body;
-    element.innerHTML = "<p>Downloading schedule...</p>";
+    element.innerHTML = `<p class="loader">Downloading schedule...</p>`;
 
     // Get UTC date
     var d = new Date();
@@ -187,7 +187,6 @@ function get_schedule()
         if (res.status == 200) {
             res.json().then((data) => {
                 sch = parse_schedule(data['data']);
-                build_schedule();
                 
                 print("Ready (online)", "SCHD");
             });
@@ -200,7 +199,6 @@ function get_schedule()
                     res.text().then((data) => {
                         data = data.split('\n');
                         sch = parse_schedule(data);
-                        build_schedule();
 
                         //TODO: Check for stale offline schedule
 
@@ -362,7 +360,7 @@ function block_schedule(element)
             time_remaining = `in <b>${time_remaining}</b>`;
         }
 
-        element.children[0].innerHTML = "" +
+        element.innerHTML = "" +
             `<p>Failed to download online ${config.downlink} schedule from ` +
             `<a href="https://nmsc.kma.go.kr/enhome/html/satellite/plan/selectDailyOperPlan.do" target="_blank">KMA NMSC</a><br>` +
             `<button onclick="get_schedule()">Retry download</button></p><br><br><br><br>` +
@@ -389,9 +387,6 @@ function block_schedule(element)
     // Get current UTC time
     var time = get_time_utc().replace(/:/g, "");
 
-    // Get table body element
-    var body = element.children[0].children[1];
-
     // Find first entry to add to table
     var first;
     for (var entry in sch) {
@@ -405,6 +400,8 @@ function block_schedule(element)
     }
 
     // Loop through schedule items
+    build_schedule();
+    var body = element.children[0].children[1];
     body.innerHTML = "";
     for (var i = first; i < first + 12; i++) {
         // Limit index
