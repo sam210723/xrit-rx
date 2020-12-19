@@ -35,7 +35,7 @@ All user-configurable options are found in [`xrit-rx.ini`](src/xrit-rx.ini). The
 
 If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
 
-[Click here for a full list of configuration options](#list-of-options)
+[Click here for a full list of configuration options](#configuration-options)
 
 
 ## Dashboard
@@ -47,7 +47,7 @@ The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved fr
 By default the dashboard is enabled and accessible on port <abbr title="Comes from the COMS-1/GK-2A LRIT frequency: 1692.14 MHz">1692</abbr> via HTTP (no HTTPS). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
 
 
-## List of options
+## Configuration Options
 
 #### `rx` section
 | Setting | Description | Options | Default |
