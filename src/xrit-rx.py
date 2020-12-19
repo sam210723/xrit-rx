@@ -373,6 +373,7 @@ def parse_args():
     argp.add_argument("--file", action="store", help="Path to VCDU packet file", default=None)
     argp.add_argument("-v", action="store_true", help="Enable verbose console output (only useful for debugging)", default=False)
     argp.add_argument("--dump", action="store", help="Dump VCDUs (except fill) to file (only useful for debugging)", default=None)
+    argp.add_argument("--no-exit", action="store_true", help="Pause main thread before exiting (only useful for debugging)", default=False)
 
     return argp.parse_args()
 
@@ -487,6 +488,17 @@ def safe_stop(message=True):
     Safely kill threads and exit
     """
 
+    # Pause main thread if --no-exit is set
+    if args.no_exit:
+        print("PAUSING MAIN THREAD (--no-exit)")
+        
+        try:
+            while True:
+                sleep(0.5)
+        except KeyboardInterrupt:
+            pass
+    
+    # Stop child threads
     if demux != None: demux.stop()
     if dash != None: dash.stop()
 
