@@ -1,7 +1,7 @@
 all: release
 
 release: clean
-	@echo. && @echo ====== Building release package ======
+	@echo   && echo ====== Building release package ======
 	mkdir release
 	copy /Y src\*.py release
 	mkdir release\tools
@@ -20,7 +20,7 @@ release: clean
 	rmdir /S /Q release
 
 clean:
-	@echo. && @echo ====== Cleaning development environment ======
+	@echo   && echo ====== Cleaning development environment ======
 	if exist release rmdir /S /Q release
 	if exist src\__pycache__ rmdir /S /Q src\__pycache__
 	if exist src\received rmdir /S /Q src\received
