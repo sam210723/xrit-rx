@@ -99,14 +99,20 @@ function get_time_until(target)
  */
 function parse_schedule(raw)
 {
-    var start = -1;
-    var end = -1;
-
     // Get DOP date
-    var dop_date = new Date(raw[2].replace("DISSEMINATION SCHEDULE FROM ", ""));
-    print(`DOP Date: ${dop_date.getUTCDate() + 1}-${dop_date.getUTCMonth() + 1}-${dop_date.getUTCFullYear()}`, "SCHD");
+    var dop_date = new Date(raw[2].replace("DISSEMINATION SCHEDULE FROM ", "") + " GMT+0000");
+    dop_date.setUTCHours(0, 0, 0);
+    print(`DOP Date: ${dop_date.getUTCDate()}-${dop_date.getUTCMonth() + 1}-${dop_date.getUTCFullYear()}`, "SCHD");
+
+    // Check for stale DOP
+    var today = new Date();
+    today.setUTCHours(0, 0, 0);
+    print(`UTC Date: ${today.getUTCDate()}-${today.getUTCMonth() + 1}-${today.getUTCFullYear()}`, "SCHD");
+    if (dop_date.getUTCDate() != today.getUTCDate()) return false;
 
     // Find start and end of DOP
+    var start = -1;
+    var end = -1;
     for (var i in raw) {
         var line = raw[i].trim();
 

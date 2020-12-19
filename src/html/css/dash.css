@@ -81,6 +81,23 @@ a {
   letter-spacing: 1px;
 }
 
+.block #schedule-status {
+  position: relative;
+  float: right;
+  padding: 5px 9px 5px 8px;
+  margin-top: 1px;
+  margin-right: 6px;
+  font-size: 18px;
+  border-radius: 4px;
+  background: red;
+  -webkit-box-shadow: 0 0 5px #222;
+          box-shadow: 0 0 5px #222;
+}
+
+.block #schedule-status[active] {
+  background: green;
+}
+
 .vchan {
   display: inline-block;
   width: 100px;

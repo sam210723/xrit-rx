@@ -102,6 +102,26 @@ a {
     h3 {
         letter-spacing: 1px;
     }
+
+    #schedule-status {
+        position: relative;
+        float: right;
+
+        padding: 5px 9px 5px 8px;
+        margin-top: 1px;
+        margin-right: 6px;
+
+        font-size: 18px;
+
+        border-radius: 4px;
+
+        background: red;
+        box-shadow: 0 0 5px #222;
+
+        &[active] {
+            background: green;
+        }
+    }
 }
 
 .vchan {

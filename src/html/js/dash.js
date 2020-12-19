@@ -42,6 +42,7 @@ var vchans = {
     }
 };
 var sch = [];
+var sch_offline = false;
 var current_vcid;
 var latest_image;
 var utc_date;
@@ -200,14 +201,20 @@ function get_schedule()
                         data = data.split('\n');
                         sch = parse_schedule(data);
 
-                        //TODO: Check for stale offline schedule
+                        if (sch) {
+                            print("Ready (offline)", "SCHD");
+                            sch_offline = true;
+                        }
+                        else {
+                            print("Offline schedule is stale", "SCHD");
 
-                        print("Ready (offline)", "SCHD");
+                            return false;
+                        }
                     });
                 }
                 else {
                     print("Failed to get offline schedule", "SCHD");
-                    sch.push("failed");
+                    sch = false;
 
                     return false;
                 }
@@ -346,7 +353,7 @@ function block_schedule(element)
     if (sch.length == 0) { return; }
 
     // If schedule failed to download
-    if (sch[0] == "failed") {
+    if (!sch) {
         // Calculate time until next schedule is transmitted
         var schedule_time = new Date();
         schedule_time.setUTCHours(3, 29, 15);
@@ -372,11 +379,10 @@ function block_schedule(element)
         return;
     }
 
-    //TODO: Indicate schedule is offline
-
     // Add spacecraft and downlink to block header
     var header = element.parentNode.children[0];
     header.innerHTML = `${config.spacecraft} ${config.downlink} Schedule`;
+    if (sch_offline) header.innerHTML += `<div id="schedule-status" title="Using schedule received via ${config.downlink} downlink">OFFLINE</div>`;
 
     // Check UTC date
     var d = new Date();
