@@ -34,10 +34,14 @@ class Demuxer:
         self.lastImage = None           # Last image output by demuxer
         self.lastXRIT = None            # Last xRIT file output by demuxer
 
-        if self.config.downlink == "LRIT":
-            self.coreWait = 54          # Core loop delay in ms for LRIT (108.8ms per packet @ 64 kbps)
-        elif self.config.downlink == "HRIT":
-            self.coreWait = 1           # Core loop delay in ms for HRIT (2.2ms per packet @ 3 Mbps)
+        # Set core loop delay
+        bitrate = {
+            "GK-2A": {
+                "LRIT": 65536,      # 64 kbps
+                "HRIT": 3072000     # 3 Mbps
+            }
+        }
+        self.core_wait = (1 / (bitrate[self.config.spacecraft][self.config.downlink] / 8192)) / 2
 
         # Start core demuxer thread
         demux_thread = Thread()
@@ -123,7 +127,7 @@ class Demuxer:
                 self.channels[vcdu.VCID].data_in(vcdu)
             else:
                 # No packet available, sleep thread
-                sleep(self.coreWait / 1000)
+                sleep(self.core_wait)
         
         # Gracefully exit core thread
         if self.coreStop:
