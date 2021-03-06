@@ -30,21 +30,25 @@ a {
     text-align: center;
 }
 
-#dash-heading {
+#dash-header {
     margin: 0 0 20px 0;
-    padding: 10px 0 15px 20px;
+    padding: 11px 5px 15px 20px;
 
     font-weight: normal;
 
     background: $blockh;
 
-    span {
+    &-title {
+        text-shadow: 3px 3px 2px #111;
+    }
+
+    &-version {
         padding: 4px 13px 0 0;
         float: right;
 
         font-size: 18px;
 
-        color: #777;
+        color: #888;
     }
 }
 

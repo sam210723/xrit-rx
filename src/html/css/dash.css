@@ -20,18 +20,22 @@ a {
   text-align: center;
 }
 
-#dash-heading {
+#dash-header {
   margin: 0 0 20px 0;
-  padding: 10px 0 15px 20px;
+  padding: 11px 5px 15px 20px;
   font-weight: normal;
   background: #292929;
 }
 
-#dash-heading span {
+#dash-header-title {
+  text-shadow: 3px 3px 2px #111;
+}
+
+#dash-header-version {
   padding: 4px 13px 0 0;
   float: right;
   font-size: 18px;
-  color: #777;
+  color: #888;
 }
 
 .block {
@@ -169,16 +173,19 @@ a {
 .schedule {
   width: 100%;
   border-collapse: collapse;
+  -webkit-box-shadow: 0 0 10px #0A0A0A;
+          box-shadow: 0 0 10px #0A0A0A;
+  background: #1E211E;
 }
 
-.schedule thead {
+.schedule th, .schedule td {
+  padding: 10px;
+  border: 1px solid #555;
+}
+
+.schedule th {
   font-weight: bold;
   background: #383838;
-}
-
-.schedule td {
-  padding: 10px;
-  border: 1px solid #666;
 }
 
 .schedule tr[active] {
