@@ -78,12 +78,26 @@ function configure()
     // Write config object to console
     console.log(config);
 
-    // Set heading and window title
-    var heading = document.getElementById("dash-heading");
-    heading.innerHTML =  `${config.spacecraft} ${config.downlink} Dashboard`;
-    heading.innerHTML += `<span>xrit-rx <a href="https://github.com/sam210723/xrit-rx/releases/tag/v${config.version}" target="_blank" title="Release notes on GitHub">v${config.version}</a></span>`;
+    // Set dashboard title
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
+    // Build dashboard header
+    var header = document.getElementById("dash-header");
+    var title = document.createElement("span");
+    var version = document.createElement("span");    
+    var link = document.createElement("a");
+    title.id = "dash-header-title";
+    title.innerText = `${config.spacecraft} ${config.downlink} Dashboard`;
+    version.id = "dash-header-version";
+    version.innerText = `xrit-rx `;
+    link.href = `https://github.com/sam210723/xrit-rx/releases/tag/v${config.version}`;
+    link.target = "_blank";
+    link.title = "Release notes on GitHub";
+    link.innerText = `v${config.version}`;
+    version.appendChild(link);
+    header.appendChild(title);
+    header.appendChild(version);
+    
     // Build blocks
     console.log(blocks);
     for (var block in blocks) {
