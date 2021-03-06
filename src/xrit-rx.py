@@ -368,7 +368,6 @@ def parse_args():
     """
     
     argp = ArgumentParser()
-    argp.description = "Frontend for CCSDS demultiplexer"
     argp.add_argument("--config", action="store", help="Configuration file path (.ini)", default="xrit-rx.ini")
     argp.add_argument("--file", action="store", help="Path to VCDU packet file", default=None)
     argp.add_argument("-v", action="store_true", help="Enable verbose console output (only useful for debugging)", default=False)
@@ -473,7 +472,8 @@ def print_config():
     print("KEY FILE:         {}".format(keypath))
     
     if dashe:
-        print("DASHBOARD:        ENABLED (port {})".format(dashp))
+        ip = socket.gethostbyname(socket.gethostname())
+        print("DASHBOARD:        http://{}:{}".format(ip, dashp))
     else:
         print("DASHBOARD:        DISABLED")
     
