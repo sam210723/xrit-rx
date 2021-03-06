@@ -204,15 +204,18 @@ a {
     width: 100%;
 
     border-collapse: collapse;
+    box-shadow: 0 0 10px #0A0A0A;
 
-    thead {
-        font-weight: bold;
-        background: #383838;
+    th, td {
+        padding: 10px;
+
+        border: 1px solid #555;
     }
 
-    td {
-        padding: 10px;
-        border: 1px solid #666;
+    th {
+        font-weight: bold;
+
+        background: #383838;
     }
 
     tr {
@@ -225,6 +228,8 @@ a {
             background: #282828;
         }
     }
+
+    background: #1E211E;
 }
 
 ::-webkit-scrollbar {

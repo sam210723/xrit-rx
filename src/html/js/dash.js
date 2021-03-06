@@ -237,10 +237,14 @@ function build_schedule()
     // Table header
     var header = table.createTHead();
     var row = header.insertRow(0);
-    row.insertCell(0).innerHTML = "Start (UTC)";
-    row.insertCell(1).innerHTML = "End (UTC)";
-    row.insertCell(2).innerHTML = "Type";
-    row.insertCell(3).innerHTML = "ID";
+    var headings = ["Start (UTC)", "End (UTC)", "Type", "ID"];
+    for (var h in headings)
+    {
+        var th = document.createElement("th");
+        th.innerText = headings[h];
+        row.appendChild(th);
+
+    }
 
     // Add table to document
     var element = blocks['schedule'].body;
