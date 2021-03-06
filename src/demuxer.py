@@ -27,12 +27,12 @@ class Demuxer:
         # Configure instance globals
         self.config = config            # Configuration tuple
         self.rxq = deque()              # Data receive queue
-        self.coreReady = False          # Core thread ready state
-        self.coreStop = False           # Core thread stop flag
+        self.core_ready = False         # Core thread ready state
+        self.core_stop = False          # Core thread stop flag
         self.channels = {}              # List of channel handlers
-        self.currentVCID = None         # Current Virtual Channel ID
-        self.lastImage = None           # Last image output by demuxer
-        self.lastXRIT = None            # Last xRIT file output by demuxer
+        self.vcid = None                # Current Virtual Channel ID
+        self.latest_img = None          # Latest image output by demuxer
+        self.latest_xrit = None         # Latest xRIT file output by demuxer
 
         # Set core loop delay
         bitrate = {
@@ -55,48 +55,43 @@ class Demuxer:
         """
         
         # Indicate core thread has initialised
-        self.coreReady = True
+        self.core_ready = True
 
         # Thread globals
-        lastVCID = None                         # Last VCID seen
-        crclut = CCSDS.CP_PDU.CCITT_LUT(None)   # CP_PDU CRC LUT
+        last_vcid = None                        # Last VCID seen
+        crc_lut = CCSDS.CP_PDU.CCITT_LUT(None)  # CP_PDU CRC LUT
         
         # Open VCDU dump file
-        dumpf = None
-        if self.config.dump != None:
-            dumpf = open(self.config.dump, 'wb+')
+        if self.config.dump: dump_file = open(self.config.dump, 'wb+')
 
         # Thread loop
-        while not self.coreStop:
+        while not self.core_stop:
             # Pull next packet from queue
             packet = self.pull()
             
             # If queue is not empty
-            if packet != None:
+            if packet:
                 # Parse VCDU
                 vcdu = CCSDS.VCDU(packet)
-
-                # Set current VCID
-                self.currentVCID = vcdu.VCID
+                self.vcid = vcdu.VCID
 
                 # Dump raw VCDU to file
-                if dumpf != None:
+                if self.config.dump:
                     # Write packet to file if not fill
                     if vcdu.VCID != 63:
-                        dumpf.write(packet)
+                        dump_file.write(packet)
                     else:
                         # Write single fill packet to file (forces VCDU change on playback)
-                        if lastVCID != 63:
-                            dumpf.write(packet)
+                        if last_vcid != 63:
+                            dump_file.write(packet)
 
                 # Check spacecraft is supported
                 if vcdu.SC != "GK-2A":
-                    if self.config.verbose:
-                        print(Fore.WHITE + Back.RED + Style.BRIGHT + "SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
+                    if self.config.verbose: print(Fore.WHITE + Back.RED + Style.BRIGHT + "SPACECRAFT \"{}\" NOT SUPPORTED".format(vcdu.SCID))
                     continue
 
                 # Check for VCID change
-                if lastVCID != vcdu.VCID:
+                if last_vcid != vcdu.VCID:
                     # Notify channel handlers of VCID change
                     for c in self.channels:
                         self.channels[c].notify(vcdu.VCID)
@@ -104,23 +99,16 @@ class Demuxer:
                     # Print VCID info
                     if self.config.verbose: print()
                     vcdu.print_info()
-                    if vcdu.VCID in self.config.blacklist:
-                        print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "IGNORING DATA (CHANNEL IS BLACKLISTED)")
-                    lastVCID = vcdu.VCID
+                    if vcdu.VCID in self.config.blacklist: print("  " + Fore.WHITE + Back.RED + Style.BRIGHT + "IGNORING DATA (CHANNEL IS BLACKLISTED)")
+                    last_vcid = vcdu.VCID
 
-                # Discard fill packets
-                if vcdu.VCID == 63: continue
-                
-                # Discard VCDUs in blacklisted VCIDs
-                if vcdu.VCID in self.config.blacklist: continue
+                # Discard fill packets and blacklisted VCIDs
+                if vcdu.VCID == 63 or vcdu.VCID in self.config.blacklist: continue
 
-                # Check channel handler for current VCID exists
-                try:
-                    self.channels[vcdu.VCID]
-                except KeyError:
-                    # Create new channel handler instance
+                # Create channel handlers for new VCIDs
+                if vcdu.VCID not in self.channels:
                     ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
-                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crclut), self)
+                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crc_lut), self)
                     if self.config.verbose: print("  " + Fore.GREEN + Style.BRIGHT + "CREATED NEW CHANNEL HANDLER\n")
 
                 # Pass VCDU to appropriate channel handler
@@ -130,9 +118,8 @@ class Demuxer:
                 sleep(self.core_wait)
         
         # Gracefully exit core thread
-        if self.coreStop:
-            if dumpf != None:
-                dumpf.close()
+        if self.core_stop:
+            if self.config.dump: dump_file.close()
             return
 
     def push(self, packet):
@@ -167,7 +154,7 @@ class Demuxer:
         Stops the demuxer loop by setting thread stop flag
         """
 
-        self.coreStop = True
+        self.core_stop = True
 
 
 class Channel:
@@ -389,7 +376,7 @@ class Channel:
         # Save xRIT file if enabled
         if self.config.xrit:
             xrit.save(self.config.output)
-            self.demuxer.lastXRIT = xrit.get_save_path(self.config.output)
+            self.demuxer.latest_xrit = xrit.get_save_path(self.config.output)
 
         # Save image file if enabled
         if self.config.images:
@@ -404,7 +391,7 @@ class Channel:
             # Save and clear complete product
             if self.cProduct.complete:
                 self.cProduct.save()
-                self.demuxer.lastImage = self.cProduct.last
+                self.demuxer.latest_img = self.cProduct.last
                 self.cProduct = None
         else:
             # Print XRIT file info

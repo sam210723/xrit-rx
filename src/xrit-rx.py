@@ -110,7 +110,7 @@ def init():
         )
 
     # Check demuxer thread is ready
-    if not demux.coreReady:
+    if not demux.core_ready:
         print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START")
         exit()
 

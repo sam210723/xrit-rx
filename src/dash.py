@@ -141,17 +141,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif path[0] == "current" and len(path) == 2:
             if path[1] == "vcid":
                 content = {
-                    'vcid': demuxer_instance.currentVCID
+                    'vcid': demuxer_instance.vcid
                 }
 
         elif path[0] == "latest" and len(path) == 2:
             if path[1] == "image":
                 content = {
-                    'image': demuxer_instance.lastImage
+                    'image': demuxer_instance.latest_img
                 }
             elif path[1] == "xrit":
                 content = {
-                    'xrit': demuxer_instance.lastXRIT
+                    'xrit': demuxer_instance.latest_xrit
                 }
         
         # Send HTTP 200 OK if content has been updated
