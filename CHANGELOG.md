@@ -8,9 +8,10 @@ All notable changes to this project will be documented in this file.
   - Offline schedule loading when online schedule fails
   - Dashboard schedule download failue message
   - Flag to pause main thread after processing (`--no-exit`)
+  - New version notification on dashboard
 
 ### Changed
-  - 
+  - Full dashboard URL displayed on startup
 
 ### Fixed
   - 
