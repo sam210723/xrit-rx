@@ -97,7 +97,32 @@ function configure()
     version.appendChild(link);
     header.appendChild(title);
     header.appendChild(version);
-    
+
+    // Check for newer version on GitHub
+    http_get("https://api.github.com/repos/sam210723/xrit-rx/releases/latest", (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                if (`v${config.version}` != data["tag_name"]) {
+                    var new_version = document.createElement("a");
+                    new_version.id = "dash-header-version-new";
+                    new_version.title = `A new version of xrit-rx is available on GitHub`;
+                    new_version.innerText = `Download ${data["tag_name"]}`;
+                    new_version.href = "https://github.com/sam210723/xrit-rx/releases/latest";
+                    new_version.target = "_blank";
+                    header.appendChild(new_version);
+                    
+                    print(`New version available on GitHub (${data["tag_name"]})`, "DASH");
+                }
+                else {
+                    print(`Running latest version of xrit-rx`, "DASH");
+                }
+            });
+        }
+        else {
+            print("Failed to get latest release version", "DASH");
+        }
+    });
+
     // Build blocks
     console.log(blocks);
     for (var block in blocks) {
