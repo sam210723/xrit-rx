@@ -23,7 +23,7 @@ from dash import Dashboard
 # Globals
 args = None             # Parsed CLI arguments
 config = None           # Config parser object
-stime = None            # Processing start time
+start_time = None       # Processing start time
 source = None           # Input source type
 spacecraft = None       # Spacecraft name
 downlink = None         # Downlink type (LRIT/HRIT)
@@ -54,7 +54,7 @@ def init():
     
     global args
     global config
-    global stime
+    global start_time
     global output
     global demux
     global dash
@@ -117,7 +117,7 @@ def init():
     print("──────────────────────────────────────────────────────────────────────────────────\n")
 
     # Get processing start time
-    stime = time()
+    start_time = time()
 
     # Enter main loop
     loop()
@@ -163,7 +163,7 @@ def loop():
 
         elif source == "FILE":
             global packetf
-            global stime
+            global start_time
 
             if not packetf.closed:
                 # Read VCDU from file
@@ -185,8 +185,8 @@ def loop():
             else:
                 # Demuxer has all VCDUs from file, wait for processing
                 if demux.complete():
-                    runTime = round(time() - stime, 3)
-                    print("\nFINISHED PROCESSING FILE ({}s)".format(runTime))
+                    run_time = round(time() - start_time, 3)
+                    print(f"\nPROCESSED FILE IN {run_time:.03f}s")
                     safe_stop()
                 else:
                     # Limit loop speed when waiting for demuxer to finish processing
@@ -438,6 +438,7 @@ def print_config():
 
     print("SPACECRAFT:       {}".format(spacecraft))
 
+    #FIXME
     if downlink == "LRIT":
         rate = "64 kbps"
     elif downlink == "HRIT":
