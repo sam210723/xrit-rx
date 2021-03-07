@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
   - Full dashboard URL displayed on startup
+  - Calculate core wait time based on downlink bitrate
 
 ### Fixed
   - 
