@@ -111,6 +111,7 @@ class Demuxer:
 
                 # Create channel handlers for new VCIDs
                 if vcdu.VCID not in self.channels:
+                    #FIXME: Probably a better way to do this
                     ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
                     self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crc_lut), self)
                     if self.config.verbose: print(f"  {STYLE_OK}CREATED NEW CHANNEL HANDLER\n")
@@ -173,9 +174,9 @@ class Channel:
 
         self.config = config        # Configuration tuple
         self.counter = -1           # VCDU continuity counter
-        self.cCPPDU = None          # Current CP_PDU object
-        self.cTPFile = None         # Current TP_File object
-        self.cProduct = None        # Current product object
+        self.cppdu = None           # Current CP_PDU object
+        self.tpfile = None          # Current TP_File object
+        self.product = None         # Current Product object
         self.demuxer = parent       # Demuxer class instance (parent)
 
 
@@ -194,9 +195,9 @@ class Channel:
         # If M_PDU contains CP_PDU header
         if mpdu.HEADER:
             # No current TP_File and CP_PDU header is at the start of M_PDU
-            if self.cTPFile == None and mpdu.POINTER == 0:
+            if self.tpfile == None and mpdu.POINTER == 0:
                 # Create CP_PDU for new TP_File
-                self.cCPPDU = CCSDS.CP_PDU(mpdu.PACKET)
+                self.cppdu = CCSDS.CP_PDU(mpdu.PACKET)
             
             # Continue unfinished TP_File
             else:
@@ -209,61 +210,61 @@ class Channel:
                     preptr = b''
 
                 try:
-                    lenok, crcok = self.cCPPDU.finish(preptr, self.config.lut)
-                    if self.config.verbose: self.check_CPPDU(lenok, crcok)
+                    len_ok, crc_ok = self.cppdu.finish(preptr, self.config.lut)
+                    if self.config.verbose: self.check_CPPDU(len_ok, crc_ok)
 
                     # Handle finished CP_PDU
-                    self.handle_CPPDU(self.cCPPDU)
+                    self.handle_CPPDU(self.cppdu)
                 except AttributeError:
                     if self.config.verbose:
                         print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
                 
                 # Create new CP_PDU
                 postptr = mpdu.PACKET[mpdu.POINTER:]
-                self.cCPPDU = CCSDS.CP_PDU(postptr)
+                self.cppdu = CCSDS.CP_PDU(postptr)
 
                 # Need more data to parse CP_PDU header
-                if not self.cCPPDU.PARSED:
+                if not self.cppdu.PARSED:
                     return
 
                 # Handle CP_PDUs less than one M_PDU in length
-                if 1 < self.cCPPDU.LENGTH < 886 and len(self.cCPPDU.PAYLOAD) > self.cCPPDU.LENGTH:
+                if 1 < self.cppdu.LENGTH < 886 and len(self.cppdu.PAYLOAD) > self.cppdu.LENGTH:
                     # Remove trailing null bytes (M_PDU padding)
-                    self.cCPPDU.PAYLOAD = self.cCPPDU.PAYLOAD[:self.cCPPDU.LENGTH]
+                    self.cppdu.PAYLOAD = self.cppdu.PAYLOAD[:self.cppdu.LENGTH]
                     
                     try:
-                        lenok, crcok = self.cCPPDU.finish(b'', self.config.lut)
-                        if self.config.verbose: self.check_CPPDU(lenok, crcok)
+                        len_ok, crc_ok = self.cppdu.finish(b'', self.config.lut)
+                        if self.config.verbose: self.check_CPPDU(len_ok, crc_ok)
 
                         # Handle finished CP_PDU
-                        self.handle_CPPDU(self.cCPPDU)
+                        self.handle_CPPDU(self.cppdu)
                     except AttributeError:
                         if self.config.verbose:
                             print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
 
             # Handle special EOF CP_PDU (by ignoring it)
-            if self.cCPPDU.is_EOF():
-                self.cCPPDU = None
+            if self.cppdu.is_EOF():
+                self.cppdu = None
                 if self.config.verbose:
                     print(f"    {STYLE_OK}[CP_PDU] EOF MARKER\n")
             else:
                 if self.config.verbose:
-                    self.cCPPDU.print_info()
-                    print(f"    HEADER:     0x{self.cCPPDU.header.hex().upper()}")
+                    self.cppdu.print_info()
+                    print(f"    HEADER:     0x{self.cppdu.header.hex().upper()}")
                     print(f"    OFFSET:     0x{mpdu.POINTER:04X}\n    ", end="")
         else:
             # Append M_PDU payload to current CP_PDU
             try:
                 # Check if CP_PDU header has been parsed
-                wasparsed = self.cCPPDU.PARSED
+                was_parsed = self.cppdu.PARSED
 
                 # Add data from current M_PDU
-                self.cCPPDU.append(mpdu.PACKET)
+                self.cppdu.append(mpdu.PACKET)
 
                 # If CP_PDU header was just parsed, print CP_PDU header info
-                if wasparsed != self.cCPPDU.PARSED and self.config.verbose:
-                    self.cCPPDU.print_info()
-                    print(f"    HEADER:     0x{self.cCPPDU.header.hex().upper()}")
+                if was_parsed != self.cppdu.PARSED and self.config.verbose:
+                    self.cppdu.print_info()
+                    print(f"    HEADER:     0x{self.cppdu.header.hex().upper()}")
                     print(f"    OFFSET:     SPANS MULTIPLE M_PDUs")
             except AttributeError:
                 if self.config.verbose:
@@ -282,7 +283,7 @@ class Channel:
         # If at least one VCDU has been received
         if self.counter != -1:
             # Check counter reset
-            if self.counter == 16777215 and vcdu.COUNTER == 0:
+            if self.counter == 0xFFFFFF and vcdu.COUNTER == 0:
                 self.counter = vcdu.COUNTER
                 return
             
@@ -296,22 +297,22 @@ class Channel:
         self.counter = vcdu.COUNTER
     
 
-    def check_CPPDU(self, lenok, crcok):
+    def check_CPPDU(self, len_ok, crc_ok):
         """
         Checks length and CRC of finished CP_PDU
         """
 
         # Show length error
-        if lenok:
+        if len_ok:
             print(f"\n    {STYLE_OK}LENGTH:     OK")
         else:
-            ex = self.cCPPDU.LENGTH
-            ac = len(self.cCPPDU.PAYLOAD)
+            ex = self.cppdu.LENGTH
+            ac = len(self.cppdu.PAYLOAD)
             diff = ac - ex
             print(f"\n    {STYLE_ERR}LENGTH:     ERROR (EXPECTED: {ex}, ACTUAL: {ac}, DIFF: {diff})")
 
         # Show CRC error
-        if crcok:
+        if crc_ok:
             print(f"    {STYLE_OK}CRC:        OK")
         else:
             print(f"    {STYLE_ERR}CRC:        ERROR")
@@ -325,22 +326,22 @@ class Channel:
 
         if cppdu.SEQ == cppdu.Sequence.FIRST:
             # Create new TP_File
-            self.cTPFile = CCSDS.TP_File(cppdu.PAYLOAD[:-2])
+            self.tpfile = CCSDS.TP_File(cppdu.PAYLOAD[:-2])
 
         elif cppdu.SEQ == cppdu.Sequence.CONTINUE:
             # Add data to TP_File
-            self.cTPFile.append(cppdu.PAYLOAD[:-2])
+            self.tpfile.append(cppdu.PAYLOAD[:-2])
 
         elif cppdu.SEQ == cppdu.Sequence.LAST:
             # Close current TP_File
-            lenok = self.cTPFile.finish(cppdu.PAYLOAD[:-2])
+            len_ok = self.tpfile.finish(cppdu.PAYLOAD[:-2])
 
-            if self.config.verbose: self.cTPFile.print_info()
-            if lenok:
+            if self.config.verbose: self.tpfile.print_info()
+            if len_ok:
                 if self.config.verbose: print(f"    {STYLE_OK}LENGTH:     OK\n")
                 
                 # Handle S_PDU (decryption)
-                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.config.keys)
+                spdu = CCSDS.S_PDU(self.tpfile.PAYLOAD, self.config.keys)
 
                 # Handle xRIT file
                 self.handle_xRIT(spdu)
@@ -349,9 +350,9 @@ class Channel:
                 if self.config.verbose:
                     print(f"    KEY INDEX:  0x{int.from_bytes(spdu.index, byteorder='big'):02X}\n")
 
-            elif not lenok:
-                ex = self.cTPFile.LENGTH
-                ac = len(self.cTPFile.PAYLOAD)
+            elif not len_ok:
+                ex = self.tpfile.LENGTH
+                ac = len(self.tpfile.PAYLOAD)
                 diff = ac - ex
 
                 if self.config.verbose:
@@ -359,11 +360,11 @@ class Channel:
                 print(f"    {STYLE_ERR}SKIPPING FILE DUE TO DROPPED PACKETS")
             
             # Clear finished TP_File
-            self.cTPFile = None
+            self.tpfile = None
 
         if self.config.verbose:
-            ac = len(self.cTPFile.PAYLOAD)
-            ex = self.cTPFile.LENGTH
+            ac = len(self.tpfile.PAYLOAD)
+            ex = self.tpfile.LENGTH
             p = round((ac/ex) * 100)
             diff = ex - ac
             print(f"    [TP_File]  CURRENT LEN: {ac} ({p}%)     EXPECTED LEN: {ex}     DIFF: {diff}\n\n\n")
@@ -385,18 +386,18 @@ class Channel:
         # Save image file if enabled
         if self.config.images:
             # Create new product
-            if self.cProduct == None:
-                self.cProduct = products.new(self.config, xrit.FILE_NAME)
-                self.cProduct.print_info()
+            if self.product == None:
+                self.product = products.new(self.config, xrit.FILE_NAME)
+                self.product.print_info()
             
             # Add data to current product
-            self.cProduct.add(xrit)
+            self.product.add(xrit)
 
             # Save and clear complete product
-            if self.cProduct.complete:
-                self.cProduct.save()
-                self.demuxer.latest_img = self.cProduct.last
-                self.cProduct = None
+            if self.product.complete:
+                self.product.save()
+                self.demuxer.latest_img = self.product.last
+                self.product = None
         else:
             # Print XRIT file info
             xrit.print_info(self.config.verbose)
@@ -410,23 +411,23 @@ class Channel:
         # No longer the active channel handler
         if vcid != self.config.VCID:
             # Channel has unfinished TP_File
-            if self.cTPFile != None:
+            if self.tpfile != None:
                 # Handle S_PDU (decryption)
-                spdu = CCSDS.S_PDU(self.cTPFile.PAYLOAD, self.config.keys)
+                spdu = CCSDS.S_PDU(self.tpfile.PAYLOAD, self.config.keys)
 
                 # Handle xRIT file
                 self.handle_xRIT(spdu)
 
-                if len(self.cTPFile.PAYLOAD) < self.cTPFile.LENGTH:
+                if len(self.tpfile.PAYLOAD) < self.tpfile.LENGTH:
                     print(f"    {STYLE_ERR}FILE IS INCOMPLETE")
-                    ac = len(self.cTPFile.PAYLOAD)
-                    ex = self.cTPFile.LENGTH
+                    ac = len(self.tpfile.PAYLOAD)
+                    ex = self.tpfile.LENGTH
                     p = round((ac/ex) * 100)
                     print(f"    {STYLE_ERR}{p}% OF EXPECTED LENGTH")
 
                 # Clear finished TP_File
-                self.cTPFile = None
-            elif self.cProduct != None:
+                self.tpfile = None
+            elif self.product != None:
                 # Save and clear current product
-                self.cProduct.save()
-                self.cProduct = None
+                self.product.save()
+                self.product = None
