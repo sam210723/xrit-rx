@@ -183,7 +183,7 @@ class Channel:
     def data_in(self, vcdu):
         """
         Takes in VCDUs for the channel handler to process
-        :param packet: Parsed VCDU object
+        :param vcdu: Parsed VCDU object
         """
 
         # Check VCDU continuity counter
