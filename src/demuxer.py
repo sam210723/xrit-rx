@@ -250,7 +250,7 @@ class Channel:
                 if self.config.verbose:
                     self.cCPPDU.print_info()
                     print(f"    HEADER:     0x{self.cCPPDU.header.hex().upper()}")
-                    print(f"    OFFSET:     0x{hex(mpdu.POINTER)[2:].upper()}\n    ", end="")
+                    print(f"    OFFSET:     0x{mpdu.POINTER:04X}\n    ", end="")
         else:
             # Append M_PDU payload to current CP_PDU
             try:
@@ -347,7 +347,7 @@ class Channel:
 
                 # Print key index
                 if self.config.verbose:
-                    print(f"    KEY INDEX:  0x{hex(int.from_bytes(spdu.index, byteorder='big'))[2:].upper()}\n")    #FIXME
+                    print(f"    KEY INDEX:  0x{int.from_bytes(spdu.index, byteorder='big'):02X}\n")
 
             elif not lenok:
                 ex = self.cTPFile.LENGTH
