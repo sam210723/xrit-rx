@@ -14,19 +14,18 @@ from pathlib import Path
 import socketserver
 from threading import Thread
 
-dash_config = None
-demuxer_instance = None
+config = None
+demuxer = None
 
 class Dashboard:
-    def __init__(self, config, demuxer):
-        global dash_config
-        global demuxer_instance
-
-        dash_config = config
-        demuxer_instance = demuxer
+    def __init__(self, c, d):
+        global config
+        global demuxer
+        config = c
+        demuxer = d
 
         try:
-            self.socket = socketserver.TCPServer(("", int(dash_config.port)), Handler)
+            self.socket = socketserver.TCPServer(("", int(config.port)), Handler)
         except OSError as e:
             if e.errno == 10048:
                 print("\n" + Fore.WHITE + Back.RED + Style.BRIGHT + "DASHBOARD NOT STARTED: PORT ALREADY IN USE")
@@ -145,20 +144,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Root endpoint
         if api_path == "":
             data = {
-                'version':        dash_config.version,
-                'spacecraft':     dash_config.spacecraft,
-                'downlink':       dash_config.downlink,
-                'vcid_blacklist': dash_config.blacklist,
-                'images':         dash_config.images,
-                'xrit':           dash_config.xrit,
-                'interval':       int(dash_config.interval)
+                'version':        config.version,
+                'spacecraft':     config.spacecraft,
+                'downlink':       config.downlink,
+                'vcid_blacklist': config.blacklist,
+                'images':         config.images,
+                'xrit':           config.xrit,
+                'interval':       int(config.interval)
             }
 
         # Received data endpoint
         elif api_path.startswith("/received"):
             # Get relative path of requested file
             api_path = api_path.replace("/received", "")
-            file_path = Path(dash_config.output + api_path)
+            file_path = Path(config.output + api_path)
 
             # Read file from disk if it exists
             if file_path.is_file():
@@ -168,9 +167,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 file_obj.close()
 
         # Simple value endpoints
-        elif api_path == "/current/vcid": data = { "vcid":  demuxer_instance.vcid }
-        elif api_path == "/latest/image": data = { "image": demuxer_instance.latest_img }
-        elif api_path == "/latest/xrit":  data = { "xrit":  demuxer_instance.latest_xrit }
+        elif api_path == "/current/vcid": data = { "vcid":  demuxer.vcid }
+        elif api_path == "/latest/image": data = { "image": demuxer.latest_img }
+        elif api_path == "/latest/xrit":  data = { "xrit":  demuxer.latest_xrit }
 
         # Send HTTP 200 OK if content has been updated
         if data != b'': code = 200
