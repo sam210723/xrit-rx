@@ -10,6 +10,7 @@ import http.server
 import json
 import mimetypes
 import os
+from pathlib import Path
 import socketserver
 from threading import Thread
 
@@ -106,7 +107,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
     
 
-    def handle_api(self, path):
+    def handle_api(self, url):
         """
         Handle API endpoint request
         """
@@ -116,11 +117,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         status = 404
         mime = "application/json"
 
-        # Requested endpoint path
-        path = path.replace("/api", "").split("/")
-        path = None if len(path) == 1 else path[1:]
+        # Requested endpoint URL
+        url = url.replace("/api", "").split("/")
+        url = None if len(url) == 1 else url[1:]
 
-        if path == None:                                        # Root API endpoint
+        # Root API endpoint
+        if url == None:
             content = {
                 'version': dash_config.version,
                 'spacecraft': dash_config.spacecraft,
@@ -131,25 +133,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 'xrit': dash_config.xrit,
                 'interval': int(dash_config.interval)
             }
-        
-        elif "/".join(path).startswith(dash_config.output):     # Endpoint starts with demuxer output root path
-            path = "/".join(path)
-            if (os.path.isfile(path)):
-                mime = mimetypes.guess_type(path)[0]
-                content = open(path, 'rb').read()
 
-        elif path[0] == "current" and len(path) == 2:
-            if path[1] == "vcid":
+        # Received data endpoint
+        elif url[0] == "received":
+            file_path = Path(dash_config.output + "/".join(url[2:]))
+            
+            if (file_path.exists() and file_path.is_file()):
+                mime = mimetypes.guess_type(file_path)[0]
+                content = open(file_path, 'rb').read()
+
+        # Current values endpoint
+        elif url[0] == "current" and len(url) == 2:
+            if url[1] == "vcid":
                 content = {
                     'vcid': demuxer_instance.vcid
                 }
 
-        elif path[0] == "latest" and len(path) == 2:
-            if path[1] == "image":
+        # Latest data endpoints
+        elif url[0] == "latest" and len(url) == 2:
+            if url[1] == "image":
                 content = {
                     'image': demuxer_instance.latest_img
                 }
-            elif path[1] == "xrit":
+            elif url[1] == "xrit":
                 content = {
                     'xrit': demuxer_instance.latest_xrit
                 }
@@ -158,8 +164,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if content != b'': status = 200
 
         # Convert Python dict into JSON string
-        if type(content) is dict:
-            content = json.dumps(content, sort_keys=False).encode('utf-8')
+        if type(content) is dict: content = json.dumps(content, sort_keys=False).encode('utf-8')
 
         # Return response bytes, HTTP status code and content MIME type
         return content, status, mime
