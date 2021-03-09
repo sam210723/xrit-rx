@@ -7,7 +7,6 @@ from collections import deque, namedtuple
 from colorama import Fore, Back, Style
 from time import sleep
 from threading import Thread
-import sys
 
 import ccsds as CCSDS
 import products
@@ -28,29 +27,33 @@ class Demuxer:
         """
 
         # Configure instance globals
-        self.config = config            # Configuration tuple
-        self.rxq = deque()              # Data receive queue
-        self.core_ready = False         # Core thread ready state
-        self.core_stop = False          # Core thread stop flag
-        self.channels = {}              # List of channel handlers
-        self.vcid = None                # Current Virtual Channel ID
-        self.latest_img = None          # Latest image output by demuxer
-        self.latest_xrit = None         # Latest xRIT file output by demuxer
+        self.config = config        # Configuration tuple
+        self.rxq = deque()          # Data receive queue
+        self.core_ready = False     # Core thread ready flag
+        self.core_stop = False      # Core thread stop flag
+        self.channels = {}          # List of channel handlers
+        self.vcid = None            # Current Virtual Channel ID
+        self.latest_image = None    # Latest image output by demuxer
+        self.latest_xrit = None     # Latest xRIT file output by demuxer
 
         # Set core loop delay
-        bitrate = {
+        bitrates = {
             "GK-2A": {
                 "LRIT": 65536,      # 64 kbps
                 "HRIT": 3072000     # 3 Mbps
             }
         }
-        self.core_wait = (1 / (bitrate[self.config.spacecraft][self.config.downlink] / 8192)) / 2
+        bitrate = bitrates[self.config.spacecraft][self.config.downlink]
+        cadu_len = 1024 * 8
+        cadu_period = 1 / (bitrate / cadu_len)
+        self.core_wait = cadu_period / 2
 
         # Start core demuxer thread
         demux_thread = Thread()
         demux_thread.name = "DEMUX CORE"
         demux_thread.run = self.demux_core
         demux_thread.start()
+
 
     def demux_core(self):
         """
@@ -126,6 +129,7 @@ class Demuxer:
             if self.config.dump: dump_file.close()
             return
 
+
     def push(self, packet):
         """
         Takes in VCDUs for the demuxer to process
@@ -133,6 +137,7 @@ class Demuxer:
         """
 
         self.rxq.append(packet)
+
 
     def pull(self):
         """
@@ -146,12 +151,14 @@ class Demuxer:
             # Queue empty
             return None
 
+
     def complete(self):
         """
         Checks if receive queue is empty
         """
 
         return len(self.rxq) == 0
+
 
     def stop(self):
         """
@@ -172,7 +179,7 @@ class Channel:
         """
 
         self.config = config        # Configuration tuple
-        self.counter = -1           # VCDU continuity counter
+        self.counter = None         # VCDU continuity counter
         self.cppdu = None           # Current CP_PDU object
         self.tpfile = None          # Current TP_File object
         self.product = None         # Current Product object
@@ -182,11 +189,11 @@ class Channel:
     def data_in(self, vcdu):
         """
         Takes in VCDUs for the channel handler to process
-        :param vcdu: Parsed VCDU object
         """
 
         # Check VCDU continuity counter
         self.continuity(vcdu)
+        self.counter = vcdu.COUNTER
 
         # Parse M_PDU
         mpdu = CCSDS.M_PDU(vcdu.MPDU)
@@ -200,46 +207,60 @@ class Channel:
             
             # Continue unfinished TP_File
             else:
-                # If M_PDU contains data from previous CP_PDU
-                if mpdu.POINTER != 0:
-                    # Finish previous CP_PDU
-                    preptr = mpdu.PACKET[:mpdu.POINTER]
-                else:
-                    # No data to append
-                    preptr = b''
+                # Split M_PDU at pointer
+                pre_ptr = mpdu.PACKET[:mpdu.POINTER]
+                post_ptr = mpdu.PACKET[mpdu.POINTER:]
 
+                # Finish current CP_PDU
                 try:
-                    len_ok, crc_ok = self.cppdu.finish(preptr, self.config.lut)
-                    if self.config.verbose: self.check_CPPDU(len_ok, crc_ok)
+                    len_ok, crc_ok = self.cppdu.finish(pre_ptr, self.config.lut)
+                    if self.config.verbose:
+                        # Show length error
+                        if len_ok:
+                            print(f"\n    {STYLE_OK}LENGTH:     OK")
+                        else:
+                            diff = len(self.cppdu.PAYLOAD) - self.cppdu.LENGTH
+                            print(f"\n    {STYLE_ERR}LENGTH:     ERROR", end='')
+                            print(f"{STYLE_ERR} (EXPECTED: {self.cppdu.LENGTH}, ACTUAL: {len(self.cppdu.PAYLOAD)}, DIFF: {diff})")
+
+                        # Show CRC error
+                        print(f"    {STYLE_OK if crc_ok else STYLE_ERR}CRC:        {'OK' if crc_ok else 'ERROR'}\n")
 
                     # Handle finished CP_PDU
                     self.handle_CPPDU(self.cppdu)
                 except AttributeError:
-                    if self.config.verbose:
-                        print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
+                    if self.config.verbose: print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
                 
                 # Create new CP_PDU
-                postptr = mpdu.PACKET[mpdu.POINTER:]
-                self.cppdu = CCSDS.CP_PDU(postptr)
+                self.cppdu = CCSDS.CP_PDU(post_ptr)
 
-                # Need more data to parse CP_PDU header
-                if not self.cppdu.PARSED:
-                    return
+                # Not enough data to parse CP_PDU header
+                if not self.cppdu.PARSED: return
 
                 # Handle CP_PDUs less than one M_PDU in length
                 if 1 < self.cppdu.LENGTH < 886 and len(self.cppdu.PAYLOAD) > self.cppdu.LENGTH:
                     # Remove trailing null bytes (M_PDU padding)
                     self.cppdu.PAYLOAD = self.cppdu.PAYLOAD[:self.cppdu.LENGTH]
                     
+                    # Finish current CP_PDU
                     try:
                         len_ok, crc_ok = self.cppdu.finish(b'', self.config.lut)
-                        if self.config.verbose: self.check_CPPDU(len_ok, crc_ok)
+                        if self.config.verbose:
+                            # Show length error
+                            if len_ok:
+                                print(f"\n    {STYLE_OK}LENGTH:     OK")
+                            else:
+                                diff = len(self.cppdu.PAYLOAD) - self.cppdu.LENGTH
+                                print(f"\n    {STYLE_ERR}LENGTH:     ERROR", end='')
+                                print(f"{STYLE_ERR} EXPECTED: {self.cppdu.LENGTH}, ACTUAL: {len(self.cppdu.PAYLOAD)}, DIFF: {diff})")
+
+                            # Show CRC error
+                            print(f"    {STYLE_OK if crc_ok else STYLE_ERR}CRC:        {'OK' if crc_ok else 'ERROR'}\n")
 
                         # Handle finished CP_PDU
                         self.handle_CPPDU(self.cppdu)
                     except AttributeError:
-                        if self.config.verbose:
-                            print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
+                        if self.config.verbose: print(f"  {STYLE_ERR}NO CP_PDU TO FINISH (DROPPED PACKETS?)")
 
             # Handle special EOF CP_PDU (by ignoring it)
             if self.cppdu.is_EOF():
@@ -266,56 +287,32 @@ class Channel:
                     print(f"    HEADER:     0x{self.cppdu.header.hex().upper()}")
                     print(f"    OFFSET:     SPANS MULTIPLE M_PDUs")
             except AttributeError:
-                if self.config.verbose:
-                    print(f"  {STYLE_ERR}NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
+                if self.config.verbose: print(f"  {STYLE_ERR}NO CP_PDU TO APPEND M_PDU TO (DROPPED PACKETS?)")
         
         # VCDU indicator
-        if self.config.verbose: print(".", end="")
-        sys.stdout.flush()
+        if self.config.verbose: print(".", end="", flush=True)
     
 
     def continuity(self, vcdu):
         """
-        Checks VCDU packet continuity by comparing packet counters
+        Checks VCDU packet continuity
         """
 
-        # If at least one VCDU has been received
-        if self.counter != -1:
-            # Check counter reset
-            if self.counter == 0xFFFFFF and vcdu.COUNTER == 0:
-                self.counter = vcdu.COUNTER
-                return
-            
-            diff = vcdu.COUNTER - self.counter - 1
-            if diff > 0:
-                if self.config.verbose:
-                    print(f"  {STYLE_ERR}DROPPED {diff} PACKET{'S' if diff > 1 else ''}    (CURRENT: {vcdu.COUNTER}   LAST: {self.counter}   VCID: {vcdu.VCID})")
-                else:
-                    print(f"    {STYLE_ERR}DROPPED {diff} PACKET{'S' if diff > 1 else ''}")
+        # Skip if first VCDU packet
+        if not self.counter: return False
+
+        # Handle counter reset
+        if self.counter == 0xFFFFFF and vcdu.COUNTER == 0: return True
         
-        self.counter = vcdu.COUNTER
-    
-
-    def check_CPPDU(self, len_ok, crc_ok):
-        """
-        Checks length and CRC of finished CP_PDU
-        """
-
-        # Show length error
-        if len_ok:
-            print(f"\n    {STYLE_OK}LENGTH:     OK")
-        else:
-            ex = self.cppdu.LENGTH
-            ac = len(self.cppdu.PAYLOAD)
-            diff = ac - ex
-            print(f"\n    {STYLE_ERR}LENGTH:     ERROR (EXPECTED: {ex}, ACTUAL: {ac}, DIFF: {diff})")
-
-        # Show CRC error
-        if crc_ok:
-            print(f"    {STYLE_OK}CRC:        OK")
-        else:
-            print(f"    {STYLE_ERR}CRC:        ERROR")
-        print()
+        # Check counter difference
+        diff = vcdu.COUNTER - self.counter - 1
+        if diff > 0:
+            if self.config.verbose:
+                print(f"  {STYLE_ERR}DROPPED {diff} PACKET{'S' if diff > 1 else ''}    ({vcdu.COUNTER} -> {self.counter})")
+            else:
+                print(f"    {STYLE_ERR}DROPPED {diff} PACKET{'S' if diff > 1 else ''}")
+            return False
+        return True
 
 
     def handle_CPPDU(self, cppdu):
@@ -395,7 +392,7 @@ class Channel:
             # Save and clear complete product
             if self.product.complete:
                 self.product.save()
-                self.demuxer.latest_img = self.product.get_save_path(ext=self.product.ext, with_root=False)
+                self.demuxer.latest_image = self.product.get_save_path(ext=self.product.ext, with_root=False)
                 self.product = None
         else:
             # Print XRIT file info

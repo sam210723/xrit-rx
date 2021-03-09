@@ -171,7 +171,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         # Simple value endpoints
         elif api_path == "/current/vcid": data = { "vcid":  demuxer.vcid }
-        elif api_path == "/latest/image": data = { "image": demuxer.latest_img }
+        elif api_path == "/latest/image": data = { "image": demuxer.latest_image }
         elif api_path == "/latest/xrit":  data = { "xrit":  demuxer.latest_xrit }
 
         # Send HTTP 200 OK if content has been updated
