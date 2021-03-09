@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
   - Static received data API endpoint
 
 ### Fixed
-  - 
+  - HTTP request handler locking up
 </details>
 
 

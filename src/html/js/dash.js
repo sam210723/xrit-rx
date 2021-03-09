@@ -357,7 +357,7 @@ function block_latestimg(element)
     var cap = element.children[2];
 
     if (latest_image) {
-        var url = `/api/${latest_image}`;
+        var url = `/api/received/${latest_image}`;
         var fname = url.split('/');
         fname = fname[fname.length - 1];
         var ext = fname.split('.')[1];

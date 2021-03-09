@@ -552,10 +552,12 @@ class xRIT:
             fExt = self.FILE_NAME.split(".")[1]
 
         # Check output directories exist
-        if not os.path.exists("{}/{}".format(root, txDate)): os.mkdir(root + "/" + txDate)
-        if not os.path.exists("{}/{}/{}".format(root, txDate, obMode)): os.mkdir(root + "/" + txDate + "/" + obMode)
+        if root:
+            root += "/"
+            if not os.path.exists("{}{}".format(root, txDate)): os.mkdir(root + "/" + txDate)
+            if not os.path.exists("{}{}/{}".format(root, txDate, obMode)): os.mkdir(root + "/" + txDate + "/" + obMode)
 
-        path = "/{}/{}/".format(txDate, obMode)
+        path = "{}/{}/".format(txDate, obMode)
         return root + path + self.FILE_NAME
 
     def save(self, root):

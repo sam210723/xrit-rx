@@ -107,18 +107,19 @@ class Product:
 
         return (h, m ,s)
 
-    def get_save_path(self, ext="", filename=True):
+    def get_save_path(self, ext="", filename=True, with_root=True):
         """
         Get save path of product (without extension)
         """
 
         # Build file output path (root + date + observation mode)
-        root = self.config.output
+        root = self.config.output if with_root else ""
         date = "{2}{1}{0}".format(*self.name.date)
         path = "{}{}/{}/".format(root, date, self.name.mode)
 
         # Check output directories exist
-        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+        if with_root:
+            pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
         # Assemble final file path and name
         return "{}{}{}".format(

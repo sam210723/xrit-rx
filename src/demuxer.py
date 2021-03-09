@@ -381,7 +381,7 @@ class Channel:
         # Save xRIT file if enabled
         if self.config.xrit:
             xrit.save(self.config.output)
-            self.demuxer.latest_xrit = xrit.get_save_path(self.config.output)
+            self.demuxer.latest_xrit = xrit.get_save_path("")
 
         # Save image file if enabled
         if self.config.images:
@@ -396,7 +396,7 @@ class Channel:
             # Save and clear complete product
             if self.product.complete:
                 self.product.save()
-                self.demuxer.latest_img = self.product.last
+                self.demuxer.latest_img = self.product.get_save_path(ext=self.product.ext, with_root=False)
                 self.product = None
         else:
             # Print XRIT file info

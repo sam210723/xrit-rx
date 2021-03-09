@@ -62,112 +62,124 @@ class Dashboard:
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     """
-    Custom HTTP request handler
+    Custom HTTP request handler for static files and JSON API
     """
 
-    def __init__(self, request, client_address, server):
+    def __init__(self, req, addr, server):
+        """
+        Initialise HTTP request handler
+        """
+
+        self.close_connection = True
+        self.custom_routes = {
+            "/": "/index.html"
+        }
+
         try:
-            super().__init__(request, client_address, server)
+            super().__init__(req, addr, server)
         except ConnectionResetError:
+            print(f"[HTTP] Connection to {self.client_address[0]} reset")
             return
 
 
     def do_GET(self):
         """
-        Respond to GET requests
+        Handle HTTP GET requests
         """
 
-        # Respond with index.html content on root path requests
-        if self.path == "/": self.path = "index.html"
-        
+        # Check for custom routes associated with path
+        if self.path in self.custom_routes:
+            self.path = self.custom_routes[self.path]
+
         try:
-            if self.path.startswith("/api/") or self.path == "/api":    # API endpoint requests
-                content, status, mime = self.handle_api(self.path)
+            # Handle API requests
+            if self.path.startswith("/api"):
+                code, mime, data = self.do_API()
 
-                self.send_response(status)
-                self.send_header('Content-type', mime)
+                self.send_response(code)
+                self.send_header("Content-type", mime)
                 self.end_headers()
-                self.wfile.write(content)
-            else:                                                       # Local file requests
-                self.path = "html/{}".format(self.path)
+                self.wfile.write(data)
+            
+            # Handle static file requests
+            else:
+                file_path = Path(f"html{self.path}")
 
-                if os.path.isfile(self.path):                           # Requested file exists (HTTP 200)
+                # Requested file exists
+                if file_path.is_file():
                     self.send_response(200)
-                    mime = mimetypes.guess_type(self.path)[0]
-                    self.send_header('Content-type', mime)
+
+                    # Send file MIME Type
+                    mime = mimetypes.guess_type(file_path)[0]
+                    self.send_header("Content-type", mime)
                     self.end_headers()
 
-                    self.wfile.write(
-                        open(self.path, 'rb').read()
-                    )
-                else:                                                   # Requested file not found (HTTP 404)
-                    self.send_response(404)
+                    # Send file contents
+                    data = open(file_path, "rb")
+                    self.wfile.write(data.read())
+                    data.close()
+
+                # Requested file not found
+                else:
+                    self.send_response_only(404)
                     self.end_headers()
-        except ConnectionAbortedError:
+
+        except ConnectionResetError:
+            print(f"[HTTP] Connection to {self.client_address[0]} reset")
             return
-    
 
-    def handle_api(self, url):
+
+    def do_API(self):
         """
-        Handle API endpoint request
+        Handle API endpoint requests
         """
 
         # Base response object
-        content = b''
-        status = 404
+        code = 404
         mime = "application/json"
+        data = b''
 
-        # Requested endpoint URL
-        url = url.replace("/api", "").split("/")
-        url = None if len(url) == 1 else url[1:]
-
-        # Root API endpoint
-        if url == None:
-            content = {
-                'version': dash_config.version,
-                'spacecraft': dash_config.spacecraft,
-                'downlink': dash_config.downlink,
+        # API endpoint path
+        api_path = self.path.replace("/api", "")
+        
+        # Root endpoint
+        if api_path == "":
+            data = {
+                'version':        dash_config.version,
+                'spacecraft':     dash_config.spacecraft,
+                'downlink':       dash_config.downlink,
                 'vcid_blacklist': dash_config.blacklist,
-                'output_path': dash_config.output,
-                'images': dash_config.images,
-                'xrit': dash_config.xrit,
-                'interval': int(dash_config.interval)
+                'images':         dash_config.images,
+                'xrit':           dash_config.xrit,
+                'interval':       int(dash_config.interval)
             }
 
         # Received data endpoint
-        elif url[0] == "received":
-            file_path = Path(dash_config.output + "/".join(url[2:]))
-            
-            if (file_path.exists() and file_path.is_file()):
+        elif api_path.startswith("/received"):
+            # Get relative path of requested file
+            api_path = api_path.replace("/received", "")
+            file_path = Path(dash_config.output + api_path)
+
+            # Read file from disk if it exists
+            if file_path.is_file():
                 mime = mimetypes.guess_type(file_path)[0]
-                content = open(file_path, 'rb').read()
+                file_obj = open(file_path, "rb")
+                data = file_obj.read()
+                file_obj.close()
 
-        # Current values endpoint
-        elif url[0] == "current" and len(url) == 2:
-            if url[1] == "vcid":
-                content = {
-                    'vcid': demuxer_instance.vcid
-                }
+        # Simple value endpoints
+        elif api_path == "/current/vcid": data = { "vcid":  demuxer_instance.vcid }
+        elif api_path == "/latest/image": data = { "image": demuxer_instance.latest_img }
+        elif api_path == "/latest/xrit":  data = { "xrit":  demuxer_instance.latest_xrit }
 
-        # Latest data endpoints
-        elif url[0] == "latest" and len(url) == 2:
-            if url[1] == "image":
-                content = {
-                    'image': demuxer_instance.latest_img
-                }
-            elif url[1] == "xrit":
-                content = {
-                    'xrit': demuxer_instance.latest_xrit
-                }
-        
         # Send HTTP 200 OK if content has been updated
-        if content != b'': status = 200
+        if data != b'': code = 200
 
         # Convert Python dict into JSON string
-        if type(content) is dict: content = json.dumps(content, sort_keys=False).encode('utf-8')
+        if type(data) is dict: data = json.dumps(data, sort_keys=False).encode('utf-8')
 
-        # Return response bytes, HTTP status code and content MIME type
-        return content, status, mime
+        # Return HTTP status code, content MIME type and response body
+        return code, mime, data
 
 
     def log_message(self, format, *args):

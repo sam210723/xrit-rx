@@ -112,7 +112,6 @@ The root endpoint is located at `/api` which returns information about the curre
     4,
     5
   ],
-  "output_path": "received/LRIT/",
   "images": true,
   "xrit": false,
   "interval": 1
