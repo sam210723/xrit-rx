@@ -4,7 +4,6 @@ https://github.com/sam210723/xrit-rx
 """
 
 from collections import deque, namedtuple
-import colorama
 from colorama import Fore, Back, Style
 from time import sleep
 from threading import Thread
