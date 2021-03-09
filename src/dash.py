@@ -9,10 +9,13 @@ from colorama import Fore, Back, Style
 import http.server
 import json
 import mimetypes
-import os
 from pathlib import Path
 import socketserver
 from threading import Thread
+
+# Colorama styles
+STYLE_ERR = f"{Fore.WHITE}{Back.RED}{Style.BRIGHT}"
+STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
 
 config = None
 demuxer = None
@@ -28,7 +31,7 @@ class Dashboard:
             self.socket = socketserver.TCPServer(("", int(config.port)), Handler)
         except OSError as e:
             if e.errno == 10048:
-                print("\n" + Fore.WHITE + Back.RED + Style.BRIGHT + "DASHBOARD NOT STARTED: PORT ALREADY IN USE")
+                print(f"\n{STYLE_ERR}DASHBOARD NOT STARTED: PORT {config.port} ALREADY IN USE")
             else:
                 print(e)
             return
