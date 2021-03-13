@@ -113,7 +113,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     self.send_response(200)
 
                     # Send file MIME Type
-                    mime = mimetypes.guess_type(file_path)[0]
+                    mime = mimetypes.guess_type(str(file_path))[0]
                     self.send_header("Content-type", mime)
                     self.end_headers()
 
@@ -165,7 +165,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             # Read file from disk if it exists
             if file_path.is_file():
-                mime = mimetypes.guess_type(file_path)[0]
+                mime = mimetypes.guess_type(str(file_path))[0]
                 file_obj = open(file_path, "rb")
                 data = file_obj.read()
                 file_obj.close()
