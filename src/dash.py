@@ -27,13 +27,14 @@ class Dashboard:
         config = c
         demuxer = d
 
+        # Create TCP socket for all interfaces
         try:
             self.socket = socketserver.TCPServer(("", int(config.port)), Handler)
         except OSError as e:
-            if e.errno == 10048:
-                print(f"\n{STYLE_ERR}DASHBOARD NOT STARTED: PORT {config.port} ALREADY IN USE")
-            else:
-                print(e)
+            msg = e.strerror
+            if e.errno == 10048: msg = f"PORT {config.port} IS ALREADY IN USE"
+
+            print(f"{STYLE_ERR}DASHBOARD ERROR: {msg}")
             return
 
         # Start HTTP server thread
@@ -49,7 +50,7 @@ class Dashboard:
         """
 
         self.socket.serve_forever()
-    
+
 
     def stop(self):
         """
