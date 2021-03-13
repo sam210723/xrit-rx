@@ -19,6 +19,9 @@ from demuxer import Demuxer
 import ccsds as CCSDS
 from dash import Dashboard
 
+# Colorama styles
+STYLE_ERR = f"{Fore.WHITE}{Back.RED}{Style.BRIGHT}"
+STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
 
 # Globals
 args = None             # Parsed CLI arguments
@@ -111,8 +114,8 @@ def init():
 
     # Check demuxer thread is ready
     if not demux.core_ready:
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "DEMUXER CORE THREAD FAILED TO START")
-        exit()
+        print(f"{STYLE_ERR}DEMUXER CORE THREAD FAILED TO START")
+        safe_stop()
 
     print("──────────────────────────────────────────────────────────────────────────────────\n")
 

@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
   - HTTP request handler locking up
+  - Safe exit when demux core not ready
 </details>
 
 
