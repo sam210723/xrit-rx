@@ -2,502 +2,447 @@
 xrit-rx.py
 https://github.com/sam210723/xrit-rx
 
-Frontend for CCSDS demultiplexer and image generator
+Receive images from geostationary weather satellites
 """
 
+import argparse
 import ast
-from argparse import ArgumentParser
-from collections import namedtuple
 import colorama
-from colorama import Fore, Back, Style
-from configparser import ConfigParser, NoOptionError, NoSectionError
-from os import mkdir, path
-from pathlib import Path
+from collections import namedtuple
+import configparser
+import os
+from   pathlib import Path
+import requests
 import socket
-from time import time, sleep
+import struct
+import time
 
 from demuxer import Demuxer
 import ccsds as CCSDS
 from dash import Dashboard
 
-# Colorama styles
-STYLE_ERR = f"{Fore.WHITE}{Back.RED}{Style.BRIGHT}"
-STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
+class Main:
+    def __init__(self):
+        print("┌──────────────────────────────────────────────┐")
+        print("│                   xrit-rx                    │")
+        print("│         LRIT/HRIT Downlink Processor         │")
+        print("├──────────────────────────────────────────────┤")
+        print("│     @sam210723         vksdr.com/xrit-rx     │")
+        print("└──────────────────────────────────────────────┘\n")
 
-# Globals
-args = None             # Parsed CLI arguments
-config = None           # Config parser object
-start_time = None       # Processing start time
-source = None           # Input source type
-spacecraft = None       # Spacecraft name
-downlink = None         # Downlink type (LRIT/HRIT)
-output = None           # Output path root
-output_images = None    # Flag for saving Images to disk
-output_xrit = None      # Flag for saving xRIT files to disk
-blacklist = []          # VCID blacklist
-packetf = None          # Packet file object
-keypath = None          # Decryption key file path
-keys = {}               # Decryption keys
-sck = None              # TCP/UDP socket object
-buflen = 892            # Input buffer length (1 VCDU)
-demux = None            # Demuxer class object
-dash = None             # Dashboard class object
-dashe = None            # Dashboard enabled flag
-dashp = None            # Dashboard HTTP port
-dashi = None            # Dashboard refresh interval (sec)
-ver = "1.3.1+dev"       # xrit-rx version
+        # Set instance variables
+        self.demuxer = None         # Demuxer class instance
+        self.dashboard = None       # Dashboard class instance
+        self.keys = None            # Encryption key list
+        self.packet_file = None     # Packet input file
+        self.dump_file = None       # Packet output file
+        self.version = "1.4"        # Application version
 
+        # Initialise Colorama
+        colorama.init(autoreset=True)
 
-def init():
-    print("┌──────────────────────────────────────────────┐")
-    print("│                   xrit-rx                    │")
-    print("│         LRIT/HRIT Downlink Processor         │")
-    print("├──────────────────────────────────────────────┤")
-    print("│     @sam210723         vksdr.com/xrit-rx     │")
-    print("└──────────────────────────────────────────────┘\n")
-    
-    global args
-    global config
-    global start_time
-    global output
-    global demux
-    global dash
+        # Configure xrit-rx
+        self.configure()
 
-    # Initialise Colorama
-    colorama.init(autoreset=True)
-
-    # Handle arguments and config file
-    args = parse_args()
-    config = parse_config(args.config)
-    print_config()
-
-    # Configure directories and input source
-    dirs()
-    config_input()
-
-    # Load decryption keys
-    load_keys()
-
-    # Create demuxer instance
-    demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit blacklist keys')
-    output += "/" + downlink + "/"
-    demux = Demuxer(
-        demux_config(
-            spacecraft,
-            downlink,
-            args.v,
-            args.dump,
-            output,
-            output_images,
-            output_xrit,
-            blacklist,
-            keys
-        )
-    )
-
-    # Start dashboard server
-    if dashe:
-        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
-        dash = Dashboard(
-            dash_config(
-                dashp,
-                dashi,
-                spacecraft,
-                downlink,
-                output,
-                output_images,
-                output_xrit,
-                blacklist,
-                ver
-            ),
-            demux
-        )
-
-    # Check demuxer thread is ready
-    if not demux.core_ready:
-        print(f"{STYLE_ERR}DEMUXER CORE THREAD FAILED TO START")
-        safe_stop()
-
-    print("──────────────────────────────────────────────────────────────────────────────────\n")
-
-    # Get processing start time
-    start_time = time()
-
-    # Enter main loop
-    loop()
+        # Setup input source
+        self.setup_input()
 
 
-def loop():
-    """
-    Handles data from the selected input source
-    """
-    global demux
-    global source
-    global sck
-    global buflen
+    def configure(self):
+        """
+        Configures xrit-rx
+        """
 
-    while True:
-        if source == "GOESRECV":
-            try:
-                data = sck.recv(buflen + 8)
-            except ConnectionResetError:
-                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO GOESRECV")
-                safe_stop()
+        # Get command line arguments
+        argp = argparse.ArgumentParser()
+        argp.add_argument("-v", "--verbose", action="store_true", help="Enable verbose console output (only useful for debugging)")
+        argp.add_argument("--config", action="store", help="Path to configuration file (*.ini)", default="xrit-rx.ini")
+        argp.add_argument("--file", action="store", help="Path to VCDU packet file")
+        argp.add_argument("--dump", action="store", help="Write VCDU packets to file (only useful for debugging)")
+        argp.add_argument("--no-exit", action="store_true", help="Pause main thread before exiting (only useful for debugging)")
+        self.args = argp.parse_args()
 
-            if len(data) == buflen + 8:
-                demux.push(data[8:])
-        
-        elif source == "OSP":
-            try:
-                data = sck.recv(buflen)
-            except ConnectionResetError:
-                print(Fore.WHITE + Back.RED + Style.BRIGHT + "LOST CONNECTION TO OPEN SATELLITE PROJECT")
-                safe_stop()
-            
-            demux.push(data)
-        
-        elif source == "UDP":
-            try:
-                data, address = sck.recvfrom(buflen)
-            except Exception as e:
-                print(e)
-                safe_stop()
-            
-            demux.push(data)
+        # Open input packet file
+        if self.args.file:
+            self.args.file = Path(self.args.file)
 
-        elif source == "FILE":
-            global packetf
-            global start_time
+            # Check packet file exists
+            if not self.args.file.is_file():
+                self.log(f"PACKET FILE \"{self.args.file.absolute()}\" DOES NOT EXIST", style="error")
+                self.stop(code=1)
 
-            if not packetf.closed:
-                # Read VCDU from file
-                data = packetf.read(buflen)
+            self.packet_file = open(self.args.file, "rb")
 
-                # No more data to read from file
-                if data == b'':
-                    #print("INPUT FILE LOADED")
-                    packetf.close()
+        # Open packet dump file
+        if self.args.dump:
+            dump_path = Path(self.args.dump)
+            self.dump_file = open(dump_path, "wb+")
 
-                    # Append single fill VCDU (VCID 63)
-                    # Triggers TP_File processing inside channel handlers
-                    demux.push(b'\x70\xFF\x00\x00\x00\x00')
+        # Change working directory to script location
+        os.chdir(Path(__file__).parent.absolute())
 
-                    continue
-                
-                # Push VCDU to demuxer
-                demux.push(data)
-            else:
-                # Demuxer has all VCDUs from file, wait for processing
-                if demux.complete():
-                    run_time = round(time() - start_time, 3)
-                    print(f"\nPROCESSED FILE IN {run_time:.03f}s")
-                    safe_stop()
-                else:
-                    # Limit loop speed when waiting for demuxer to finish processing
-                    sleep(0.5)
-
-
-def config_input():
-    """
-    Configures the selected input source
-    """
-
-    global source
-    global sck
-
-    if source == "GOESRECV":
-        sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        ip = config.get('goesrecv', 'ip')
-        port = int(config.get('goesrecv', 'vchan'))
-        addr = (ip, port)
-
-        print("Connecting to goesrecv ({})...".format(ip), end='')
-        connect_socket(addr)
-        nanomsg_init()
-    
-    elif source == "OSP":
-        sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        ip = config.get('osp', 'ip')
-        port = int(config.get('osp', 'vchan'))
-        addr = (ip, port)
-
-        print("Connecting to Open Satellite Project ({})...".format(ip), end='')
-        connect_socket(addr)
-    
-    elif source == "UDP":
-        sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        ip = config.get('udp', 'ip')
-        port = int(config.get('udp', 'vchan'))
-        addr = (ip, port)
-        
-        print("Binding UDP socket ({}:{})...".format(ip, port), end='')
-        try:
-            sck.bind(addr)
-            print(Fore.GREEN + Style.BRIGHT + "SUCCESS")
-        except socket.error as e:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "FAILED")
-            print(e)
-            safe_stop()
-
-    elif source == "FILE":
-        global packetf
-
-        # Check VCDU file exists
-        if not path.exists(args.file):
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "INPUT FILE DOES NOT EXIST")
-            safe_stop()
-        
-        packetf = open(args.file, 'rb')
-        print(Fore.GREEN + Style.BRIGHT + "OPENED PACKET FILE")
-
-    else:
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "UNKNOWN INPUT MODE: \"{}\"".format(source))
-        safe_stop()
-
-
-def connect_socket(addr):
-    """
-    Connects TCP socket to address and handle exceptions
-    """
-
-    try:
-        sck.connect(addr)
-        print(Fore.GREEN + Style.BRIGHT + "CONNECTED")
-    except socket.error as e:
-        if e.errno == 10061:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "CONNECTION REFUSED")
+        # Load configuration file
+        config_path = Path(self.args.config)
+        if config_path.is_file():
+            confp = configparser.ConfigParser()
+            confp.read(config_path)
+            self.config = confp._sections
         else:
-            print(e)
-    
-        safe_stop()
-
-
-def nanomsg_init():
-    """
-    Sets up nanomsg publisher in goesrecv to send VCDUs over TCP
-    """
-
-    global sck
-
-    sck.send(b'\x00\x53\x50\x00\x00\x21\x00\x00')
-    nmres = sck.recv(8)
-
-    # Check nanomsg response
-    if nmres != b'\x00\x53\x50\x00\x00\x20\x00\x00':
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "  ERROR CONFIGURING NANOMSG (BAD RESPONSE)")
-        safe_stop()
-
-
-def dirs():
-    """
-    Configures directories for demuxed files
-    """
-
-    global downlink
-    global output
-
-    absp = path.abspath(output)
-    
-    # Create output directory if it doesn't exist already
-    if not path.isdir(absp):
-        try:
-            mkdir(absp)
-        except OSError as e:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
-            safe_stop()
-    
-    if not path.isdir(absp + "/" + downlink + "/"):
-        try:
-            mkdir(absp + "/" + downlink + "/")
-
-            print(Fore.GREEN + Style.BRIGHT + "CREATED OUTPUT FOLDERS")
-        except OSError as e:
-            print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR CREATING OUTPUT FOLDERS\n{}".format(e))
-            safe_stop()
-
-
-def load_keys():
-    """
-    Loads key file and parses keys
-    """
-
-    global keypath
-    global keys
-    global output_images
-    global output_xrit
-
-    # Check key file exists
-    if not path.exists(keypath):
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "KEY FILE NOT FOUND: ONLY ENCRYPTED XRIT FILES WILL BE SAVED")
+            self.log(f"CONFIGURATION FILE \"{self.args.config}\" DOES NOT EXIST", style="error")
+            self.stop(code=1)
         
-        # Only output xRIT files
-        output_images = False
-        output_xrit = True
-        
-        return False
+        # Create path objects
+        self.config['rx']['keys'] = Path(self.config['rx']['keys'])
+        self.config['rx']['mode'] = self.config['rx']['mode'].upper()
+        self.config['output']['path'] = Path(self.config['output']['path']) / self.config['rx']['mode']
+        self.config['output']['path'].mkdir(parents=True, exist_ok=True)
 
-    # Load key file
-    keyf = open(keypath, mode='rb')
-    fbytes = keyf.read()
+        # Parse boolean options
+        self.config['output']['images'] = self.config['output']['images'] == "true"
+        self.config['output']['xrit'] = self.config['output']['xrit'] == "true"
+        self.config['dashboard']['enabled'] = self.config['dashboard']['enabled'] == "true"
 
-    # Parse key count
-    count = int.from_bytes(fbytes[:2], byteorder='big')
+        # Parse ignored channel list
+        if self.config['output']['ignored']:
+            self.config['output']['ignored'] = ast.literal_eval(self.config['output']['ignored'])
+            if type(self.config['output']['ignored']) == int:
+                self.config['output']['ignored'] = (self.config['output']['ignored'],)
+        else:
+            self.config['output']['ignored'] = ()
+        ignored = ", ".join(f"{c} ({CCSDS.VCDU.get_VC(None, c)})" for c in self.config['output']['ignored'])
 
-    # Parse keys
-    for i in range(count):
-        offset = (i * 10) + 2
-        index = fbytes[offset : offset + 2]
-        key = fbytes[offset + 2 : offset + 10]
+        # Limit dashboard refresh rate
+        self.config['dashboard']['interval'] = round(float(self.config['dashboard']['interval']), 1)
+        self.config['dashboard']['interval'] = max(1, self.config['dashboard']['interval'])
 
-        '''
-        # Print keys
-        i = hex(int.from_bytes(index, byteorder='big')).upper()[2:]
-        k = hex(int.from_bytes(key, byteorder='big')).upper()[2:]
-        print("{}: {}".format(i, k))
-        '''
-
-        # Add key to dictionary
-        keys[index] = key
-
-    print(Fore.GREEN + Style.BRIGHT + "DECRYPTION KEYS LOADED")
-    return True
-
-
-def parse_args():
-    """
-    Parses command line arguments
-    """
-    
-    argp = ArgumentParser()
-    argp.add_argument("--config", action="store", help="Configuration file path (.ini)", default="xrit-rx.ini")
-    argp.add_argument("--file", action="store", help="Path to VCDU packet file", default=None)
-    argp.add_argument("-v", action="store_true", help="Enable verbose console output (only useful for debugging)", default=False)
-    argp.add_argument("--dump", action="store", help="Dump VCDUs (except fill) to file (only useful for debugging)", default=None)
-    argp.add_argument("--no-exit", action="store_true", help="Pause main thread before exiting (only useful for debugging)", default=False)
-
-    return argp.parse_args()
-
-
-def parse_config(path):
-    """
-    Parses configuration file
-    """
-
-    global source
-    global spacecraft
-    global downlink
-    global output
-    global output_images
-    global output_xrit
-    global blacklist
-    global keypath
-    global dashe
-    global dashp
-    global dashi
-
-    cfgp = ConfigParser()
-    cfgp.read(path)
-
-    if args.file == None:
-        source = cfgp.get('rx', 'input').upper()
-    else:
-        source = "FILE"
-    
-    try:
-        spacecraft = cfgp.get('rx', 'spacecraft').upper()
-        downlink = cfgp.get('rx', 'mode').upper()
-        output = cfgp.get('output', 'path')
-        output_images = cfgp.getboolean('output', 'images')
-        output_xrit = cfgp.getboolean('output', 'xrit')
-        bl = cfgp.get('output', 'channel_blacklist')
-        keypath = cfgp.get('rx', 'keys')
-        dashe = cfgp.getboolean('dashboard', 'enabled')
-        dashp = cfgp.get('dashboard', 'port')
-        dashi = round((float(cfgp.get('dashboard', 'interval'))), 1)
-    except (NoSectionError, NoOptionError) as e:
-        print(Fore.WHITE + Back.RED + Style.BRIGHT + "ERROR PARSING CONFIG FILE: " + str(e).upper())
-        safe_stop()
-
-    # Limit dashboard refresh interval
-    if dashi < 1: dashi = 1
-
-    # If VCID blacklist is not empty
-    if bl != "":
-        # Parse blacklist string into int or list
-        blacklist = ast.literal_eval(bl)
-
-        # If parsed into int, wrap int in list
-        if type(blacklist) == int: blacklist = [blacklist]
-
-    return cfgp
-
-
-def print_config():
-    """
-    Prints configuration information
-    """
-
-    # Spacecraft info
-    sc_info = {
-        "GK-2A": {
-            "name": "GEO-KOMPSAT-2A (GK-2A)",
-            "LRIT": "64 kbps",
-            "HRIT": "3 Mbps"
+        # Information dictionary
+        info = {
+            "GK-2A": {
+                "name": "GEO-KOMPSAT-2A (GK-2A)",
+                "LRIT": [1692.14, "64 kbps"],
+                "HRIT": [1695.4, "3 Mbps"]
+            }
         }
-    }
+        spacecraft = self.config['rx']['spacecraft']
+        downlink = self.config['rx']['mode']
 
-    # Input source info
-    sources = {
-        "GOESRECV": "goesrecv (github.com/sam210723/goestools)",
-        "OSP":      "Open Satellite Project (github.com/opensatelliteproject/xritdemod)",
-        "FILE":    f"File ({args.file})"
-    }
-
-    # Build ignored channels list
-    ignored = ", ".join(f"{c} ({CCSDS.VCDU.get_VC(None, c)})" for c in blacklist)
-    
-    # Get host IP address
-    ip = socket.gethostbyname(socket.gethostname())
-    
-    print(f"SPACECRAFT:   {sc_info[spacecraft]['name'] if spacecraft in sc_info else spacecraft}")
-    print(f"DOWNLINK:     {downlink} @ {sc_info[spacecraft][downlink]}")
-    print(f"INPUT:        {sources[source]}")
-    print(f"OUTPUT:       {str(Path(output).absolute())}")  #FIXME: `output` should be Path() object
-    print(f"KEY FILE:     {keypath}")
-    print(f"IGNORED:      {ignored if ignored else 'None'}")
-    print(f"DASHBOARD:    {f'http://{ip}:{dashp}' if dashe else 'DISABLED'}")
-    print(f"VERSION:      {ver}\n")
-    
-    if args.dump: print(f"{STYLE_OK}WRITING PACKETS TO \"{args.dump}\"")
-
-
-def safe_stop(message=True):
-    """
-    Safely kill threads and exit
-    """
-
-    # Pause main thread if --no-exit is set
-    if args.no_exit:
-        print("PAUSING MAIN THREAD (--no-exit)")
+        # Check spacecraft is valid
+        if spacecraft not in info:
+            self.log(f"INVALID SPACECRAFT \"{spacecraft}\"", style="error")
+            self.stop(code=1)
         
+        # Check downlink is valid
+        if downlink not in info[spacecraft]:
+            self.log(f"INVALID DOWNLINK \"{downlink}\"", style="error")
+            self.stop(code=1)
+        
+        # Check input type is valid
+        if self.config['rx']['input'] not in ['goesrecv', 'osp', 'udp']:
+            self.log(f"INVALID INPUT TYPE \"{self.config['rx']['input']}\"", style="error")
+            self.stop(code=1)
+        
+        # Get dashboard URL
+        ip = socket.gethostbyname(socket.gethostname())
+        dashboard_url = f"https://{ip}:{self.config['dashboard']['port']}"
+
+        # Get input path
+        if not self.args.file:
+            input_path =  f"{self.config['rx']['input']}"
+            input_path += f" ({self.config[self.config['rx']['input']]['ip']}:{self.config[self.config['rx']['input']]['port']})"
+        else:
+            input_path = self.args.file.name
+            self.config['rx']['input'] = "file"
+        
+        # Print configuration info
+        self.log(f"SPACECRAFT:   {info[spacecraft]['name'] if spacecraft in info else spacecraft}")
+        self.log(f"DOWNLINK:     {downlink.upper()} ({info[spacecraft][downlink][0]} MHz, {info[spacecraft][downlink][1]})")
+        self.log(f"INPUT:        {input_path}")
+        self.log(f"OUTPUT:       {self.config['output']['path'].absolute()}")
+        self.log(f"KEY FILE:     {self.config['rx']['keys'].name}")
+        self.log(f"IGNORED:      {ignored if ignored else 'None'}")
+        self.log(f"DASHBOARD:    {dashboard_url if self.config['dashboard']['enabled'] else 'DISABLED'}")
+        self.log(f"VERSION:      v{self.version}\n")
+
+        # Load encryption keys
+        self.keys = self.load_keys(self.config['rx']['keys'])
+
+        # Dump file status
+        self.log(f"WRITING PACKETS TO \"{dump_path.absolute()}\"", style="ok")
+
+        # Check for new version on GitHub
         try:
-            while True:
-                sleep(0.5)
-        except KeyboardInterrupt:
-            pass
-    
-    # Stop child threads
-    if demux != None: demux.stop()
-    if dash != None: dash.stop()
-
-    if message: print("\nExiting...")
-    exit()
+            r = requests.get("https://api.github.com/repos/sam210723/xrit-rx/releases/latest")
+            if r.status_code == 200:
+                latest_tag = r.json()['tag_name']
+                if f"v{self.version}" != latest_tag:
+                    self.log(f"\nA new version of xrit-rx is available on GitHub", style="ok")
+                    self.log("https://github.com/sam210723/xrit-rx/releases/latest", style="ok")
+        except Exception: pass
 
 
+    def load_keys(self, path):
+        """
+        Loads encryption keys from key file
+        """
+
+        # Check key file exists
+        if not path.is_file():
+            # Only output encrypted xRIT files
+            self.config['output']['images'] = False
+            self.config['output']['xrit'] = True
+
+            self.log(f"KEY FILE \"{path.absolute()}\" DOES NOT EXIST", style="error")
+            self.log(f"ENCRYPTED XRIT FILES WILL BE SAVED TO DISK\n", style="error")
+            return {}
+        
+        # Load key file
+        key_file = open(path, "rb")
+
+        # Get number of keys
+        key_count = int.from_bytes(key_file.read(2), byteorder="big")
+
+        # Loop through keys
+        keys = {}
+        for _ in range(key_count):
+            # Get key index and key value
+            key = struct.unpack(">2s8s", key_file.read(10))
+
+            # Add key to dict
+            keys[key[0]] = key[1]
+
+        key_file.close()
+        self.log("DECRYPTION KEYS LOADED", style="ok")
+        return keys
+
+
+    def setup_input(self):
+        """
+        Sets up the selected input source
+        """
+
+        if self.config['rx']['input'] == "goesrecv":
+            # Create socket and address
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            addr = (self.config['goesrecv']['ip'], int(self.config['goesrecv']['port']))
+
+            # Connect socket
+            print(f"Connecting to {addr[0]}:{addr[1]}...", end='', flush=True)
+            self.connect_socket(self.socket, addr)
+
+            # Setup nanomsg published in goesrecv
+            self.socket.send(b'\x00\x53\x50\x00\x00\x21\x00\x00')
+            if self.socket.recv(8) != b'\x00\x53\x50\x00\x00\x20\x00\x00':
+                self.log("ERROR CONFIGURING NANOMSG", style="error")
+                self.stop(code=1)
+
+        elif self.config['rx']['input'] == "osp":
+            # Create socket and address
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            addr = (self.config['osp']['ip'], int(self.config['osp']['port']))
+
+            # Connect socket
+            print(f"Connecting to {addr[0]}:{addr[1]}...", end='', flush=True)
+            self.connect_socket(self.socket, addr)
+
+        elif self.config['rx']['input'] == "udp":
+            # Create socket and address
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            addr = (self.config['udp']['ip'], int(self.config['udp']['port']))
+
+            # Bind socket
+            print(f"Binding UDP socket to {addr[0]}:{addr[1]}...", end='', flush=True)
+            try:
+                self.socket.bind(addr)
+                self.log("SUCCESS", style="ok")
+            except socket.error as e:
+                self.log("FAILED", style="error")
+                self.log(e)
+                self.stop(code=1)
+
+
+    def connect_socket(self, s, addr):
+        """
+        Connect a socket and handle exceptions
+        """
+
+        try:
+            s.connect(addr)
+            self.log("CONNECTED", style="ok")
+        except socket.error as e:
+            if e.errno == 10061: self.log("CONNECTION REFUSED", style="error")
+            self.log(e)
+            self.stop(code=1)
+
+
+    def start(self):
+        """
+        Starts xrit-rx components
+        """
+
+        # Create demuxer instance
+        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit blacklist keys')
+        self.demuxer = Demuxer(
+            demux_config(
+                self.config['rx']['spacecraft'],
+                self.config['rx']['mode'],
+                self.args.verbose,
+                self.dump_file,
+                self.config['output']['path'],
+                self.config['output']['images'],
+                self.config['output']['xrit'],
+                self.config['output']['ignored'],
+                self.keys
+            )
+        )
+        #TODO: Remove configuration tuple
+
+        # Create dashboard instance
+        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
+        self.dashboard = Dashboard(
+            dash_config(
+                self.config['dashboard']['port'],
+                self.config['dashboard']['interval'],
+                self.config['rx']['spacecraft'],
+                self.config['rx']['mode'],
+                self.config['output']['path'],
+                self.config['output']['images'],
+                self.config['output']['xrit'],
+                self.config['output']['ignored'],
+                self.version
+            ),
+            self.demuxer
+        )
+        #TODO: Remove configuration tuple
+
+        # Check demuxer thread is ready
+        if not self.demuxer.core_ready:
+            self.log("DEMUXER CORE THREAD FAILED TO START", style="error")
+            self.stop(code=1)
+
+        print("───────────────────────────────────────────────────────────────\n")
+
+        # Get processing start time
+        self.start_time = time.time()
+
+        # Enter main loop
+        self.loop()
+
+
+    def loop(self):
+        """
+        Handles data from the selected input source
+        """
+
+        # Packet length (VCDU)
+        buflen = 892
+
+        while True:
+            if self.config['rx']['input'] == "goesrecv":
+                # Get packet from goesrecv
+                try:
+                    data = self.socket.recv(buflen + 8)
+                except ConnectionResetError:
+                    self.log("LOST CONNECTION TO GOESRECV", style="error")
+                    self.stop(code=1)
+
+                # Push packet to demuxer
+                if len(data) == buflen + 8: self.demuxer.push(data[8:])
+            
+            elif self.config['rx']['input'] == "osp":
+                # Get packet from Open Satellite Project
+                try:
+                    data = self.socket.recv(buflen)
+                except ConnectionResetError:
+                    self.log("LOST CONNECTION TO OPEN SATELLITE PROJECT", style="error")
+                    self.stop(code=1)
+
+                # Push packet to demuxer
+                if len(data) == buflen: self.demuxer.push(data)
+
+            elif self.config['rx']['input'] == "udp":
+                try:
+                    data, _ = self.socket.recvfrom(buflen)
+                except Exception as e:
+                    self.log(e, style="error")
+                    self.stop(code=1)
+                
+                # Push packet to demuxer
+                if len(data) == buflen: self.demuxer.push(data)
+
+            elif self.config['rx']['input'] == "file":
+                if not self.packet_file.closed:
+                    # Read packet from file
+                    data = self.packet_file.read(buflen)
+
+                    # No more data to read from file
+                    if data == b'':
+                        self.packet_file.close()
+                        
+                        # Append single fill VCDU (VCID 63)
+                        # Triggers TP_File processing inside channel handlers
+                        # by changing the currently active VCID
+                        self.demuxer.push(b'\x70\xFF\x00\x00\x00\x00')
+                        continue
+                    
+                    # Push packet to demuxer
+                    self.demuxer.push(data)
+                else:
+                    # Demuxer has all packets from file in its queue
+                    # Wait for processing to finish
+                    if self.demuxer.complete():
+                        run_time = round(time.time() - self.start_time, 3)
+                        self.log(f"\nPROCESSED FILE IN {run_time:.03f}s", style="ok")
+                        self.stop()
+                    else:
+                        # Limit loop speed when waiting for demuxer to finish processing
+                        time.sleep(0.5)
+
+
+    def stop(self, msg=True, code=0):
+        """
+        Stops xrit-rx gracefully
+        """
+
+        # Close dump file
+        if self.dump_file: self.dump_file.close()
+
+        # Keep running until keyboard interrupt
+        if self.args.no_exit:
+            self.log("PAUSING MAIN THREAD (--no-exit)", style="ok")
+            try:
+                while True: time.sleep(0.5)
+            except KeyboardInterrupt: pass
+        
+        # Stop child threads
+        if self.demuxer: self.demuxer.stop()
+        if self.dashboard: self.dashboard.stop()
+
+        # Show message and exit
+        if msg: self.log("Exiting...")
+        exit(code)
+
+
+    def log(self, msg, style="none"):
+        """
+        Writes to console
+        """
+
+        # Colorama styles
+        styles = {
+            "none":   "",
+            "ok":    f"{colorama.Fore.GREEN}{colorama.Style.BRIGHT}",
+            "error": f"{colorama.Fore.WHITE}{colorama.Back.RED}{colorama.Style.BRIGHT}"
+        }
+        
+        print(f"{styles[style]}{msg}")
+
+
+
+# Initialise xrit-rx
+instance = Main()
 try:
-    init()
+    # Start xrit-rx
+    instance.start()
 except KeyboardInterrupt:
-    safe_stop()
+    # Exit on keyboard interrupt
+    instance.stop()

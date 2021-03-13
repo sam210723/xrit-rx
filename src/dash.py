@@ -160,8 +160,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Received data endpoint
         elif api_path.startswith("/received"):
             # Get relative path of requested file
-            api_path = api_path.replace("/received", "")
-            file_path = Path(config.output + api_path)
+            file_path = config.output / api_path[10:]
 
             # Read file from disk if it exists
             if file_path.is_file():

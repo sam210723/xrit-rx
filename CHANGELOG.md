@@ -3,22 +3,29 @@ All notable changes to this project will be documented in this file.
 
 <details>
 <summary>Unreleased changes</summary>
+This release includes minor changes to the configuration file format.
+
 
 ### Added
   - Offline schedule loading when online schedule fails
   - Dashboard schedule download failue message
   - Flag to pause main thread after processing (`--no-exit`)
+  - New version notification on startup console output
   - New version notification on dashboard
 
 ### Changed
+  - Complete rewrite of `xrit-rx.py`
   - Full dashboard URL displayed on startup
   - Calculate core wait time based on downlink bitrate
   - Static received data API endpoint
 
 ### Fixed
+  - Naming convention and code quality issues
   - HTTP request handler locking up
   - Safe exit when demux core not ready
   - Dashboard font fallback
+  - Check config file exists before reading
+  - Relative paths when script is not in the CWD
 </details>
 
 

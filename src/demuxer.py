@@ -1,6 +1,8 @@
 """
 demuxer.py
 https://github.com/sam210723/xrit-rx
+
+CCSDS demultiplexer
 """
 
 from collections import deque, namedtuple
@@ -66,9 +68,6 @@ class Demuxer:
         # Thread globals
         last_vcid = None                        # Last VCID seen
         crc_lut = CCSDS.CP_PDU.CCITT_LUT(None)  # CP_PDU CRC LUT
-        
-        # Open VCDU dump file
-        if self.config.dump: dump_file = open(self.config.dump, 'wb+')
 
         # Thread loop
         while not self.core_stop:
@@ -85,11 +84,11 @@ class Demuxer:
                 if self.config.dump:
                     # Write packet to file if not fill
                     if vcdu.VCID != 63:
-                        dump_file.write(packet)
+                        self.config.dump.write(packet)
                     else:
                         # Write single fill packet to file (forces VCDU change on playback)
                         if last_vcid != 63:
-                            dump_file.write(packet)
+                            self.config.dump.write(packet)
 
                 # Check spacecraft is supported
                 if vcdu.SC != "GK-2A":
@@ -125,9 +124,7 @@ class Demuxer:
                 sleep(self.core_wait)
         
         # Gracefully exit core thread
-        if self.core_stop:
-            if self.config.dump: dump_file.close()
-            return
+        if self.core_stop: return
 
 
     def push(self, packet):
@@ -377,7 +374,7 @@ class Channel:
         # Save xRIT file if enabled
         if self.config.xrit:
             xrit.save(self.config.output)
-            self.demuxer.latest_xrit = xrit.get_save_path("")
+            self.demuxer.latest_xrit = xrit.get_save_path(None)
 
         # Save image file if enabled
         if self.config.images:

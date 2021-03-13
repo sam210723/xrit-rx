@@ -8,6 +8,7 @@ Parsing and assembly functions for all CCSDS protocol layers
 from Crypto.Cipher import DES
 from enum import Enum
 import os
+from pathlib import Path
 
 
 class VCDU:
@@ -297,7 +298,7 @@ class TP_File:
         header = self.data[:10]
 
         # Header fields
-        self.COUNTER = self.tools.get_bits_int(header, 0, 16, 80)                # File Counter
+        self.COUNTER = self.tools.get_bits_int(header, 0, 16, 80)                # File Counter #FIXME: Update for GK-2A
         self.LENGTH = int(self.tools.get_bits_int(header, 16, 64, 80)/8)         # File Length
 
         # Add post-header data to payload
@@ -550,15 +551,16 @@ class xRIT:
             txTime = fnameSplit[4]
             segNum = fnameSplit[5][:2]
             fExt = self.FILE_NAME.split(".")[1]
-
+        
         # Check output directories exist
         if root:
-            root += "/"
-            if not os.path.exists("{}{}".format(root, txDate)): os.mkdir(root + "/" + txDate)
-            if not os.path.exists("{}{}/{}".format(root, txDate, obMode)): os.mkdir(root + "/" + txDate + "/" + obMode)
+            file_path = root / txDate / obMode
+            file_path.mkdir(parents=True, exist_ok=True)
+            file_path = (file_path / self.FILE_NAME).absolute()
+        else:
+            file_path = f"{txDate}/{obMode}/{self.FILE_NAME}"
 
-        path = "{}/{}/".format(txDate, obMode)
-        return root + path + self.FILE_NAME
+        return file_path
 
     def save(self, root):
         """

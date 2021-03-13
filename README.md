@@ -64,28 +64,28 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 | `path` | Root output path for received files | *Absolute or relative file path* | `"received"` |
 | `images` | Enable/Disable saving Image files to disk | `true` or `false` | `true` |
 | `xrit` | Enable/Disable saving xRIT files to disk | `true` or `false` | `false` |
-| `channel_blacklist` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
+| `ignored` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
 #### `goesrecv` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
-| `vchan` | Output port of **goesrecv** | *Any TCP port number* | `5004` |
+| `port` | Output port of **goesrecv** | *Any TCP port number* | `5004` |
 
 #### `osp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
-| `vchan` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
+| `port` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
 
 #### `udp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `ip` | IP Address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
-| `vchan` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
+| `port` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
 
 #### `dashboard` section
 

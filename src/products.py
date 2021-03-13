@@ -10,7 +10,7 @@ import colorama
 from colorama import Fore, Back, Style
 import io
 import numpy as np
-import pathlib
+from pathlib import Path
 from PIL import Image, ImageFile, UnidentifiedImageError
 import subprocess
 
@@ -113,20 +113,19 @@ class Product:
         """
 
         # Build file output path (root + date + observation mode)
-        root = self.config.output if with_root else ""
         date = "{2}{1}{0}".format(*self.name.date)
-        path = "{}{}/{}/".format(root, date, self.name.mode)
-
-        # Check output directories exist
+        ext = f".{ext}" if ext else ""
         if with_root:
-            pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+            file_path = self.config.output / date / self.name.mode
+            file_path.mkdir(parents=True, exist_ok=True)
 
-        # Assemble final file path and name
-        return "{}{}{}".format(
-            path,
-            "" if not filename else self.name.full,
-            "" if not ext else ".{}".format(ext)
-        )
+            if filename: file_path = file_path / f"{self.name.full}.{ext}"
+            #file_path = file_path.absolute()
+        else:
+            file_path = f"{date}/{self.name.mode}"
+            if filename: file_path += f"/{self.name.full}{ext}"
+
+        return file_path
 
     def print_info(self):
         """
@@ -224,11 +223,11 @@ class MultiSegmentImage(Product):
                     print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING TRUNCATED IMAGE SEGMENT")
             
             # Get image path for current channel
-            channel_path = "{}{}.{}".format(
+            channel_path = "{}/{}.{}".format(
                 path,
                 self.name.full.replace("<CHANNEL>", c),
                 self.ext
-            )
+            ) #FIXME: This is bad
 
             # Save final image
             img.save(channel_path, format='JPEG', subsampling=0, quality=100)
@@ -256,13 +255,13 @@ class MultiSegmentImage(Product):
         # Convert J2P to PPM
         ppmName = path + name + ".ppm"
         subprocess.call(["tools\\libjpeg\\jpeg", jp2Name, ppmName], stdout=subprocess.DEVNULL)
-        pathlib.Path(jp2Name).unlink()
+        Path(jp2Name).unlink()
         
         # Load and convert 16-bit PPM to 8-bit image
         img = Image.open(ppmName)
         iarr = np.uint8(np.array(img) / 4)
         img = Image.fromarray(iarr)
-        pathlib.Path(ppmName).unlink()
+        Path(ppmName).unlink()
         return img
     
     def get_res(self, channel):
