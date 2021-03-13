@@ -12,6 +12,7 @@ import colorama
 from colorama import Fore, Back, Style
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import mkdir, path
+from pathlib import Path
 import socket
 from time import time, sleep
 
@@ -439,52 +440,38 @@ def print_config():
     Prints configuration information
     """
 
-    print("SPACECRAFT:       {}".format(spacecraft))
+    # Spacecraft info
+    sc_info = {
+        "GK-2A": {
+            "name": "GEO-KOMPSAT-2A (GK-2A)",
+            "LRIT": "64 kbps",
+            "HRIT": "3 Mbps"
+        }
+    }
 
-    #FIXME
-    if downlink == "LRIT":
-        rate = "64 kbps"
-    elif downlink == "HRIT":
-        rate = "3 Mbps"
-    print("DOWNLINK:         {} ({})".format(downlink, rate))
+    # Input source info
+    sources = {
+        "GOESRECV": "goesrecv (github.com/sam210723/goestools)",
+        "OSP":      "Open Satellite Project (github.com/opensatelliteproject/xritdemod)",
+        "FILE":    f"File ({args.file})"
+    }
 
-    if source == "GOESRECV":
-        s = "goesrecv (github.com/sam210723/goestools)"
-    elif source == "OSP":
-        s = "Open Satellite Project (github.com/opensatelliteproject/xritdemod)"
-    elif source == "FILE":
-        s = "File ({})".format(args.file)
-    else:
-        s = "UNKNOWN"
-
-    print("INPUT SOURCE:     {}".format(s))
+    # Build ignored channels list
+    ignored = ", ".join(f"{c} ({CCSDS.VCDU.get_VC(None, c)})" for c in blacklist)
     
-    absp = path.abspath(output)
-    absp = absp[0].upper() + absp[1:]  # Fix lowercase drive letter
-    print("OUTPUT PATH:      {}".format(absp))
-
-    if (len(blacklist) == 0):
-        print("IGNORED VCIDs:    None")
-    else:
-        blacklist_str = ""
-        for i, c in enumerate(blacklist):
-            if i > 0: blacklist_str += ", "
-            blacklist_str += "{} ({})".format(c, CCSDS.VCDU.get_VC(None, int(c)))
-        
-        print("IGNORED VCIDs:    {}".format(blacklist_str))
+    # Get host IP address
+    ip = socket.gethostbyname(socket.gethostname())
     
-    print("KEY FILE:         {}".format(keypath))
+    print(f"SPACECRAFT:   {sc_info[spacecraft]['name'] if spacecraft in sc_info else spacecraft}")
+    print(f"DOWNLINK:     {downlink} @ {sc_info[spacecraft][downlink]}")
+    print(f"INPUT:        {sources[source]}")
+    print(f"OUTPUT:       {str(Path(output).absolute())}")  #FIXME: `output` should be Path() object
+    print(f"KEY FILE:     {keypath}")
+    print(f"IGNORED:      {ignored if ignored else 'None'}")
+    print(f"DASHBOARD:    {f'http://{ip}:{dashp}' if dashe else 'DISABLED'}")
+    print(f"VERSION:      {ver}\n")
     
-    if dashe:
-        ip = socket.gethostbyname(socket.gethostname())
-        print("DASHBOARD:        http://{}:{}".format(ip, dashp))
-    else:
-        print("DASHBOARD:        DISABLED")
-    
-    print("VERSION:          {}\n".format(ver))
-    
-    if args.dump:
-        print(Fore.GREEN + Style.BRIGHT + "WRITING PACKETS TO: \"{}\"".format(args.dump))
+    if args.dump: print(f"{STYLE_OK}WRITING PACKETS TO \"{args.dump}\"")
 
 
 def safe_stop(message=True):
