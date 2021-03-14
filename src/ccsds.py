@@ -10,6 +10,7 @@ from enum import Enum
 import os
 from pathlib import Path
 import struct
+from collections import namedtuple
 
 
 class VCDU:
@@ -364,105 +365,81 @@ class S_PDU:
     Decrypts CCSDS Session Protocol Data Unit (S_PDU)
     """
 
-    def __init__(self, data, k):
-        self.data = data
-        self.tools = Tools()
-        self.keys = k
-        self.key = None
-        self.headerField = None
-        self.dataField = None
-        self.PLAINTEXT = None
+    def __init__(self, data, keys):
+        self.header_field = None    # xRIT header field
+        self.data_field = None      # xRIT data field
+        self.keys = keys            # Encryption key list
+        self.key_index = None       # Encryption key index
+        self.payload = None         # xRIT payload
 
-        # Check keys have been loaded
-        if self.keys != {}:
-            self.parse()
+        # Parse xRIT headers
+        self.parse(data)
 
-            # Check encryption is applied to file
-            if self.key != 0:
-                self.decrypt()
-            else:
-                self.PLAINTEXT = self.data
+        if self.keys == {} or self.key_index == 0:
+            # No keys or file unencrypted
+            self.payload = self.header_field + self.data_field
         else:
-            self.PLAINTEXT = self.data
-    
-    def parse(self):
+            # Get key from list
+            try:
+                self.key = self.keys[self.key_index]
+            except KeyError:
+                print(f"  UNKNOWN ENCRYPTION KEY INDEX ({self.key_index:02X})")
+                self.key = 0
+
+            # Decrypt payload
+            cipher = DES.new(self.key, DES.MODE_ECB)
+            decrypted = cipher.decrypt(self.data_field)
+
+            self.payload = self.header_field + decrypted
+
+
+    def parse(self, data):
         """
-        Parses xRIT primary and key headers
+        Parses xRIT primary header and key header
         """
         
-        primaryHeader = self.data[:16]
+        # Parse primary header
+        primary_header = namedtuple(
+            'xrit_primary_header',
+            'type length file_type header_length data_length'
+        )(*struct.unpack(">BHBIQ", data[:16]))
 
-        # Header fields
-        self.HEADER_TYPE = self.tools.get_bits_int(primaryHeader, 0, 8, 128)               # Header Type (always 0x00)
-        self.HEADER_LEN = self.tools.get_bits_int(primaryHeader, 8, 16, 128)               # Header Length (always 0x10)
-        self.FILE_TYPE = self.tools.get_bits_int(primaryHeader, 24, 8, 128)                # File Type
-        self.TOTAL_HEADER_LEN = self.tools.get_bits_int(primaryHeader, 32, 32, 128)        # Total xRIT Header Length
-        self.DATA_LEN = self.tools.get_bits_int(primaryHeader, 64, 64, 128)                # Data Field Length
+        # Get data field
+        self.header_field = data[:primary_header.header_length]
+        self.data_field = data[primary_header.header_length : primary_header.header_length + primary_header.data_length]
 
-        #print("  Header Length: {} bits ({} bytes)".format(self.TOTAL_HEADER_LEN, self.TOTAL_HEADER_LEN/8))
-        #print("  Data Length: {} bits ({} bytes)".format(self.DATA_LEN, self.DATA_LEN/8))
+        # Get key header offset
+        offset = self.skip(self.header_field, 7)
 
-        self.headerField = self.data[:self.TOTAL_HEADER_LEN]
-        self.dataField = self.data[self.TOTAL_HEADER_LEN: self.TOTAL_HEADER_LEN + self.DATA_LEN]
-        
-        # Loop through headers until Key header (type 7)
-        offset = self.HEADER_LEN
-        nextHeader = self.get_next_header(offset)
+        # Parse key header
+        key_header = namedtuple(
+            'xrit_key_header',
+            'type length index'
+        )(*struct.unpack(">BHI", self.header_field[offset : offset + 7]))
 
-        while nextHeader != 7:
-            offset += self.get_header_len(offset)
-            nextHeader = self.get_next_header(offset)
+        # Get encryption key index
+        self.key_index = key_header.index
 
-        # Parse Key header (type 7)
-        key_header = struct.unpack(">BHI", self.headerField[offset : offset + 7])
-        self.index = key_header[2]
+        # Set key index to zero
+        self.header_field = self.header_field[:offset] + struct.pack(">BHI", 7, 7, 0) + self.header_field[offset + 7:]
 
-        #keyHLen = int.from_bytes(self.headerField[offset + 1 : offset + 3], byteorder='big')
-        #self.index = self.headerField[offset + 5 : offset + keyHLen]
 
-        # Catch wrong key index
-        try:
-            self.key = self.keys[self.index]
-        except KeyError:
-            if self.index != 0: print("  UNKNOWN ENCRYPTION KEY INDEX")
-            self.key = 0
-        
-        # Check block length if encryption is applied
-        if self.key != 0:
-            # Append null bytes to data field to fill last 8 byte DES block
-            dFMod8 = len(self.dataField) % 8
-            if dFMod8 != 0:
-                for i in range(dFMod8):
-                    self.dataField += b'\x00'
-                #print("  Added {} null bytes to fill last DES block".format(dFMod8))
-        
-        # Set key header to 0x0000
-        decHeaderField = self.headerField[: offset + 3]
-        decHeaderField += b'\x00\x00\x00\x00'
-        decHeaderField += self.headerField[offset + 7:]
-        self.headerField = decHeaderField
-
-    def get_next_header(self, offset):
+    def skip(self, header_field, header_type):
         """
-        Returns type of next header
-        """
-        return int.from_bytes(self.data[offset : offset + 1], byteorder='big')
-    
-    def get_header_len(self, offset):
-        """
-        Returns length of current header
-        """
-        return int.from_bytes(self.data[offset + 1 : offset + 3], byteorder='big')
-    
-    def decrypt(self):
-        """
-        Decrypts S_PDU data field into a plain text xRIT file
+        Get offset of header type in header field
         """
 
-        decoder = DES.new(self.key, DES.MODE_ECB)
-        decData = decoder.decrypt(self.dataField)
+        offset = 0
+        while True:
+            # Check enough data left in header field
+            if offset > (len(header_field) - 3): return -1
 
-        self.PLAINTEXT = self.headerField + decData
+            # Get header type and length
+            header = struct.unpack(">BH", header_field[offset : offset + 3])
+
+            # Return offset of header
+            if header[0] == header_type: return offset
+            offset += header[1]
 
 
 class xRIT:

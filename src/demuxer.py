@@ -340,8 +340,7 @@ class Channel:
                 self.handle_xRIT(spdu)
 
                 # Print key index
-                if self.config.verbose:
-                    print(f"    KEY INDEX:  0x{int.from_bytes(spdu.index, byteorder='big'):02X}\n")
+                if self.config.verbose: print(f"    KEY INDEX:  0x{spdu.key_index:02X}\n")
 
             elif not len_ok:
                 ex = self.tpfile.LENGTH
@@ -369,7 +368,7 @@ class Channel:
         """
 
         # Create new xRIT object
-        xrit = CCSDS.xRIT(spdu.PLAINTEXT)
+        xrit = CCSDS.xRIT(spdu.payload)
 
         # Save xRIT file if enabled
         if self.config.xrit:
