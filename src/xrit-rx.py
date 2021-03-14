@@ -8,7 +8,7 @@ Receive images from geostationary weather satellites
 import argparse
 import ast
 import colorama
-from collections import namedtuple
+from   collections import namedtuple
 import configparser
 import os
 from   pathlib import Path
@@ -167,7 +167,7 @@ class Main:
         self.keys = self.load_keys(self.config['rx']['keys'])
 
         # Dump file status
-        self.log(f"WRITING PACKETS TO \"{dump_path.absolute()}\"", style="ok")
+        if self.args.dump: self.log(f"WRITING PACKETS TO \"{dump_path.absolute()}\"", style="ok")
 
         # Check for new version on GitHub
         try:
@@ -294,7 +294,6 @@ class Main:
                 self.keys
             )
         )
-        #TODO: Remove configuration tuple
 
         # Create dashboard instance
         dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
@@ -312,7 +311,6 @@ class Main:
             ),
             self.demuxer
         )
-        #TODO: Remove configuration tuple
 
         # Check demuxer thread is ready
         if not self.demuxer.core_ready:
@@ -435,7 +433,6 @@ class Main:
         }
         
         print(f"{styles[style]}{msg}")
-
 
 
 # Initialise xrit-rx

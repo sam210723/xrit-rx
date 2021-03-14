@@ -81,7 +81,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             super().__init__(req, addr, server)
         except ConnectionResetError:
-            print(f"[HTTP] Connection to {self.client_address[0]} reset")
+            print(f"{STYLE_ERR}HTTP connection to {self.client_address[0]} reset")
             return
 
 
@@ -128,7 +128,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     self.end_headers()
 
         except ConnectionResetError:
-            print(f"[HTTP] Connection to {self.client_address[0]} reset")
+            print(f"{STYLE_ERR}HTTP connection to {self.client_address[0]} reset")
             return
 
 
