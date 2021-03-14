@@ -9,6 +9,7 @@ from Crypto.Cipher import DES
 from enum import Enum
 import os
 from pathlib import Path
+import struct
 
 
 class VCDU:
@@ -413,14 +414,17 @@ class S_PDU:
             nextHeader = self.get_next_header(offset)
 
         # Parse Key header (type 7)
-        keyHLen = int.from_bytes(self.headerField[offset + 1 : offset + 3], byteorder='big')
-        self.index = self.headerField[offset + 5 : offset + keyHLen]
+        key_header = struct.unpack(">BHI", self.headerField[offset : offset + 7])
+        self.index = key_header[2]
+
+        #keyHLen = int.from_bytes(self.headerField[offset + 1 : offset + 3], byteorder='big')
+        #self.index = self.headerField[offset + 5 : offset + keyHLen]
 
         # Catch wrong key index
         try:
             self.key = self.keys[self.index]
         except KeyError:
-            if self.index != b'\x00\x00': print("  UNKNOWN ENCRYPTION KEY INDEX")
+            if self.index != 0: print("  UNKNOWN ENCRYPTION KEY INDEX")
             self.key = 0
         
         # Check block length if encryption is applied

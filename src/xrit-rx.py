@@ -205,7 +205,7 @@ class Main:
         keys = {}
         for _ in range(key_count):
             # Get key index and key value
-            key = struct.unpack(">2s8s", key_file.read(10))
+            key = struct.unpack(">H8s", key_file.read(10))
 
             # Add key to dict
             keys[key[0]] = key[1]
