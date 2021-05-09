@@ -143,7 +143,7 @@ class Main:
         
         # Get dashboard URL
         ip = socket.gethostbyname(socket.gethostname())
-        dashboard_url = f"https://{ip}:{self.config['dashboard']['port']}"
+        dashboard_url = f"http://{ip}:{self.config['dashboard']['port']}"
 
         # Get input path
         if not self.args.file:
