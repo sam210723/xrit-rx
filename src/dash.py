@@ -151,7 +151,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 'version':        config.version,
                 'spacecraft':     config.spacecraft,
                 'downlink':       config.downlink,
-                'vcid_blacklist': config.blacklist,
+                'ignored_vcids':  list(config.ignored),
                 'images':         config.images,
                 'xrit':           config.xrit,
                 'interval':       int(config.interval)

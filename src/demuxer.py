@@ -104,16 +104,16 @@ class Demuxer:
                     # Print VCID info
                     if self.config.verbose: print()
                     vcdu.print_info()
-                    if vcdu.VCID in self.config.blacklist: print(f"  {STYLE_ERR}IGNORING DATA (CHANNEL IS BLACKLISTED)")
+                    if vcdu.VCID in self.config.ignored: print(f"  {STYLE_ERR}SKIPPING DATA (CHANNEL IS IGNORED IN CONFIG)")
                     last_vcid = vcdu.VCID
 
-                # Discard fill packets and blacklisted VCIDs
-                if vcdu.VCID == 63 or vcdu.VCID in self.config.blacklist: continue
+                # Discard fill packets and ignored VCIDs
+                if vcdu.VCID == 63 or vcdu.VCID in self.config.ignored: continue
 
                 # Create channel handlers for new VCIDs
                 if vcdu.VCID not in self.channels:
                     #FIXME: Probably a better way to do this
-                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit blacklist keys VCID lut')
+                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit ignored keys VCID lut')
                     self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crc_lut), self)
                     if self.config.verbose: print(f"  {STYLE_OK}CREATED NEW CHANNEL HANDLER\n")
 

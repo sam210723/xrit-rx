@@ -12,12 +12,14 @@ This release includes minor changes to the configuration file format.
   - Flag to pause main thread after processing (`--no-exit`)
   - New version notification on startup console output
   - New version notification on dashboard
+  - Link to decryption key info in key error message
 
 ### Changed
   - Complete rewrite of `xrit-rx.py`
   - Full dashboard URL displayed on startup
   - Calculate core wait time based on downlink bitrate
   - Static received data API endpoint
+  - Pasrse ignored VCIDs into a set
 
 ### Fixed
   - Naming convention and code quality issues

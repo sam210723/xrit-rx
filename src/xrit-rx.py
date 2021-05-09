@@ -6,7 +6,6 @@ Receive images from geostationary weather satellites
 """
 
 import argparse
-import ast
 import colorama
 from   collections import namedtuple
 import configparser
@@ -104,11 +103,11 @@ class Main:
 
         # Parse ignored channel list
         if self.config['output']['ignored']:
-            self.config['output']['ignored'] = ast.literal_eval(self.config['output']['ignored'])
-            if type(self.config['output']['ignored']) == int:
-                self.config['output']['ignored'] = (self.config['output']['ignored'],)
+            self.config['output']['ignored'] = self.config['output']['ignored'].split(',')
+            self.config['output']['ignored'] = [int(c) for c in self.config['output']['ignored']]
+            self.config['output']['ignored'] = set(self.config['output']['ignored'])
         else:
-            self.config['output']['ignored'] = ()
+            self.config['output']['ignored'] = set()
         ignored = ", ".join(f"{c} ({CCSDS.VCDU.get_VC(None, c)})" for c in self.config['output']['ignored'])
 
         # Limit dashboard refresh rate
@@ -159,7 +158,7 @@ class Main:
         self.log(f"INPUT:        {input_path}")
         self.log(f"OUTPUT:       {self.config['output']['path'].absolute()}")
         self.log(f"KEY FILE:     {self.config['rx']['keys'].name}")
-        self.log(f"IGNORED:      {ignored if ignored else 'None'}")
+        self.log(f"IGNORED:      {ignored if len(ignored) > 0 else 'None'}")
         self.log(f"DASHBOARD:    {dashboard_url if self.config['dashboard']['enabled'] else 'DISABLED'}")
         self.log(f"VERSION:      v{self.version}\n")
 
@@ -281,7 +280,7 @@ class Main:
         """
 
         # Create demuxer instance
-        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit blacklist keys')
+        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit ignored keys')
         self.demuxer = Demuxer(
             demux_config(
                 self.config['rx']['spacecraft'],
@@ -297,7 +296,7 @@ class Main:
         )
 
         # Create dashboard instance
-        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit blacklist version')
+        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit ignored version')
         self.dashboard = Dashboard(
             dash_config(
                 self.config['dashboard']['port'],

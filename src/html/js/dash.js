@@ -308,10 +308,10 @@ function block_vchan(element)
             var name = vchans[config.spacecraft][ch][0];
             indicator.innerHTML = `<span>${name}</span><p>VCID ${ch}</p>`;
 
-            // Set 'disabled' attribute on blacklisted VCIDs
-            if (config.vcid_blacklist.indexOf(parseInt(ch)) > -1) {
+            // Set 'disabled' attribute on ignored VCIDs
+            if (config.ignored_vcids.indexOf(parseInt(ch)) > -1) {
                 indicator.setAttribute("disabled", "");
-                indicator.title += " (blacklisted)";
+                indicator.title += " (ignored)";
             }
 
             element.appendChild(indicator);
@@ -319,8 +319,8 @@ function block_vchan(element)
     }
     else {  // Update block
         for (var ch in vchans[config.spacecraft]) {
-            // Do not update blacklisted channels
-            if (config.vcid_blacklist.indexOf(parseInt(ch)) > -1) { continue; }
+            // Do not update ignored channels
+            if (config.ignored_vcids.indexOf(parseInt(ch)) > -1) { continue; }
 
             // Update active channel
             if (ch == current_vcid) {
