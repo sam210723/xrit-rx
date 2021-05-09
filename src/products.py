@@ -247,13 +247,13 @@ class MultiSegmentImage(Product):
         """
 
         # Save JP2 to disk
-        jp2Name = path + name + ".jp2"
+        jp2Name = path / f"{name}.jp2"
         f = open(jp2Name, "wb")
         f.write(data)
         f.close()
 
         # Convert J2P to PPM
-        ppmName = path + name + ".ppm"
+        ppmName = path / f"{name}.ppm"
         subprocess.call(["tools\\libjpeg\\jpeg", jp2Name, ppmName], stdout=subprocess.DEVNULL)
         Path(jp2Name).unlink()
         
