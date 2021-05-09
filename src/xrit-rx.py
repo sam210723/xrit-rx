@@ -141,7 +141,10 @@ class Main:
             self.stop(code=1)
         
         # Get dashboard URL
-        ip = socket.gethostbyname(socket.gethostname())
+        try:
+            ip = socket.gethostbyname(socket.gethostname())
+        except socket.gaierror:
+            ip = "127.0.0.1"
         dashboard_url = f"http://{ip}:{self.config['dashboard']['port']}"
 
         # Get input path
