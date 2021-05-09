@@ -2,7 +2,7 @@ html, body {
   margin: 0;
   color: white;
   background: #111;
-  font-family: Roboto;
+  font-family: Roboto, Arial;
   cursor: default;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
