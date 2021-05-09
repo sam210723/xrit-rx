@@ -119,7 +119,7 @@ class Product:
             file_path = self.config.output / date / self.name.mode
             file_path.mkdir(parents=True, exist_ok=True)
 
-            if filename: file_path = file_path / f"{self.name.full}.{ext}"
+            if filename: file_path = file_path / f"{self.name.full}{ext}"
             #file_path = file_path.absolute()
         else:
             file_path = f"{date}/{self.name.mode}"
