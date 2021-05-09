@@ -16,6 +16,7 @@ This release includes minor changes to the configuration file format.
 
 ### Changed
   - Complete rewrite of `xrit-rx.py`
+  - Partial rewrite of CCSDS classes
   - Full dashboard URL displayed on startup
   - Calculate core wait time based on downlink bitrate
   - Static received data API endpoint
