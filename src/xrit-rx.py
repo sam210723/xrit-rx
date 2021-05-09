@@ -192,7 +192,8 @@ class Main:
             self.config['output']['xrit'] = True
 
             self.log(f"KEY FILE \"{path.absolute()}\" DOES NOT EXIST", style="error")
-            self.log(f"ENCRYPTED XRIT FILES WILL BE SAVED TO DISK\n", style="error")
+            self.log(f"Encrypted xRIT files will be saved to disk", style="error")
+            self.log(f"See https://vksdr.com/xrit-rx#keys for more information\n", style="error")
             return {}
         
         # Load key file
