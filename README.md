@@ -97,6 +97,23 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 
 
 
+## Command Line Arguments
+Most of the **xrit-rx** command line arguments are only useful for development and debugging purposes. All configuration required for decoding images is done through `xrit-rx.ini` as outlined above.
+
+```
+usage: xrit-rx.py [-h] [-v] [--config CONFIG] [--file FILE] [--dump DUMP] [--no-exit]
+
+optional arguments:
+  -h, --help       Show this help message and exit
+  -v, --verbose    Enable verbose console output
+  --config CONFIG  Path to configuration file (*.ini)
+  --file FILE      Path to VCDU packet file
+  --dump DUMP      Write VCDU packets to file
+  --no-exit        Pause main thread before exiting
+```
+
+
+
 ## HTTP API
 **xrit-rx** has a basic API accessible via HTTP primarily to support its web-based monitoring dashboard.
 This may be useful for integrating **xrit-rx** with other applications.
@@ -105,13 +122,10 @@ The API only supports `GET` requests and will return either a `200 OK` or `404 N
 The root endpoint is located at `/api` which returns information about the current xrit-rx configuration (example below).
 ```json
 {
-  "version": 1.1,
+  "version": 1.4,
   "spacecraft": "GK-2A",
   "downlink": "LRIT",
-  "ignored_vcids": [
-    4,
-    5
-  ],
+  "ignored_vcids": [4, 5],
   "images": true,
   "xrit": false,
   "interval": 1
@@ -122,7 +136,7 @@ The root endpoint is located at `/api` which returns information about the curre
 | URL                   | Description                              | Example                                                              | MIME               |
 | --------------------- | ---------------------------------------- | -------------------------------------------------------------------- | ------------------ |
 | `/api`                | General configuration information        | *see above*                                                          | `application/json` |
-| `/api/received/[...]` | Received data access                     | *binary data*                                                        | `image/jpeg`       |
+| `/api/received/[...]` | Received data access                     | *binary data*                                                        | `image/...`        |
 | `/api/current/vcid`   | Currently active virtual channel number  | `{ "vcid": 63 }`                                                     | `application/json` |
 | `/api/latest/image`   | Path to most recently received product   | `{ "image": "20190722/FD/IMG_FD_050_IR105_20190722_082006.jpg" }`    | `application/json` |
 | `/api/latest/xrit`    | Path to most recently received xRIT file | `{ "xrit": "20190722/FD/IMG_FD_050_IR105_20190722_082006_10.lrit" }` | `application/json` |
