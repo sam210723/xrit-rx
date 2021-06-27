@@ -232,7 +232,7 @@ class Main:
             print(f"Connecting to {addr[0]}:{addr[1]}...", end='', flush=True)
             self.connect_socket(self.socket, addr)
 
-            # Setup nanomsg published in goesrecv
+            # Setup nanomsg publisher in goesrecv
             self.socket.send(b'\x00\x53\x50\x00\x00\x21\x00\x00')
             if self.socket.recv(8) != b'\x00\x53\x50\x00\x00\x20\x00\x00':
                 self.log("ERROR CONFIGURING NANOMSG", style="error")
@@ -299,21 +299,22 @@ class Main:
         )
 
         # Create dashboard instance
-        dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit ignored version')
-        self.dashboard = Dashboard(
-            dash_config(
-                self.config['dashboard']['port'],
-                self.config['dashboard']['interval'],
-                self.config['rx']['spacecraft'],
-                self.config['rx']['mode'],
-                self.config['output']['path'],
-                self.config['output']['images'],
-                self.config['output']['xrit'],
-                self.config['output']['ignored'],
-                self.version
-            ),
-            self.demuxer
-        )
+        if self.config['dashboard']['enabled']:
+            dash_config = namedtuple('dash_config', 'port interval spacecraft downlink output images xrit ignored version')
+            self.dashboard = Dashboard(
+                dash_config(
+                    self.config['dashboard']['port'],
+                    self.config['dashboard']['interval'],
+                    self.config['rx']['spacecraft'],
+                    self.config['rx']['mode'],
+                    self.config['output']['path'],
+                    self.config['output']['images'],
+                    self.config['output']['xrit'],
+                    self.config['output']['ignored'],
+                    self.version
+                ),
+                self.demuxer
+            )
 
         # Check demuxer thread is ready
         if not self.demuxer.core_ready:

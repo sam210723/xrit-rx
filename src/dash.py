@@ -34,7 +34,7 @@ class Dashboard:
             msg = e.strerror
             if e.errno == 10048: msg = f"PORT {config.port} IS ALREADY IN USE"
 
-            print(f"{STYLE_ERR}DASHBOARD ERROR: {msg}")
+            print(f"{STYLE_ERR}DASHBOARD ERROR:\n{e}")
             return
 
         # Start HTTP server thread
