@@ -29,6 +29,7 @@ This release includes minor changes to the configuration file format.
   - Dashboard font fallback
   - Check config file exists before reading
   - Relative paths when script is not in the CWD
+  - Clipping to white in enhancement script
 </details>
 
 
