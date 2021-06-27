@@ -134,6 +134,10 @@ def gen_luts():
         else:
             lut[hotI + i] = sclut[i]
     
+    # Clip values above CLUT to last CLUT value
+    for i in range(len(lut) - coldI):
+        lut[coldI + i] = clut[-1]
+    
     # Generate alpha mask
     if args.t:
         for i in range(len(lut)):
