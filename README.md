@@ -54,7 +54,7 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 | ------- | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
 | `mode` | Type of downlink being received | `lrit` or `hrit` | `lrit` |
-| `input` | Input source | `goesrecv` or `osp` | `goesrecv` |
+| `input` | Input source | `goesrecv`, `tcp` or `udp` | `goesrecv` |
 | `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
 #### `output` section
@@ -70,21 +70,21 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP Address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
+| `ip` | IP address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
 | `port` | Output port of **goesrecv** | *Any TCP port number* | `5004` |
 
-#### `osp` section
+#### `tcp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP Address of a device running Open Satellite Project **xritdecoder** | *Any IPv4 address* | `127.0.0.1` |
-| `port` | Output port of Open Satellite Project **xritdecoder** | *Any TCP port number* | `5001` |
+| `ip` | IP address of a TCP data source (e.g. **xritdecoder**) | *Any IPv4 address* | `127.0.0.1` |
+| `port` | Output port of a TCP data source | *Any TCP port number* | `5001` |
 
 #### `udp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP Address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
+| `ip` | IP address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
 | `port` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
 
 #### `dashboard` section

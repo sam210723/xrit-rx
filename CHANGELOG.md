@@ -16,11 +16,13 @@ This release includes minor changes to the configuration file format.
 
 ### Changed
   - Complete rewrite of `xrit-rx.py`
-  - Partial rewrite of CCSDS classes
+  - Partial rewrite of CCSDS classes (`S_PDU`)
   - Full dashboard URL displayed on startup
-  - Calculate core wait time based on downlink bitrate
+  - Dynamic core wait time based on downlink bitrate
   - Static received data API endpoint
-  - Pasrse ignored VCIDs into a set
+  - Parse ignored VCIDs into a set
+  - Remove unused legacy functions
+  - Rename `osp` source to `tcp`
 
 ### Fixed
   - Naming convention and code quality issues

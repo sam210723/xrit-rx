@@ -136,7 +136,7 @@ class Main:
             self.stop(code=1)
         
         # Check input type is valid
-        if self.config['rx']['input'] not in ['goesrecv', 'osp', 'udp']:
+        if self.config['rx']['input'] not in ['goesrecv', 'tcp', 'udp']:
             self.log(f"INVALID INPUT TYPE \"{self.config['rx']['input']}\"", style="error")
             self.stop(code=1)
         
@@ -178,7 +178,7 @@ class Main:
                 latest_tag = r.json()['tag_name']
                 if f"v{self.version}" != latest_tag:
                     self.log(f"\nA new version of xrit-rx is available on GitHub", style="ok")
-                    self.log("https://github.com/sam210723/xrit-rx/releases/latest", style="ok")
+                    self.log("https://github.com/sam210723/xrit-rx/releases/latest\n", style="ok")
         except Exception: pass
 
 
@@ -238,10 +238,10 @@ class Main:
                 self.log("ERROR CONFIGURING NANOMSG", style="error")
                 self.stop(code=1)
 
-        elif self.config['rx']['input'] == "osp":
+        elif self.config['rx']['input'] == "tcp":
             # Create socket and address
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            addr = (self.config['osp']['ip'], int(self.config['osp']['port']))
+            addr = (self.config['tcp']['ip'], int(self.config['tcp']['port']))
 
             # Connect socket
             print(f"Connecting to {addr[0]}:{addr[1]}...", end='', flush=True)
@@ -335,7 +335,7 @@ class Main:
         Handles data from the selected input source
         """
 
-        # Packet length (VCDU)
+        # Packet length (1 VCDU)
         buflen = 892
 
         while True:
@@ -350,18 +350,19 @@ class Main:
                 # Push packet to demuxer
                 if len(data) == buflen + 8: self.demuxer.push(data[8:])
             
-            elif self.config['rx']['input'] == "osp":
-                # Get packet from Open Satellite Project
+            elif self.config['rx']['input'] == "tcp":
+                # Get packet from TCP source
                 try:
                     data = self.socket.recv(buflen)
                 except ConnectionResetError:
-                    self.log("LOST CONNECTION TO OPEN SATELLITE PROJECT", style="error")
+                    self.log("LOST CONNECTION TO TCP SOURCE", style="error")
                     self.stop(code=1)
 
                 # Push packet to demuxer
                 if len(data) == buflen: self.demuxer.push(data)
 
             elif self.config['rx']['input'] == "udp":
+                # Get packet from UDP source
                 try:
                     data, _ = self.socket.recvfrom(buflen)
                 except Exception as e:
