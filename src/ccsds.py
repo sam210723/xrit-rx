@@ -386,10 +386,30 @@ class S_PDU:
                 print(f"  UNKNOWN ENCRYPTION KEY INDEX ({self.key_index:02X})")
                 self.key = 0
 
-            # Decrypt payload
+            # Setup DES cipher
             cipher = DES.new(self.key, DES.MODE_ECB)
-            decrypted = cipher.decrypt(self.data_field)
 
+            # Check block boundary alignment
+            mod = len(self.data_field) % 8
+
+            # Payload is not aligned to ECB block boundary
+            if mod > 0:
+                print("a")
+                # Add padding bytes to end of payload
+                self.data_field = bytearray(self.data_field)
+                self.data_field.extend(bytes(8 - mod))
+                self.data_field = bytes(self.data_field)
+
+                # Decrypt payload
+                decrypted = cipher.decrypt(self.data_field)
+
+                # Strip padding bytes
+                self.data_field = decrypted[:8 - mod]
+            else:
+                # Decrypt payload
+                decrypted = cipher.decrypt(self.data_field)
+
+            # Add header field to unencrypted payload
             self.payload = self.header_field + decrypted
 
 
