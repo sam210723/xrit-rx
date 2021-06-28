@@ -385,7 +385,7 @@ class S_PDU:
             try:
                 self.key = self.keys[self.key_index]
             except KeyError:
-                print(f"  UNKNOWN ENCRYPTION KEY INDEX ({self.key_index:02X})")
+                log(f"  UNKNOWN ENCRYPTION KEY INDEX ({self.key_index:02X})", style="error")
                 self.key = 0
 
             # Setup DES cipher
@@ -396,7 +396,8 @@ class S_PDU:
 
             # Payload is not aligned to ECB block boundary
             if mod > 0:
-                print("a")
+                log("PAYLOAD NOT ALIGNED WITH DES ECB BLOCK BOUNDARY\n", style="error")
+
                 # Add padding bytes to end of payload
                 self.data_field = bytearray(self.data_field)
                 self.data_field.extend(bytes(8 - mod))

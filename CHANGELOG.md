@@ -32,6 +32,7 @@ This release includes minor changes to the configuration file format.
   - Check config file exists before reading
   - Relative paths when script is not in the CWD
   - Clipping to white in enhancement script
+  - Payload DES ECB block boundary alignment
 </details>
 
 
