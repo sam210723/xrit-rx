@@ -369,7 +369,7 @@ function block_latestimg(element)
             if (img.getAttribute("src") != url) {
                 img.setAttribute("src", url);
                 link.setAttribute("href", url);
-                cap.innerText = fname;
+                cap.innerText = fname.replace("_ENHANCED", "");
             }
         }
     }

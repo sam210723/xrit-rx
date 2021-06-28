@@ -113,7 +113,7 @@ class Demuxer:
                 # Create channel handlers for new VCIDs
                 if vcdu.VCID not in self.channels:
                     #FIXME: Probably a better way to do this
-                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit ignored keys VCID lut')
+                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit enhance ignored keys VCID lut')
                     self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crc_lut), self)
                     if self.config.verbose: print(f"  {STYLE_OK}CREATED NEW CHANNEL HANDLER\n")
 
@@ -387,8 +387,9 @@ class Channel:
 
             # Save and clear complete product
             if self.product.complete:
-                self.product.save()
-                self.demuxer.latest_image = self.product.get_save_path(ext=self.product.ext, with_root=False)
+                self.product.save(enhance=self.config.enhance)
+
+                self.demuxer.latest_image = self.product.last
                 self.product = None
         else:
             # Print XRIT file info

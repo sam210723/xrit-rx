@@ -50,49 +50,50 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 ## Configuration Options
 
 #### `rx` section
-| Setting | Description | Options | Default |
-| ------- | ----------- | ------- | ------- |
+| Setting      | Description | Options | Default |
+| ------------ | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
-| `mode` | Type of downlink being received | `lrit` or `hrit` | `lrit` |
-| `input` | Input source | `goesrecv`, `tcp` or `udp` | `goesrecv` |
-| `keys` | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
+| `mode`       | Type of downlink being received | `lrit` or `hrit` | `lrit` |
+| `input`      | Input source | `goesrecv`, `tcp` or `udp` | `goesrecv` |
+| `keys`       | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
 #### `output` section
 
-| Setting | Description | Options | Default |
-| ------- | ----------- | ------- | ------- |
-| `path` | Root output path for received files | *Absolute or relative file path* | `"received"` |
-| `images` | Enable/Disable saving Image files to disk | `true` or `false` | `true` |
-| `xrit` | Enable/Disable saving xRIT files to disk | `true` or `false` | `false` |
+| Setting   | Description | Options | Default |
+| --------- | ----------- | ------- | ------- |
+| `path`    | Root output path for received files | *Absolute or relative file path* | `"received"` |
+| `images`  | Enable/Disable saving Image files to disk | `true` or `false` | `true` |
+| `xrit`    | Enable/Disable saving xRIT files to disk | `true` or `false` | `false` |
+| `enhance` | Automatically enhance LRIT IR105 images | `true` or `false` | `true` |
 | `ignored` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
 #### `goesrecv` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
-| `port` | Output port of **goesrecv** | *Any TCP port number* | `5004` |
+| `ip`    | IP address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
+| `port`  | Output port of **goesrecv** | *Any TCP port number* | `5004` |
 
 #### `tcp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP address of a TCP data source (e.g. **xritdecoder**) | *Any IPv4 address* | `127.0.0.1` |
-| `port` | Output port of a TCP data source | *Any TCP port number* | `5001` |
+| `ip`    | IP address of a TCP data source (e.g. **xritdecoder**) | *Any IPv4 address* | `127.0.0.1` |
+| `port`  | Output port of a TCP data source | *Any TCP port number* | `5001` |
 
 #### `udp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip` | IP address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
-| `port` | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
+| `ip`    | IP address to bind UDP socket to | *Any IPv4 address* | `127.0.0.1` |
+| `port`  | Port number to bind UDP socket to | *Any UDP port number* | `5002` |
 
 #### `dashboard` section
 
-| Setting | Description | Options | Default |
-| ------- | ----------- | ------- | ------- |
-| `enabled` | Enable/Disable dashboard server | `true` or `false` | `true` |
-| `port` | Port number for server to listen on | *Any TCP port number* | `1692` |
+| Setting    | Description | Options | Default |
+| ---------- | ----------- | ------- | ------- |
+| `enabled`  | Enable/Disable dashboard server | `true` or `false` | `true` |
+| `port`     | Port number for server to listen on | *Any TCP port number* | `1692` |
 | `interval` | Update interval in seconds | `integer` | `1` |
 
 

@@ -7,6 +7,7 @@ This release includes minor changes to the configuration file format.
 
 
 ### Added
+  - Automatic LRIT IR105 image enhancement
   - Offline schedule loading when online schedule fails
   - Dashboard schedule download failue message
   - Flag to pause main thread after processing (`--no-exit`)

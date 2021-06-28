@@ -6,12 +6,11 @@ Parsing and assembly functions for downlinked products
 """
 
 import collections
-import colorama
 from colorama import Fore, Back, Style
 import io
 import numpy as np
 from pathlib import Path
-from PIL import Image, ImageFile, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 import subprocess
 
 
@@ -198,7 +197,7 @@ class MultiSegmentImage(Product):
         total_segs = { "LRIT": 10, "HRIT": 50 }
         if self.counter == total_segs[self.config.downlink]: self.complete = True
 
-    def save(self):
+    def save(self, enhance=False):
         """
         Save product to disk
         """
@@ -229,10 +228,18 @@ class MultiSegmentImage(Product):
                 self.ext
             ) #FIXME: This is bad
 
-            # Save final image
+            # Save assembled image
             img.save(channel_path, format='JPEG', subsampling=0, quality=100)
             print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(channel_path))
-            self.last = channel_path
+            self.last = self.get_save_path(with_root=False, ext=self.ext)
+
+            # Optional LRIT IR105 image enhancement
+            if enhance and c == "IR105" and self.config.downlink == "LRIT":
+                enh = EnhanceIR105(img)
+                enh.save(f"{self.get_save_path()}_ENHANCED.{self.ext}")
+
+                self.last = f"{self.get_save_path(with_root=False)}_ENHANCED.{self.ext}"
+
     
     def convert_to_img(self, path, name, data):
         """
@@ -415,3 +422,76 @@ class AlphanumericText(Product):
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
         self.last = path
+
+
+class EnhanceIR105:
+    """
+    Apply infrared colour enhancement to IR105 channel imagery
+    """
+
+    def __init__(self, img):
+        lut = [
+            (  0,   0,   0), (  1,   1,   1), (  2,   2,   2), (  3,   3,   3), (  4,   4,   4), (  5,   5,   5), (  6,   6,   6), (  7,   7,   7),
+            (  8,   8,   8), (  9,   9,   9), ( 10,  10,  10), ( 11,  11,  11), ( 12,  12,  12), ( 13,  13,  13), ( 14,  14,  14), ( 15,  15,  15),
+            ( 16,  16,  16), ( 17,  17,  17), ( 18,  18,  18), ( 19,  19,  19), ( 20,  20,  20), ( 21,  21,  21), ( 22,  22,  22), ( 23,  23,  23),
+            ( 24,  24,  24), ( 25,  25,  25), ( 26,  26,  26), ( 27,  27,  27), ( 28,  28,  28), ( 29,  29,  29), ( 30,  30,  30), ( 31,  31,  31),
+            ( 32,  32,  32), ( 33,  33,  33), ( 34,  34,  34), ( 35,  35,  35), ( 36,  36,  36), ( 37,  37,  37), ( 38,  38,  38), ( 39,  39,  39),
+            ( 40,  40,  40), ( 41,  41,  41), ( 42,  42,  42), ( 43,  43,  43), ( 44,  44,  44), ( 45,  45,  45), ( 46,  46,  46), ( 47,  47,  47),
+            ( 48,  48,  48), ( 49,  49,  49), ( 50,  50,  50), ( 51,  51,  51), ( 52,  52,  52), ( 53,  53,  53), ( 54,  54,  54), ( 55,  55,  55),
+            ( 56,  56,  56), ( 57,  57,  57), ( 58,  58,  58), ( 59,  59,  59), ( 60,  60,  60), ( 61,  61,  61), ( 62,  62,  62), ( 63,  63,  63),
+            ( 64,  64,  64), ( 65,  65,  65), ( 66,  66,  66), ( 67,  67,  67), ( 68,  68,  68), ( 69,  69,  69), ( 70,  70,  70), ( 71,  71,  71),
+            ( 72,  72,  72), ( 73,  73,  73), ( 74,  74,  74), ( 75,  75,  75), ( 76,  76,  76), ( 77,  77,  77), ( 78,  78,  78), ( 79,  79,  79),
+            ( 80,  80,  80), ( 81,  81,  81), ( 82,  82,  82), ( 83,  83,  83), ( 84,  84,  84), ( 85,  85,  85), ( 86,  86,  86), ( 87,  87,  87),
+            ( 88,  88,  88), ( 89,  89,  89), ( 90,  90,  90), ( 91,  91,  91), ( 92,  92,  92), ( 93,  93,  93), ( 94,  94,  94), ( 95,  95,  95),
+            ( 96,  96,  96), ( 97,  97,  97), ( 98,  98,  98), ( 99,  99,  99), (100, 100, 100), (101, 101, 101), (102, 102, 102), (103, 103, 103),
+            (104, 104, 104), (105, 105, 105), (106, 106, 106), (107, 107, 107), (108, 108, 108), (109, 109, 109), (110, 110, 110), (111, 111, 111),
+            (112, 112, 112), (113, 113, 113), (114, 114, 114), (115, 115, 115), (116, 116, 116), (117, 117, 117), (118, 118, 118), (119, 119, 119),
+            (120, 120, 120), (121, 121, 121), (122, 122, 122), (123, 123, 123), (124, 124, 124), (125, 125, 125), (126, 126, 126), (127, 127, 127),
+            (128, 128, 128), (129, 129, 129), (130, 130, 130), (131, 131, 131), (132, 132, 132), (133, 133, 133), (134, 134, 134), (135, 135, 135),
+            (136, 136, 136), (137, 137, 137), (138, 138, 138), (139, 139, 139), (140, 140, 140), (141, 141, 141), (142, 142, 142), (143, 143, 143),
+            (144, 144, 144), (145, 145, 145), (146, 146, 146), (147, 147, 147), (148, 148, 148), (149, 149, 149), (150, 150, 150), (151, 151, 151),
+            (152, 152, 152), (153, 153, 153), (154, 154, 154), (155, 155, 155), (156, 156, 156), (157, 157, 157), (158, 158, 158), (159, 159, 159),
+            (160, 160, 160), (161, 161, 161), (162, 162, 162), (163, 163, 163), (164, 164, 164), (165, 165, 165), (166, 166, 166), (167, 167, 167),
+            (168, 168, 168), (169, 169, 169), (170, 170, 170), (171, 171, 171), (172, 172, 172), (173, 173, 173), (174, 174, 174), (175, 175, 175),
+            (176, 176, 176), (177, 177, 177), (160, 160, 174), (143, 143, 174), (125, 125, 176), (108, 108, 182), ( 91,  91, 192), ( 73,  73, 204),
+            ( 55,  55, 216), ( 37,  37, 234), ( 18,  20, 247), (  0,  19, 255), (  0,  31, 255), (  0,  47, 255), (  0,  63, 255), (  0,  79, 255),
+            (  0,  91, 255), (  0, 107, 255), (  0, 123, 255), (  0, 139, 255), (  0, 155, 255), (  0, 167, 255), (  0, 183, 255), (  0, 199, 255),
+            (  0, 215, 255), (  0, 227, 255), (  0, 243, 255), (  0, 255, 255), ( 15, 255, 239), ( 27, 255, 227), ( 43, 255, 211), ( 59, 255, 195),
+            ( 75, 255, 179), ( 87, 255, 167), (103, 255, 151), (119, 255, 135), (135, 255, 119), (151, 255, 103), (163, 255,  91), (179, 255,  75),
+            (195, 255,  59), (211, 255,  43), (223, 255,  31), (239, 255,  15), (255, 255,   0), (255, 239,   0), (255, 227,   0), (255, 211,   0),
+            (255, 195,   0), (255, 179,   0), (255, 167,   0), (255, 151,   0), (255, 135,   0), (255, 119,   0), (255, 103,   0), (255,  91,   0),
+            (255,  75,   0), (255,  59,   0), (255,  43,   0), (255,  31,   0), (255,  15,   0), (255,   0,   0), (237,   0,   0), (224,   0,   0),
+            (206,   0,   0), (189,   0,   0), (171,   0,   0), (158,   0,   0), (140,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0),
+            (131,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0), (131,   0,   0)
+        ]
+
+        # Create empty NumPy arrays for each channel
+        nplutR = np.zeros(len(lut), dtype=np.uint8)
+        nplutG = np.zeros(len(lut), dtype=np.uint8)
+        nplutB = np.zeros(len(lut), dtype=np.uint8)
+
+        # Convert LUT channels into separate NumPy arrays
+        for i, c in enumerate(lut):
+            nplutR[i] = c[0]
+            nplutG[i] = c[1]
+            nplutB[i] = c[2]
+        
+        # Get grayscale values from input image
+        gray = np.array(img)
+        
+        # Apply each channel of LUT to grayscale image
+        enhR = nplutR[gray]
+        enhG = nplutG[gray]
+        enhB = nplutB[gray]
+
+        # Convert enhanced arrays to images
+        iR = Image.fromarray(enhR).convert('L')
+        iG = Image.fromarray(enhG).convert('L')
+        iB = Image.fromarray(enhB).convert('L')
+
+        # Combine enhanced channels into an RGB(A) image
+        self.output = Image.merge("RGB", (iR, iG, iB))
+
+    def save(self, path):
+        self.output.save(path, format='JPEG', subsampling=0, quality=100)
+        print(f"   {Fore.GREEN}{Style.BRIGHT} Saved \"{path}\"")

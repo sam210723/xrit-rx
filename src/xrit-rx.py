@@ -99,6 +99,7 @@ class Main:
         # Parse boolean options
         self.config['output']['images'] = self.config['output']['images'] == "true"
         self.config['output']['xrit'] = self.config['output']['xrit'] == "true"
+        self.config['output']['enhance'] = self.config['output']['enhance'] == "true"
         self.config['dashboard']['enabled'] = self.config['dashboard']['enabled'] == "true"
 
         # Parse ignored channel list
@@ -283,7 +284,7 @@ class Main:
         """
 
         # Create demuxer instance
-        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit ignored keys')
+        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit enhance ignored keys')
         self.demuxer = Demuxer(
             demux_config(
                 self.config['rx']['spacecraft'],
@@ -293,6 +294,7 @@ class Main:
                 self.config['output']['path'],
                 self.config['output']['images'],
                 self.config['output']['xrit'],
+                self.config['output']['enhance'],
                 self.config['output']['ignored'],
                 self.keys
             )
