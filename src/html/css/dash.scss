@@ -4,6 +4,39 @@ $blockh: #292929;
 $blockb: #1C1C1C;
 $border: #555;
 
+
+@mixin animation($str) {
+    -webkit-animation: #{$str};
+    -moz-animation: #{$str};
+    -ms-animation: #{$str};
+    -o-animation: #{$str};
+    animation: #{$str};      
+}
+
+@mixin keyframes($animation-name) {
+    @-webkit-keyframes #{$animation-name} {
+        @content;
+    }
+    @-moz-keyframes #{$animation-name} {
+        @content;
+    }  
+    @-ms-keyframes #{$animation-name} {
+        @content;
+    }
+    @-o-keyframes #{$animation-name} {
+        @content;
+    }  
+    @keyframes #{$animation-name} {
+        @content;
+    }
+}
+
+@include keyframes(indicator-pulse) {
+    0%   { background: green; }
+    100% { background: darkgreen; }
+}
+
+
 html, body {
     margin: 0;
 
@@ -184,6 +217,8 @@ a {
         background: green;
         border-color: limegreen;
 
+        @include animation('indicator-pulse 1s infinite alternate ease-in-out');
+
         p {
             color: white;
         }
@@ -197,20 +232,6 @@ a {
         p {
             color: #777;
         }
-    }
-}
-
-.time {
-    margin: 5px 15px 21px 15px;
-
-    font-size: 35px;
-    font-weight: bold;
-
-    span {
-        font-size: 20px;
-        font-weight: normal;
-
-        color: #AAA;
     }
 }
 
