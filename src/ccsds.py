@@ -603,17 +603,3 @@ class Tools:
         bits = self.get_bits(data, start, length, count)
 
         return int(bits, 2)
-
-
-    def to_hex(self, data):
-        """
-        Convert bytes to hex string
-
-        :param data: Bytes to convert
-        """
-
-        i = int.from_bytes(data, byteorder='big')
-        h = hex(i).upper()
-        s = "0x{}".format(h[2:])
-
-        return s
