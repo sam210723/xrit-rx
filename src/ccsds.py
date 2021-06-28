@@ -5,12 +5,14 @@ https://github.com/sam210723/xrit-rx
 Parsing and assembly functions for all CCSDS protocol layers
 """
 
-from Crypto.Cipher import DES
-from enum import Enum
+import colorama
+from   colorama import Fore, Back, Style
+from   Crypto.Cipher import DES
+from   enum import Enum
 import os
-from pathlib import Path
+from   pathlib import Path
 import struct
-from collections import namedtuple
+from   collections import namedtuple
 
 
 class VCDU:
@@ -623,3 +625,19 @@ class Tools:
         bits = self.get_bits(data, start, length, count)
 
         return int(bits, 2)
+
+
+
+def log(msg, style="none"):
+        """
+        Writes to console
+        """
+
+        # Colorama styles
+        styles = {
+            "none":   "",
+            "ok":    f"{colorama.Fore.GREEN}{colorama.Style.BRIGHT}",
+            "error": f"{colorama.Fore.WHITE}{colorama.Back.RED}{colorama.Style.BRIGHT}"
+        }
+        
+        print(f"{styles[style]}{msg}")
