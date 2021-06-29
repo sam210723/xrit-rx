@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
   - Naming convention and code quality issues
   - HTTP request handler locking up
   - Safe exit when demux core not ready
+  - Partial FDs not showing up on dashboard
   - Dashboard font fallback
   - Check config file exists before reading
   - Relative paths when script is not in the CWD

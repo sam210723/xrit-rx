@@ -423,4 +423,6 @@ class Channel:
             elif self.product != None:
                 # Save and clear current product
                 self.product.save()
+
+                self.demuxer.latest_image = self.product.last
                 self.product = None
