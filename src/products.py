@@ -368,7 +368,7 @@ class SingleSegmentImage(Product):
         outf.close()
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
-        self.last = path
+        self.last = self.get_save_path(with_root=False, ext=self.ext)
 
     def get_ext(self):
         """
@@ -421,7 +421,7 @@ class AlphanumericText(Product):
             print("    GK-2A LRIT Daily Operation Plan")
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
-        self.last = path
+        self.last = self.get_save_path(with_root=False, ext=self.ext)
 
 
 class EnhanceIR105:
