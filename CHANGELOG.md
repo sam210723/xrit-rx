@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 
 <details>
 <summary>Unreleased changes</summary>
-This release includes minor changes to the configuration file format.
+
+**Note:** This release includes minor changes to the configuration file format.
 
 
 ### Added
@@ -14,6 +15,7 @@ This release includes minor changes to the configuration file format.
   - New version notification on startup console output
   - New version notification on dashboard
   - Link to decryption key info in key error message
+  - Subtle dashboard CSS animations
 
 ### Changed
   - Complete rewrite of `xrit-rx.py`

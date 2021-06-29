@@ -182,7 +182,7 @@ a {
     }
 }
 
-.vchan {
+.indicator {
     display: inline-block;
     width: 100px;
 
@@ -217,7 +217,7 @@ a {
         background: green;
         border-color: limegreen;
 
-        @include animation('indicator-pulse 1s infinite alternate ease-in-out');
+        @include animation('indicator-pulse 2s infinite alternate ease-in-out');
 
         p {
             color: white;

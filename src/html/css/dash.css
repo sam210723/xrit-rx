@@ -1,3 +1,21 @@
+@-webkit-keyframes indicator-pulse {
+  0% {
+    background: green;
+  }
+  100% {
+    background: darkgreen;
+  }
+}
+
+@keyframes indicator-pulse {
+  0% {
+    background: green;
+  }
+  100% {
+    background: darkgreen;
+  }
+}
+
 html, body {
   margin: 0;
   color: white;
@@ -120,7 +138,7 @@ a {
   background: green;
 }
 
-.vchan {
+.indicator {
   display: inline-block;
   width: 100px;
   margin: 4px 10px 0 10px;
@@ -135,47 +153,37 @@ a {
           box-shadow: 0 0 10px black;
 }
 
-.vchan span {
+.indicator span {
   font-size: 32px;
   font-weight: bold;
 }
 
-.vchan p {
+.indicator p {
   margin: 0;
   margin-top: 5px;
   color: #AAA;
 }
 
-.vchan[active] {
+.indicator[active] {
   color: white;
   background: green;
   border-color: limegreen;
+  -webkit-animation: indicator-pulse 2s infinite alternate ease-in-out;
+  animation: indicator-pulse 2s infinite alternate ease-in-out;
 }
 
-.vchan[active] p {
+.indicator[active] p {
   color: white;
 }
 
-.vchan[disabled] {
+.indicator[disabled] {
   color: #777;
   background: #400;
   border-color: #700;
 }
 
-.vchan[disabled] p {
+.indicator[disabled] p {
   color: #777;
-}
-
-.time {
-  margin: 5px 15px 21px 15px;
-  font-size: 35px;
-  font-weight: bold;
-}
-
-.time span {
-  font-size: 20px;
-  font-weight: normal;
-  color: #AAA;
 }
 
 .latestimg {
