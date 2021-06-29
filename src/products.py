@@ -201,7 +201,7 @@ class MultiSegmentImage(Product):
         """
         Save product to disk
         """
-        
+
         path = self.get_save_path(filename=False)
 
         for c in self.images:
@@ -212,7 +212,7 @@ class MultiSegmentImage(Product):
             for s in self.images[c]:
                 height = self.images[c][s].size[1]
                 offset = height * (s - 1)
-                
+
                 try:
                     img.paste(
                         self.images[c][s],
@@ -220,7 +220,7 @@ class MultiSegmentImage(Product):
                     )
                 except OSError:
                     print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING TRUNCATED IMAGE SEGMENT")
-            
+
             # Get image path for current channel
             channel_path = "{}/{}.{}".format(
                 path,
@@ -230,8 +230,8 @@ class MultiSegmentImage(Product):
 
             # Save assembled image
             img.save(channel_path, format='JPEG', subsampling=0, quality=100)
-            print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(channel_path))
-            self.last = self.get_save_path(with_root=False, ext=self.ext)
+            print(f"    {Fore.GREEN}{Style.BRIGHT}Saved \"{self.get_save_path(ext=self.ext)}\"")
+            self.last = str(self.get_save_path(with_root=False, ext=self.ext))
 
             # Optional LRIT IR105 image enhancement
             if self.config.enhance and c == "IR105" and self.config.downlink == "LRIT":
@@ -240,7 +240,7 @@ class MultiSegmentImage(Product):
 
                 self.last = f"{self.get_save_path(with_root=False)}_ENHANCED.{self.ext}"
 
-    
+
     def convert_to_img(self, path, name, data):
         """
         Converts J2K to Pillow Image object via PPM using libjpeg
@@ -494,4 +494,4 @@ class EnhanceIR105:
 
     def save(self, path):
         self.output.save(path, format='JPEG', subsampling=0, quality=100)
-        print(f"   {Fore.GREEN}{Style.BRIGHT} Saved \"{path}\"")
+        print(f"    {Fore.GREEN}{Style.BRIGHT}Saved \"{path}\"")
