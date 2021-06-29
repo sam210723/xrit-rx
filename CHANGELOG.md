@@ -24,6 +24,7 @@ This release includes minor changes to the configuration file format.
   - Parse ignored VCIDs into a set
   - Remove unused legacy functions
   - Rename `osp` source to `tcp`
+  - Use `f-strings` instead of `str.format()`
 
 ### Fixed
   - Naming convention and code quality issues

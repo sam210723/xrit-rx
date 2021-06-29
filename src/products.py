@@ -6,12 +6,16 @@ Parsing and assembly functions for downlinked products
 """
 
 import collections
-from colorama import Fore, Back, Style
+from   colorama import Fore, Back, Style
 import io
 import numpy as np
 from   pathlib import Path
 from   PIL import Image, UnidentifiedImageError
 import subprocess
+
+# Colorama styles
+STYLE_ERR = f"{Fore.WHITE}{Back.RED}{Style.BRIGHT}"
+STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
 
 
 def new(config, name):
@@ -184,7 +188,7 @@ class MultiSegmentImage(Product):
             try:
                 img = Image.open(buf)
             except UnidentifiedImageError:
-                print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "NO IMAGE FOUND IN XRIT FILE")
+                print(f"    {STYLE_ERR}NO IMAGE FOUND IN XRIT FILE")
                 return
         else:
             # Get image from J2K payload
@@ -221,14 +225,14 @@ class MultiSegmentImage(Product):
                         ( 0, offset )
                     )
                 except OSError:
-                    print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING TRUNCATED IMAGE SEGMENT")
+                    print(f"    {STYLE_ERR}SKIPPING TRUNCATED IMAGE SEGMENT")
 
             # Get image output path
             path = self.get_save_path(channel=c, extension="jpg")
 
             # Save assembled image
             img.save(path, format='JPEG', subsampling=0, quality=100)
-            log(f"    Saved \"{path}\"", style="ok")
+            print(f"    {STYLE_OK}Saved \"{path}\"")
             self.last = str(path.relative_to(self.config.output))
 
             # Optional LRIT IR105 image enhancement
@@ -238,6 +242,7 @@ class MultiSegmentImage(Product):
                 enh = EnhanceIR105(img)
                 enh.save(path)
 
+                print(f"    {STYLE_OK}Saved \"{path}\"")
                 self.last = str(path.relative_to(self.config.output))
 
     def convert_to_img(self, path, data):
@@ -370,8 +375,7 @@ class SingleSegmentImage(Product):
         outf.write(self.payload)
         outf.close()
 
-        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
-        self.last = self.get_save_path(with_root=False, ext=self.ext)
+        print(f"    {STYLE_OK}Saved \"{path}\"")
         self.last = str(path.relative_to(self.config.output))
 
     def get_ext(self):
@@ -422,10 +426,9 @@ class AlphanumericText(Product):
 
         # Detect GK-2A LRIT DOP
         if self.payload[:40].decode('utf-8') == "GK-2A AMI LRIT DOP(Daily Operation Plan)":
-            print("    GK-2A LRIT Daily Operation Plan")
+            print(f"    {STYLE_OK}GK-2A LRIT Daily Operation Plan")
 
-        print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
-        self.last = self.get_save_path(with_root=False, ext=self.ext)
+        print(f"    {STYLE_OK}Saved \"{path}\"")
         self.last = str(path.relative_to(self.config.output))
 
 
@@ -499,4 +502,3 @@ class EnhanceIR105:
 
     def save(self, path):
         self.output.save(path, format='JPEG', subsampling=0, quality=100)
-        print(f"    {Fore.GREEN}{Style.BRIGHT}Saved \"{path}\"")
