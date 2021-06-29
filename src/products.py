@@ -197,7 +197,7 @@ class MultiSegmentImage(Product):
         total_segs = { "LRIT": 10, "HRIT": 50 }
         if self.counter == total_segs[self.config.downlink]: self.complete = True
 
-    def save(self, enhance=False):
+    def save(self):
         """
         Save product to disk
         """
@@ -234,7 +234,7 @@ class MultiSegmentImage(Product):
             self.last = self.get_save_path(with_root=False, ext=self.ext)
 
             # Optional LRIT IR105 image enhancement
-            if enhance and c == "IR105" and self.config.downlink == "LRIT":
+            if self.config.enhance and c == "IR105" and self.config.downlink == "LRIT":
                 enh = EnhanceIR105(img)
                 enh.save(f"{self.get_save_path()}_ENHANCED.{self.ext}")
 

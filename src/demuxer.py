@@ -387,7 +387,7 @@ class Channel:
 
             # Save and clear complete product
             if self.product.complete:
-                self.product.save(enhance=self.config.enhance)
+                self.product.save()
 
                 self.demuxer.latest_image = self.product.last
                 self.product = None
