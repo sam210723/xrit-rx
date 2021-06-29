@@ -34,6 +34,7 @@ This release includes minor changes to the configuration file format.
   - Relative paths when script is not in the CWD
   - Clipping to white in enhancement script
   - Payload DES ECB block boundary alignment
+  - Product file path manipulation using `pathlib`
 </details>
 
 

@@ -9,8 +9,8 @@ import collections
 from colorama import Fore, Back, Style
 import io
 import numpy as np
-from pathlib import Path
-from PIL import Image, UnidentifiedImageError
+from   pathlib import Path
+from   PIL import Image, UnidentifiedImageError
 import subprocess
 
 
@@ -106,25 +106,33 @@ class Product:
 
         return (h, m ,s)
 
-    def get_save_path(self, ext="", filename=True, with_root=True):
+    def get_save_path(self, channel=None, suffix=None, extension=None):
         """
-        Get save path of product (without extension)
+        Get save path of product
         """
 
-        # Build file output path (root + date + observation mode)
         date = "{2}{1}{0}".format(*self.name.date)
-        ext = f".{ext}" if ext else ""
-        if with_root:
-            file_path = self.config.output / date / self.name.mode
-            file_path.mkdir(parents=True, exist_ok=True)
+        name = self.name.full
 
-            if filename: file_path = file_path / f"{self.name.full}{ext}"
-            #file_path = file_path.absolute()
-        else:
-            file_path = f"{date}/{self.name.mode}"
-            if filename: file_path += f"/{self.name.full}{ext}"
+        # Replace channel placeholder for multichannel HRIT images
+        if channel: name = name.replace("<CHANNEL>", channel)
 
-        return file_path
+        # Add suffix to file name
+        if suffix: name += suffix
+
+        # Add date and observation mode to path
+        path = self.config.output / date / self.name.mode
+
+        # Create folders for product
+        path.mkdir(parents=True, exist_ok=True)
+
+        # Add product name to path
+        path = path / name
+        
+        # Add file extension
+        if extension: path = path.with_suffix(f".{extension}")
+
+        return path
 
     def print_info(self):
         """
@@ -169,9 +177,6 @@ class MultiSegmentImage(Product):
         except:
             self.images[chan] = {}
 
-        # Get file name
-        fname = xrit.FILE_NAME.split(".")[0]
-
         if self.config.downlink == "LRIT":
             # Get image from JPG payload
             buf = io.BytesIO(xrit.DATA_FIELD)
@@ -183,15 +188,14 @@ class MultiSegmentImage(Product):
                 return
         else:
             # Get image from J2K payload
-            img = self.convert_to_img(self.get_save_path(filename=False), fname, xrit.DATA_FIELD)
+            img = self.convert_to_img(self.get_save_path(channel=chan), xrit.DATA_FIELD)
 
         # Add segment to channel object
         self.images[chan][num] = img
         self.counter += 1
 
         # Update progress bar
-        if not self.config.verbose:
-            self.progress()
+        if not self.config.verbose: self.progress()
 
         # Mark product as complete
         total_segs = { "LRIT": 10, "HRIT": 50 }
@@ -201,8 +205,6 @@ class MultiSegmentImage(Product):
         """
         Save product to disk
         """
-
-        path = self.get_save_path(filename=False)
 
         for c in self.images:
             # Create output image
@@ -221,27 +223,24 @@ class MultiSegmentImage(Product):
                 except OSError:
                     print("    " + Fore.WHITE + Back.RED + Style.BRIGHT + "SKIPPING TRUNCATED IMAGE SEGMENT")
 
-            # Get image path for current channel
-            channel_path = "{}/{}.{}".format(
-                path,
-                self.name.full.replace("<CHANNEL>", c),
-                self.ext
-            ) #FIXME: This is bad
+            # Get image output path
+            path = self.get_save_path(channel=c, extension="jpg")
 
             # Save assembled image
-            img.save(channel_path, format='JPEG', subsampling=0, quality=100)
-            print(f"    {Fore.GREEN}{Style.BRIGHT}Saved \"{self.get_save_path(ext=self.ext)}\"")
-            self.last = str(self.get_save_path(with_root=False, ext=self.ext))
+            img.save(path, format='JPEG', subsampling=0, quality=100)
+            log(f"    Saved \"{path}\"", style="ok")
+            self.last = str(path.relative_to(self.config.output))
 
             # Optional LRIT IR105 image enhancement
             if self.config.enhance and c == "IR105" and self.config.downlink == "LRIT":
+                path = self.get_save_path(channel=c, suffix="_ENHANCED", extension="jpg")
+
                 enh = EnhanceIR105(img)
-                enh.save(f"{self.get_save_path()}_ENHANCED.{self.ext}")
+                enh.save(path)
 
-                self.last = f"{self.get_save_path(with_root=False)}_ENHANCED.{self.ext}"
+                self.last = str(path.relative_to(self.config.output))
 
-
-    def convert_to_img(self, path, name, data):
+    def convert_to_img(self, path, data):
         """
         Converts J2K to Pillow Image object via PPM using libjpeg
 
@@ -253,22 +252,26 @@ class MultiSegmentImage(Product):
             Pillow.Image -- Pillow Image object
         """
 
+        # Get JP2 and PPM file names
+        jp2 = path.with_suffix(".jp2")
+        ppm = path.with_suffix(".ppm")
+
         # Save JP2 to disk
-        jp2Name = path / f"{name}.jp2"
-        f = open(jp2Name, "wb")
+        f = open(jp2, "wb")
         f.write(data)
         f.close()
 
-        # Convert J2P to PPM
-        ppmName = path / f"{name}.ppm"
-        subprocess.call(["tools\\libjpeg\\jpeg", jp2Name, ppmName], stdout=subprocess.DEVNULL)
-        Path(jp2Name).unlink()
+        # Convert J2P to PPM then delete JP2
+        subprocess.call(["tools\\libjpeg\\jpeg", jp2, ppm], stdout=subprocess.DEVNULL)
+        Path(jp2).unlink()
         
-        # Load and convert 16-bit PPM to 8-bit image
-        img = Image.open(ppmName)
+        # Load 16-bit PPM and convert to 8-bit image then delete PPM
+        #TODO: Save as native 16-bit PNG
+        img = Image.open(ppm)
         iarr = np.uint8(np.array(img) / 4)
         img = Image.fromarray(iarr)
-        Path(ppmName).unlink()
+        Path(ppm).unlink()
+        
         return img
     
     def get_res(self, channel):
@@ -361,7 +364,7 @@ class SingleSegmentImage(Product):
         """
 
         self.ext = self.get_ext()
-        path = self.get_save_path(self.ext)
+        path = self.get_save_path(extension=self.ext)
 
         outf = open(path, mode="wb")
         outf.write(self.payload)
@@ -369,6 +372,7 @@ class SingleSegmentImage(Product):
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
         self.last = self.get_save_path(with_root=False, ext=self.ext)
+        self.last = str(path.relative_to(self.config.output))
 
     def get_ext(self):
         """
@@ -410,7 +414,7 @@ class AlphanumericText(Product):
         Save product to disk
         """
 
-        path = self.get_save_path(self.ext)
+        path = self.get_save_path(extension=self.ext)
         
         outf = open(path, mode="wb")
         outf.write(self.payload)
@@ -422,6 +426,7 @@ class AlphanumericText(Product):
 
         print("    " + Fore.GREEN + Style.BRIGHT + "Saved \"{}\"".format(path))
         self.last = self.get_save_path(with_root=False, ext=self.ext)
+        self.last = str(path.relative_to(self.config.output))
 
 
 class EnhanceIR105:
