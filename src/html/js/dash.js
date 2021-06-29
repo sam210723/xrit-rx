@@ -8,17 +8,17 @@
 
 var config = {};
 var blocks = {
-    vchan:    {
-        width: 620,
-        height: 180,
-        title: "Virtual Channel",
-        update: block_vchan
-    },
-    time:     {
+    demod:    {
         width: 390,
         height: 180,
-        title: "Time",
-        update: null
+        title: "Demodulator Status",
+        update: block_demod
+    },
+    decoder:    {
+        width: 620,
+        height: 180,
+        title: "Decoder Status",
+        update: block_decoder
     },
     latestimg:  {
         width: 500,
@@ -139,12 +139,6 @@ function configure()
 
     // Parse and build schedule
     if (config.spacecraft == "GK-2A") { get_schedule() };
-
-    // Setup clock loop
-    setInterval(() => {
-        block_time(blocks.time.body);
-    }, 100);
-    block_time(blocks.time.body);
 
     // Setup polling loop
     setInterval(poll, config.interval * 1000);
@@ -289,19 +283,75 @@ function build_schedule()
     var element = blocks['schedule'].body;
     element.innerHTML = "";
     element.appendChild(table);
+
+    // Create clock elements
+    var clocks = document.createElement("div");
+    var local = document.createElement("div");
+    var utc = document.createElement("div");
+    clocks.className = "schedule-clocks";
+    local.style.float = "left";
+    utc.style.float = "right";
+
+    // Add clocks to document
+    clocks.appendChild(local);
+    clocks.appendChild(utc);
+    element.appendChild(clocks);
 }
 
 
 /**
- * Update Virtual Channel block
+ * Update Demodulator Status block
  */
-function block_vchan(element)
+function block_demod(element)
 {
     // Check block has been built
     if (element.innerHTML == "") {
+        var locked = document.createElement("span");
+        locked.className = "indicator";
+        locked.id = "demod-locked"
+        locked.title = "Demodulator lock state";
+        locked.innerHTML = "<span>LOCK</span><p>GK-2A LRIT</p>";
+        locked.style = "float: left;";
+        element.appendChild(locked);
+
+        var offset = document.createElement("span");
+        offset.id = "demod-offset"
+        offset.title = "Demodulator frequency offset:";
+        offset.innerHTML = "<b>Frequency:</b> -1.25 kHz";
+        offset.style = "float: left; margin: 2px 0 13px 20px;";
+        element.appendChild(offset);
+
+        var viterbi = document.createElement("span");
+        viterbi.id = "demod-viterbi";
+        viterbi.title = "Demodulator Viterbi error count";
+        viterbi.innerHTML = "<b>Viterbi Errors:</b> 24";
+        viterbi.style = "float: left; margin: 2px 0 13px 20px;";
+        element.appendChild(viterbi);
+        element.innerHTML += "<br>";
+
+        var rs = document.createElement("span");
+        rs.id = "demod-rs"
+        rs.title = "Demodulator Reed-Solomon error count";
+        rs.innerHTML = "<b>Reed-Solomon:</b> 0";
+        rs.style = "float: left; margin: 2px 0 13px 20px;";
+        element.appendChild(rs);
+    }
+    else {  // Update block
+        
+    }
+}
+
+
+/**
+ * Update Decoder Status block
+ */
+ function block_decoder(element)
+ {
+     // Check block has been built
+    if (element.innerHTML == "") {
         for (var ch in vchans[config.spacecraft]) {
             var indicator = document.createElement("span");
-            indicator.className = "vchan";
+            indicator.className = "indicator";
             indicator.id = `vcid-${ch}`
             indicator.title = vchans[config.spacecraft][ch][1];
 
@@ -331,20 +381,7 @@ function block_vchan(element)
             }
         }
     }
-}
-
-
-/**
- * Update Time block
- */
-function block_time(element)
-{
-    var local = element.children[0];
-    var utc = element.children[1];
-
-    local.innerHTML = `${get_time_local()}<br><span title="UTC ${get_time_utc_offset()}">Local</span>`;
-    utc.innerHTML = `${get_time_utc()}<br><span>UTC</span>`;
-}
+ }
 
 
 /**
@@ -358,7 +395,7 @@ function block_latestimg(element)
 
     if (latest_image) {
         var url = `/api/received/${latest_image}`;
-        var fname = url.split('/');
+        var fname = url.split('\\');
         fname = fname[fname.length - 1];
         var ext = fname.split('.')[1];
         fname = fname.split('.')[0];
@@ -443,7 +480,7 @@ function block_schedule(element)
         var end = sch[entry][1];
 
         if (time < start) {
-            first = Math.max(0, parseInt(entry) - 3);
+            first = Math.max(0, parseInt(entry) - 2);
             break;
         }
     }
@@ -452,7 +489,7 @@ function block_schedule(element)
     build_schedule();
     var body = element.children[0].children[1];
     body.innerHTML = "";
-    for (var i = first; i < first + 12; i++) {
+    for (var i = first; i < first + 8; i++) {
         // Limit index
         if (i >= sch.length) { break; }
 
@@ -478,4 +515,10 @@ function block_schedule(element)
             row.setAttribute("active", "");
         }
     }
+
+    // Update clocks
+    var local = element.children[1].children[0];
+    var utc = element.children[1].children[1];
+    local.innerHTML = `${get_time_local()}<br><span title="UTC ${get_time_utc_offset()}">Local</span>`;
+    utc.innerHTML = `${get_time_utc()}<br><span>UTC</span>`;
 }

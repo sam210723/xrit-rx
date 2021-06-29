@@ -275,6 +275,28 @@ a {
         }
     }
 
+    &-clocks {
+        width: 100%;
+
+        margin-top: 40px;
+
+        div {
+            width: 50%;
+
+            text-align: center;
+
+            font-size: 35px;
+            font-weight: bold;
+
+            span {
+                font-size: 20px;
+                font-weight: normal;
+
+                color: #AAA;
+            }
+        }
+    }
+
     background: #1E211E;
 }
 
