@@ -171,7 +171,7 @@ function poll()
     http_get("/api/latest/image", (res) => {
         if (res.status == 200) {
             res.json().then((data) => {
-                latest_image = data['image'];
+                latest_image = data['image'].replace(/\\/g, '/');
             });
         }
         else {
@@ -395,8 +395,8 @@ function block_latestimg(element)
 
     if (latest_image) {
         var url = `/api/received/${latest_image}`;
-        var fname = url.split('\\');
-        fname = fname[fname.length - 1];
+
+        var fname = latest_image.split('/')[2];
         var ext = fname.split('.')[1];
         fname = fname.split('.')[0];
 
