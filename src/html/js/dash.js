@@ -3,7 +3,7 @@
  *  dash.js
  *  https://github.com/sam210723/xrit-rx
  *  
- *  Updates dashboard data through xrit-rx API
+ *  Updates dashboard data using xrit-rx API
  */
 
 var config = {};
@@ -82,13 +82,13 @@ function configure()
     document.title = `${config.spacecraft} ${config.downlink} - xrit-rx v${config.version}`;
 
     // Build dashboard header
-    var header = document.getElementById("dash-header");
+    var header = document.getElementById("navbar");
     var title = document.createElement("span");
     var version = document.createElement("span");    
     var link = document.createElement("a");
-    title.id = "dash-header-title";
+    title.id = "navbar-title";
     title.innerText = `${config.spacecraft} ${config.downlink} Dashboard`;
-    version.id = "dash-header-version";
+    version.id = "navbar-version";
     version.innerText = `xrit-rx `;
     link.href = `https://github.com/sam210723/xrit-rx/releases/tag/v${config.version}`;
     link.target = "_blank";
@@ -104,7 +104,7 @@ function configure()
             res.json().then((data) => {
                 if (`v${config.version}` != data["tag_name"]) {
                     var new_version = document.createElement("a");
-                    new_version.id = "dash-header-version-new";
+                    new_version.id = "navbar-version-new";
                     new_version.title = `A new version of xrit-rx is available on GitHub`;
                     new_version.innerText = `Download ${data["tag_name"]}`;
                     new_version.href = "https://github.com/sam210723/xrit-rx/releases/latest";

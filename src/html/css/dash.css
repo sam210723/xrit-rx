@@ -1,3 +1,17 @@
+/**
+ *  dash.scss
+ *  https://github.com/sam210723/xrit-rx
+ *  
+ *  Dashboard stylesheet for xrit-rx
+ */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url("Roboto.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @-webkit-keyframes indicator-pulse {
   0% {
     background: green;
@@ -16,18 +30,10 @@
   }
 }
 
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: url("Roboto.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
 html, body {
   margin: 0;
-  color: white;
-  background: #111;
+  color: #FFFFFF;
+  background: #111111;
   font-family: Roboto, Arial;
   cursor: default;
   -webkit-touch-callout: none;
@@ -41,30 +47,26 @@ a {
   color: cornflowerblue;
 }
 
-#container {
-  margin: 0 0 0 15px;
-  text-align: center;
-}
-
-#dash-header {
+#navbar {
   margin: 0 0 20px 0;
   padding: 11px 5px 15px 20px;
+  font-size: 24px;
   font-weight: normal;
   background: #292929;
 }
 
-#dash-header-title {
-  text-shadow: 3px 3px 2px #111;
+#navbar-title {
+  text-shadow: 3px 3px 2px #1B1B1B;
 }
 
-#dash-header-version {
+#navbar-version {
   padding: 4px 13px 0 0;
   float: right;
   font-size: 18px;
   color: #888;
 }
 
-#dash-header-version-new {
+#navbar-version-new {
   position: relative;
   float: right;
   padding: 5px 9px 5px 8px;
@@ -72,78 +74,35 @@ a {
   font-size: 18px;
   text-decoration: none;
   border-radius: 4px;
-  color: white;
+  color: #FFFFFF;
   background: green;
   -webkit-box-shadow: 0 0 5px #222;
           box-shadow: 0 0 5px #222;
 }
 
-#dash-header-version-new:hover {
+#navbar-version-new:hover {
   text-decoration: underline;
 }
 
-.block {
-  display: inline-block;
-  margin: 10px;
-  -webkit-box-shadow: 0 0 10px #000;
-          box-shadow: 0 0 10px #000;
-  border: 2px solid #555;
-  border-radius: 8px;
-  vertical-align: top;
+#container {
+  margin: 0 0 0 15px;
   text-align: center;
-  background: #1C1C1C;
 }
 
-.block-heading {
-  padding: 6px 0 9px 0;
-  font-size: 26px;
-  font-weight: bold;
-  text-align: center;
-  border-bottom: 1px solid #555;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  background: #292929;
+::-webkit-scrollbar {
+  width: 10px;
 }
 
-.block-body {
-  padding: 20px;
+::-webkit-scrollbar-track {
+  background: #050505;
 }
 
-.block button {
-  margin: 10px;
-  padding: 5px 10px 5px 10px;
-  font-family: Roboto;
-  font-size: 14px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  color: white;
-  background: #111;
+::-webkit-scrollbar-thumb {
+  background: #555555;
 }
 
-.block button:hover {
-  border: 1px solid #777;
-  background: #292929;
-}
-
-.block h3 {
-  letter-spacing: 1px;
-}
-
-.block #schedule-status {
-  position: relative;
-  float: right;
-  padding: 5px 9px 5px 8px;
-  margin-top: 1px;
-  margin-right: 6px;
-  font-size: 18px;
-  border-radius: 4px;
-  background: red;
-  -webkit-box-shadow: 0 0 5px #222;
-          box-shadow: 0 0 5px #222;
-}
-
-.block #schedule-status[active] {
-  background: green;
+::-webkit-scrollbar-thumb:hover {
+  background: #FFFFFF;
 }
 
 .indicator {
@@ -192,6 +151,70 @@ a {
 
 .indicator[disabled] p {
   color: #777;
+}
+
+.block {
+  display: inline-block;
+  margin: 10px;
+  -webkit-box-shadow: 0 0 10px #000;
+          box-shadow: 0 0 10px #000;
+  border: 2px solid #555555;
+  border-radius: 8px;
+  vertical-align: top;
+  text-align: center;
+  background: #1C1C1C;
+}
+
+.block-heading {
+  padding: 6px 0 9px 0;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #555555;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: #292929;
+}
+
+.block-body {
+  padding: 20px;
+}
+
+.block button {
+  margin: 10px;
+  padding: 5px 10px 5px 10px;
+  font-family: Roboto;
+  font-size: 14px;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  color: white;
+  background: #111;
+}
+
+.block button:hover {
+  border: 1px solid #777;
+  background: #292929;
+}
+
+.block h3 {
+  letter-spacing: 1px;
+}
+
+.block #schedule-status {
+  position: relative;
+  float: right;
+  padding: 5px 9px 5px 8px;
+  margin-top: 1px;
+  margin-right: 6px;
+  font-size: 18px;
+  border-radius: 4px;
+  background: red;
+  -webkit-box-shadow: 0 0 5px #222;
+          box-shadow: 0 0 5px #222;
+}
+
+.block #schedule-status[active] {
+  background: green;
 }
 
 .latestimg {
@@ -247,21 +270,5 @@ a {
   font-size: 20px;
   font-weight: normal;
   color: #AAA;
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #FFF;
 }
 /*# sourceMappingURL=dash.css.map */

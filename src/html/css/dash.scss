@@ -1,17 +1,26 @@
-$text:   white;
-$page:   #111;
-$blockh: #292929;
-$blockb: #1C1C1C;
-$border: #555;
+/**
+ *  dash.scss
+ *  https://github.com/sam210723/xrit-rx
+ *  
+ *  Dashboard stylesheet for xrit-rx
+ */
+
+// Colours
+$page_text:    #FFFFFF;
+$page_bg:      #111111;
+$block_header: #292929;
+$block_body:   #1C1C1C;
+$block_border: #555555;
 
 
+// Mixins
 @mixin animation($str) {
     -webkit-animation: #{$str};
     -moz-animation: #{$str};
     -ms-animation: #{$str};
     -o-animation: #{$str};
     animation: #{$str};      
-}
+} 
 
 @mixin keyframes($animation-name) {
     @-webkit-keyframes #{$animation-name} {
@@ -31,11 +40,8 @@ $border: #555;
     }
 }
 
-@include keyframes(indicator-pulse) {
-    0%   { background: green; }
-    100% { background: darkgreen; }
-}
 
+// Fonts
 @font-face {
     font-family: 'Roboto';
     font-style: normal;
@@ -44,15 +50,26 @@ $border: #555;
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+
+// Animations
+@include keyframes(indicator-pulse) {
+    0%   { background: green; }
+    100% { background: darkgreen; }
+}
+
+
+// General
 html, body {
     margin: 0;
 
-    color: $text;
-    background: $page;
+    color: $page_text;
+    background: $page_bg;
 
     font-family: Roboto, Arial;
 
     cursor: default;
+
+    // Disable text selection
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -65,23 +82,21 @@ a {
     color: cornflowerblue;
 }
 
-#container {
-    margin: 0 0 0 15px;
-    text-align: center;
-}
-
-#dash-header {
+#navbar {
     margin: 0 0 20px 0;
     padding: 11px 5px 15px 20px;
 
+    font-size: 24px;
     font-weight: normal;
 
-    background: $blockh;
+    background: $block_header;
 
+    // Left title text
     &-title {
-        text-shadow: 3px 3px 2px #111;
+        text-shadow: 3px 3px 2px #1B1B1B;
     }
 
+    // Right version info
     &-version {
         padding: 4px 13px 0 0;
         float: right;
@@ -90,6 +105,7 @@ a {
 
         color: #888;
 
+        // New version button
         &-new {
             position: relative;
             float: right;
@@ -102,7 +118,7 @@ a {
     
             border-radius: 4px;
     
-            color: white;
+            color: $page_text;
             background: green;
             box-shadow: 0 0 5px #222;
 
@@ -113,82 +129,29 @@ a {
     }
 }
 
-.block {
-    display: inline-block;
-    margin: 10px;
-
-    box-shadow: 0 0 10px #000;
-    border: 2px solid $border;
-    border-radius: 8px;
-
-    vertical-align: top;
+#container {
+    margin: 0 0 0 15px;
     text-align: center;
+}
 
-    background: $blockb;
+::-webkit-scrollbar {
+    width: 10px;
 
-    &-heading {
-        padding: 6px 0 9px 0;
-
-        font-size: 26px;
-        font-weight: bold;
-        text-align: center;
-
-        border-bottom: 1px solid $border;
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-
-        background: $blockh;
+    &-track {
+        background: #050505; 
     }
 
-    &-body {
-        padding: 20px;
+    &-thumb {
+        background: #555555; 
     }
 
-    button {
-        margin: 10px;
-        padding: 5px 10px 5px 10px;
-
-        font-family: Roboto;
-        font-size: 14px;
-
-        border: 1px solid $border;
-        border-radius: 4px;
-
-        color: white;
-        background: #111;
-
-        &:hover {
-            border: 1px solid #777;
-            
-            background: #292929;
-        }
-    }
-
-    h3 {
-        letter-spacing: 1px;
-    }
-
-    #schedule-status {
-        position: relative;
-        float: right;
-
-        padding: 5px 9px 5px 8px;
-        margin-top: 1px;
-        margin-right: 6px;
-
-        font-size: 18px;
-
-        border-radius: 4px;
-
-        background: red;
-        box-shadow: 0 0 5px #222;
-
-        &[active] {
-            background: green;
-        }
+    &-thumb:hover {
+        background: #FFFFFF; 
     }
 }
 
+
+// Blocks
 .indicator {
     display: inline-block;
     width: 100px;
@@ -238,6 +201,82 @@ a {
 
         p {
             color: #777;
+        }
+    }
+}
+
+.block {
+    display: inline-block;
+    margin: 10px;
+
+    box-shadow: 0 0 10px #000;
+    border: 2px solid $block_border;
+    border-radius: 8px;
+
+    vertical-align: top;
+    text-align: center;
+
+    background: $block_body;
+
+    &-heading {
+        padding: 6px 0 9px 0;
+
+        font-size: 26px;
+        font-weight: bold;
+        text-align: center;
+
+        border-bottom: 1px solid $block_border;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+
+        background: $block_header;
+    }
+
+    &-body {
+        padding: 20px;
+    }
+
+    button {
+        margin: 10px;
+        padding: 5px 10px 5px 10px;
+
+        font-family: Roboto;
+        font-size: 14px;
+
+        border: 1px solid $block_border;
+        border-radius: 4px;
+
+        color: white;
+        background: #111;
+
+        &:hover {
+            border: 1px solid #777;
+            
+            background: #292929;
+        }
+    }
+
+    h3 {
+        letter-spacing: 1px;
+    }
+
+    #schedule-status {
+        position: relative;
+        float: right;
+
+        padding: 5px 9px 5px 8px;
+        margin-top: 1px;
+        margin-right: 6px;
+
+        font-size: 18px;
+
+        border-radius: 4px;
+
+        background: red;
+        box-shadow: 0 0 5px #222;
+
+        &[active] {
+            background: green;
         }
     }
 }
@@ -305,20 +344,4 @@ a {
     }
 
     background: #1E211E;
-}
-
-::-webkit-scrollbar {
-    width: 10px;
-
-    &-track {
-        background: #050505; 
-    }
-
-    &-thumb {
-        background: #555; 
-    }
-
-    &-thumb:hover {
-        background: #FFF; 
-    }
 }
