@@ -283,15 +283,17 @@ function build_schedule()
     var element = blocks['schedule'].body;
     element.innerHTML = "";
     element.appendChild(table);
-
+    
     // Create clock elements
     var clocks = document.createElement("div");
     var local = document.createElement("div");
     var utc = document.createElement("div");
     clocks.className = "schedule-clocks";
     local.style.float = "left";
+    local.className = "schedule-clocks-clock";
     utc.style.float = "right";
-
+    utc.className = "schedule-clocks-clock";
+    
     // Add clocks to document
     clocks.appendChild(local);
     clocks.appendChild(utc);
@@ -480,7 +482,7 @@ function block_schedule(element)
         var end = sch[entry][1];
 
         if (time < start) {
-            first = Math.max(0, parseInt(entry) - 2);
+            first = Math.max(0, parseInt(entry) - 3);
             break;
         }
     }
@@ -489,7 +491,7 @@ function block_schedule(element)
     build_schedule();
     var body = element.children[0].children[1];
     body.innerHTML = "";
-    for (var i = first; i < first + 8; i++) {
+    for (var i = first; i < first + 9; i++) {
         // Limit index
         if (i >= sch.length) { break; }
 
@@ -519,6 +521,6 @@ function block_schedule(element)
     // Update clocks
     var local = element.children[1].children[0];
     var utc = element.children[1].children[1];
-    local.innerHTML = `${get_time_local()}<br><span title="UTC ${get_time_utc_offset()}">Local</span>`;
-    utc.innerHTML = `${get_time_utc()}<br><span>UTC</span>`;
+    local.innerHTML = `<div class="schedule-clocks-clock-time">${get_time_local()}</div><div class="schedule-clocks-clock-zone" title="UTC${get_time_utc_offset()}">Local</div>`;
+    utc.innerHTML = `<div class="schedule-clocks-clock-time">${get_time_utc()}</div><div class="schedule-clocks-clock-zone">UTC</div>`;
 }
