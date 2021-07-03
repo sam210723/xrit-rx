@@ -20,6 +20,7 @@ STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
 config = None
 demuxer = None
 
+
 class Dashboard:
     def __init__(self, c, d):
         global config
@@ -127,8 +128,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     self.send_response_only(404)
                     self.end_headers()
 
-        except ConnectionResetError:
-            print(f"{STYLE_ERR}HTTP connection to {self.client_address[0]} reset")
+        except ConnectionResetError as e:
+            print(f"{STYLE_ERR}Connection to {self.client_address[0]} reset")
+            print(f"{STYLE_ERR}{e}")
+            return
+        
+        except ConnectionAbortedError as e:
+            print(f"{STYLE_ERR}Connection to {self.client_address[0]} aborted")
+            print(f"{STYLE_ERR}{e}")
             return
 
 
