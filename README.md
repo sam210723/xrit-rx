@@ -134,14 +134,14 @@ The root endpoint is located at `/api` which returns information about the curre
 ```
 
 ### List of Endpoints
-| URL                       | Description                                  | Example                                                              | MIME               |
-| ------------------------- | -------------------------------------------- | -------------------------------------------------------------------- | ------------------ |
-| `/api`                    | General configuration information            | *see above*                                                          | `application/json` |
-| `/api/received/[...]`     | Received data access                         | *binary data*                                                        | `image/...`        |
-| `/api/current/vcid`       | Currently active virtual channel number      | `{ "vcid": 63 }`                                                     | `application/json` |
-| `/api/current/progress`   | Progress percentage for multi-segment images | `{ "progress": 50 }`                                                 | `application/json` |
-| `/api/latest/image`       | Path to most recently received product       | `{ "image": "20190722/FD/IMG_FD_050_IR105_20190722_082006.jpg" }`    | `application/json` |
-| `/api/latest/xrit`        | Path to most recently received xRIT file     | `{ "xrit": "20190722/FD/IMG_FD_050_IR105_20190722_082006_10.lrit" }` | `application/json` |
+| URL                       | Description                                  | Example                                    | MIME               |
+| ------------------------- | -------------------------------------------- | ------------------------------------------ | ------------------ |
+| `/api`                    | General configuration information            | *see above*                                | `application/json` |
+| `/api/received/[...]`     | Received data access                         | *binary data*                              | `image/...`        |
+| `/api/current/vcid`       | Currently active virtual channel number      | `{ "vcid": 63 }`                           | `application/json` |
+| `/api/current/progress`   | Progress percentage for multi-segment images | `{ "progress": 50 }`                       | `application/json` |
+| `/api/latest/image`       | Path to most recently received product       | `{ "image": "20190722/FD/IMG_[...].jpg" }` | `application/json` |
+| `/api/latest/xrit`        | Path to most recently received xRIT file     | `{ "xrit": "20190722/FD/IMG_[...].lrit" }` | `application/json` |
 
 
 ## Acknowledgments
