@@ -35,6 +35,7 @@ class Demuxer:
         self.core_stop = False      # Core thread stop flag
         self.channels = {}          # List of channel handlers
         self.vcid = None            # Current Virtual Channel ID
+        self.progress = None        # Current multi-segment image progress
         self.latest_image = None    # Latest image output by demuxer
         self.latest_xrit = None     # Latest xRIT file output by demuxer
 
@@ -385,11 +386,25 @@ class Channel:
             # Add data to current product
             self.product.add(xrit)
 
+            # Update multi-segment image progress
+            if type(self.product) == products.MultiSegmentImage:
+                total = 0
+                for c in self.product.images:
+                    total += len(self.product.images[c])
+
+                if self.config.downlink == "LRIT":
+                    self.demuxer.progress = round((total / 10) * 100)
+                else:
+                    self.demuxer.progress = round((total / 50) * 100)
+            else:
+                self.demuxer.progress = 100
+
             # Save and clear complete product
             if self.product.complete:
                 self.product.save()
 
                 self.demuxer.latest_image = self.product.last
+                self.demuxer.progress = 100
                 self.product = None
         else:
             # Print XRIT file info
@@ -425,4 +440,5 @@ class Channel:
                 self.product.save()
 
                 self.demuxer.latest_image = self.product.last
+                self.demuxer.progress = 100
                 self.product = None

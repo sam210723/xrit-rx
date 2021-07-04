@@ -44,6 +44,7 @@ var vchans = {
 var sch = [];
 var sch_offline = false;
 var current_vcid;
+var current_progress;
 var latest_image;
 var utc_date;
 
@@ -167,11 +168,26 @@ function poll()
         }
     });
 
+    // Get current multi-segment image progress
+    http_get("/api/current/progress", (res) => {
+        if (res.status == 200) {
+            res.json().then((data) => {
+                current_progress = data['progress'];
+            });
+        }
+        else {
+            print("Failed to get current progress", "POLL");
+            return false;
+        }
+    });
+
     // Get last image
     http_get("/api/latest/image", (res) => {
         if (res.status == 200) {
             res.json().then((data) => {
-                latest_image = data['image'].replace(/\\/g, '/');
+                if (data['image'] != null) {
+                    latest_image = data['image'].replace(/\\/g, '/');
+                }
             });
         }
         else {
@@ -314,6 +330,7 @@ function block_demod(element)
         locked.title = "Demodulator lock state";
         locked.innerHTML = "<span>LOCK</span><p>GK-2A LRIT</p>";
         locked.style = "float: left;";
+        locked.setAttribute("active", "");
         element.appendChild(locked);
 
         var offset = document.createElement("span");
@@ -469,6 +486,7 @@ function block_schedule(element)
     // Check UTC date
     var d = new Date();
     if (utc_date != `${d.getUTCFullYear()}${(d.getUTCMonth()+1).toString().padStart(2, "0")}${d.getUTCDate().toString().padStart(2, "0")}`) {
+        // Reload page at UTC midnight to get updated schedule
         location.reload();
     }
     
