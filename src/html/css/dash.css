@@ -153,6 +153,70 @@ a {
   color: #777;
 }
 
+.progress {
+  display: inline-block;
+  width: 120px;
+  margin: 4px 10px 0 10px;
+  text-align: center;
+  border: 1px solid;
+  border-radius: 4px;
+  color: #777;
+  background: #333;
+  border-color: #777;
+  -webkit-box-shadow: 0 0 10px black;
+          box-shadow: 0 0 10px black;
+}
+
+.progress-bar {
+  z-index: 1;
+  display: block;
+  border-radius: 3px;
+  position: relative;
+  height: 82px;
+}
+
+.progress-bar:active {
+  -webkit-animation: indicator-pulse 2s infinite alternate ease-in-out;
+  animation: indicator-pulse 2s infinite alternate ease-in-out;
+}
+
+.progress-text {
+  position: absolute;
+  margin-top: 9px;
+  width: inherit;
+  z-index: 2;
+}
+
+.progress-text span {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.progress-text p {
+  margin: 0;
+  margin-top: 5px;
+  color: #AAA;
+}
+
+.progress[active] {
+  color: white;
+  border-color: limegreen;
+}
+
+.progress[active] p {
+  color: white;
+}
+
+.progress[disabled] {
+  color: #777;
+  background: #400;
+  border-color: #700;
+}
+
+.progress[disabled] p {
+  color: #777;
+}
+
 .block {
   display: inline-block;
   margin: 10px;

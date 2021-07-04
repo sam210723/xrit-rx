@@ -364,18 +364,18 @@ function block_demod(element)
 /**
  * Update Decoder Status block
  */
- function block_decoder(element)
- {
-     // Check block has been built
+function block_decoder(element)
+{
+    // Check block has been built
     if (element.innerHTML == "") {
         for (var ch in vchans[config.spacecraft]) {
             var indicator = document.createElement("span");
-            indicator.className = "indicator";
+            indicator.className = "progress";
             indicator.id = `vcid-${ch}`
             indicator.title = vchans[config.spacecraft][ch][1];
 
             var name = vchans[config.spacecraft][ch][0];
-            indicator.innerHTML = `<span>${name}</span><p>VCID ${ch}</p>`;
+            indicator.innerHTML = `<div class="progress-text"><span>${name}</span><p>VCID ${ch}</p></div><div class="progress-bar">&nbsp;</div>`;
 
             // Set 'disabled' attribute on ignored VCIDs
             if (config.ignored_vcids.indexOf(parseInt(ch)) > -1) {
@@ -394,13 +394,15 @@ function block_demod(element)
             // Update active channel
             if (ch == current_vcid) {
                 document.getElementById(`vcid-${ch}`).setAttribute("active", "");
+                document.getElementById(`vcid-${ch}`).children[1].style.width = `${current_progress}%`;
             }
             else {
                 document.getElementById(`vcid-${ch}`).removeAttribute("active");
+                document.getElementById(`vcid-${ch}`).children[1].style.width = "0";
             }
         }
     }
- }
+}
 
 
 /**

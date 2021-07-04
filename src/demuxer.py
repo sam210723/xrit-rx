@@ -109,7 +109,9 @@ class Demuxer:
                     last_vcid = vcdu.VCID
 
                 # Discard fill packets and ignored VCIDs
-                if vcdu.VCID == 63 or vcdu.VCID in self.config.ignored: continue
+                if vcdu.VCID == 63 or vcdu.VCID in self.config.ignored:
+                    self.progress = 100
+                    continue
 
                 # Create channel handlers for new VCIDs
                 if vcdu.VCID not in self.channels:
@@ -326,6 +328,12 @@ class Channel:
             # Add data to TP_File
             self.tpfile.append(cppdu.PAYLOAD[:-2])
 
+            # Update dashboard progress indicator
+            if type(self.product) != products.MultiSegmentImage:
+                ac = len(self.tpfile.PAYLOAD)
+                ex = self.tpfile.LENGTH
+                self.demuxer.progress = round((ac/ex) * 100)
+
         elif cppdu.SEQ == cppdu.Sequence.LAST:
             # Close current TP_File
             len_ok = self.tpfile.finish(cppdu.PAYLOAD[:-2])
@@ -386,7 +394,7 @@ class Channel:
             # Add data to current product
             self.product.add(xrit)
 
-            # Update multi-segment image progress
+            # Update dashboard progress indicator
             if type(self.product) == products.MultiSegmentImage:
                 total = 0
                 for c in self.product.images:
@@ -396,15 +404,13 @@ class Channel:
                     self.demuxer.progress = round((total / 10) * 100)
                 else:
                     self.demuxer.progress = round((total / 50) * 100)
-            else:
-                self.demuxer.progress = 100
 
             # Save and clear complete product
             if self.product.complete:
                 self.product.save()
 
                 self.demuxer.latest_image = self.product.last
-                self.demuxer.progress = 100
+                self.demuxer.progress = 0
                 self.product = None
         else:
             # Print XRIT file info
@@ -440,5 +446,5 @@ class Channel:
                 self.product.save()
 
                 self.demuxer.latest_image = self.product.last
-                self.demuxer.progress = 100
+                self.demuxer.progress = 0
                 self.product = None
