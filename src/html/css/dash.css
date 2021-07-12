@@ -173,11 +173,7 @@ a {
   border-radius: 3px;
   position: relative;
   height: 82px;
-}
-
-.progress-bar:active {
-  -webkit-animation: indicator-pulse 2s infinite alternate ease-in-out;
-  animation: indicator-pulse 2s infinite alternate ease-in-out;
+  background: green;
 }
 
 .progress-text {

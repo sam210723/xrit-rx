@@ -229,10 +229,9 @@ a {
         position: relative;
         height: 82px;
 
-        //broken
-        &:active {
-            @include animation('indicator-pulse 2s infinite alternate ease-in-out');
-        }
+        background: green;
+
+        //@include animation('indicator-pulse 2s infinite alternate ease-in-out');
     }
 
     &-text {
