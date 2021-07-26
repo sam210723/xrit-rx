@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
   - New version notification on dashboard
   - Link to decryption key info in key error message
   - Subtle dashboard CSS animations
+  - CADU to VCDU converter script
 
 ### Changed
   - Complete rewrite of `xrit-rx.py`
