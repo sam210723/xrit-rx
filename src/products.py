@@ -11,7 +11,7 @@ import io
 import numpy as np
 from   pathlib import Path
 from   PIL import Image, UnidentifiedImageError
-import subprocess
+import ffmpeg
 
 # Colorama styles
 STYLE_ERR = f"{Fore.WHITE}{Back.RED}{Style.BRIGHT}"
@@ -163,8 +163,13 @@ class MultiSegmentImage(Product):
         # Product specific setup
         self.counter = 0                    # Segment counter
         self.images = {}                    # Image list
-        self.ext = "jpg"                    # Output file extension
         self.lastproglen = 0                # Last number of lines in progress indicator
+
+        # LRIT: 8-bit JPG / 16-bit PNG
+        if self.config.downlink == "LRIT":
+            self.ext = "jpg"
+        else:
+            self.ext = "png"
 
     def add(self, xrit):
         """
@@ -191,8 +196,8 @@ class MultiSegmentImage(Product):
                 print(f"    {STYLE_ERR}NO IMAGE FOUND IN XRIT FILE")
                 return
         else:
-            # Get image from J2K payload
-            img = self.convert_to_img(self.get_save_path(channel=chan), xrit.DATA_FIELD)
+            # Get Image object from J2K payload
+            img = self.j2k_to_img(self.get_save_path(channel=chan), xrit.DATA_FIELD)
 
         # Add segment to channel object
         self.images[chan][num] = img
@@ -212,7 +217,10 @@ class MultiSegmentImage(Product):
 
         for c in self.images:
             # Create output image
-            img = Image.new("RGB", self.get_res(c))
+            if self.config.downlink == "LRIT":
+                img = Image.new("RGB", self.get_res(c))
+            else:
+                img = Image.new("I;16", self.get_res(c))
 
             # Combine segments into final image
             for s in self.images[c]:
@@ -228,10 +236,14 @@ class MultiSegmentImage(Product):
                     print(f"    {STYLE_ERR}SKIPPING TRUNCATED IMAGE SEGMENT")
 
             # Get image output path
-            path = self.get_save_path(channel=c, extension="jpg")
+            path = self.get_save_path(channel=c, extension=self.ext)
 
             # Save assembled image
-            img.save(path, format='JPEG', subsampling=0, quality=100)
+            if self.config.downlink == "LRIT":
+                img.save(path, format='JPEG', subsampling=0, quality=100)
+            else:
+                img.save(path, format="PNG")
+
             print(f"    {STYLE_OK}Saved \"{path}\"")
             self.last = str(path.relative_to(self.config.output))
 
@@ -245,9 +257,9 @@ class MultiSegmentImage(Product):
                 print(f"    {STYLE_OK}Saved \"{path}\"")
                 self.last = str(path.relative_to(self.config.output))
 
-    def convert_to_img(self, path, data):
+    def j2k_to_img(self, path, data):
         """
-        Converts J2K to Pillow Image object via PPM using libjpeg
+        Converts J2K to Pillow Image object using ffmpeg
 
         Arguments:
             path {string} -- Path for temporary files
@@ -257,25 +269,25 @@ class MultiSegmentImage(Product):
             Pillow.Image -- Pillow Image object
         """
 
-        # Get JP2 and PPM file names
+        # Get JP2 and PNG file names
         jp2 = path.with_suffix(".jp2")
-        ppm = path.with_suffix(".ppm")
+        png = path.with_suffix(".png")
 
         # Save JP2 to disk
         f = open(jp2, "wb")
         f.write(data)
         f.close()
 
-        # Convert J2P to PPM then delete JP2
-        subprocess.call(["tools\\libjpeg\\jpeg", jp2, ppm], stdout=subprocess.DEVNULL)
+        # Convert J2P to PNG then delete JP2
+        stream = ffmpeg.input(str(jp2.absolute()))
+        stream = ffmpeg.output(stream, str(png.absolute()))
+        stream = ffmpeg.overwrite_output(stream)
+        ffmpeg.run(stream, quiet=True)
         Path(jp2).unlink()
         
-        # Load 16-bit PPM and convert to 8-bit image then delete PPM
-        #TODO: Save as native 16-bit PNG
-        img = Image.open(ppm)
-        iarr = np.uint8(np.array(img) / 4)
-        img = Image.fromarray(iarr)
-        Path(ppm).unlink()
+        # Load 16-bit PNG into Image object
+        img = Image.fromarray(np.array(Image.open(png)).astype("uint16"))
+        Path(png).unlink()
         
         return img
     

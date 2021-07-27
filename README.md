@@ -22,7 +22,7 @@ The [RTL-SDR Blog](https://www.rtl-sdr.com) has also [written a guide](https://w
 ### Installing xrit-rx
 Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
 
-[`numpy`](https://pypi.org/project/numpy), [`pillow`](https://pypi.org/project/Pillow/), [`colorama`](https://pypi.org/project/colorama/) and [`pycryptodome`](https://pypi.org/project/pycryptodome/) are required to run **xrit-rx**. Use the following command to download and install these packages:
+Some extra Python packages are required to run **xrit-rx**. Use the following command to download and install these packages:
 ```
 pip3 install -r requirements.txt
 ```
