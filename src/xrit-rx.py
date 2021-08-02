@@ -50,7 +50,7 @@ class Main:
 
     def configure(self):
         """
-        Configures xrit-rx
+        Configures xrit-rx (args, input file, output file, cwd, config file, keys, updates)
         """
 
         # Get command line arguments
@@ -143,7 +143,7 @@ class Main:
             self.stop(code=1)
         
         # Check input type is valid
-        if self.config['rx']['input'] not in ['goesrecv', 'tcp', 'udp']:
+        if self.config['rx']['input'] not in ['nng', 'tcp', 'udp']:
             self.log(f"INVALID INPUT TYPE \"{self.config['rx']['input']}\"", style="error")
             self.stop(code=1)
         
@@ -234,10 +234,10 @@ class Main:
         Sets up the selected input source
         """
 
-        if self.config['rx']['input'] == "goesrecv":
+        if self.config['rx']['input'] == "nng":
             # Create socket and address
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            addr = (self.config['goesrecv']['ip'], int(self.config['goesrecv']['port']))
+            addr = (self.config['nng']['ip'], int(self.config['nng']['port']))
 
             # Connect socket
             print(f"Connecting to {addr[0]}:{addr[1]}...", end='', flush=True)
@@ -351,12 +351,12 @@ class Main:
         buflen = 892
 
         while True:
-            if self.config['rx']['input'] == "goesrecv":
-                # Get packet from goesrecv
+            if self.config['rx']['input'] == "nng":
+                # Get packet from nanomsg source
                 try:
                     data = self.socket.recv(buflen + 8)
                 except ConnectionResetError:
-                    self.log("LOST CONNECTION TO GOESRECV", style="error")
+                    self.log("LOST CONNECTION TO NANOMSG SOURCE", style="error")
                     self.stop(code=1)
 
                 # Push packet to demuxer

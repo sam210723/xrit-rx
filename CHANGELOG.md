@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 <details>
 <summary>Unreleased changes</summary>
 
-**Note:** This release includes minor changes to the configuration file format.
+**Note:** This release includes changes to the configuration file format. Configuration files from previous versions will not work with v1.4.
 
 
 ### Added
@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
   - Remove unused legacy functions
   - Rename `osp` source to `tcp`
   - Use `f-strings` instead of `str.format()`
+  - Rename `goesrecv` source to `nng` (nanomsg)
 
 ### Fixed
   - Naming convention and code quality issues

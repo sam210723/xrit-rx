@@ -5,9 +5,9 @@
 [![Github all releases](https://img.shields.io/github/downloads/sam210723/xrit-rx/total.svg)](https://github.com/sam210723/xrit-rx/releases/latest)
 [![GitHub license](https://img.shields.io/github/license/sam210723/xrit-rx.svg)](https://github.com/sam210723/xrit-rx/blob/master/LICENSE)
 
-**xrit-rx** is a packet demultiplexer and file processor for receiving images from geostationary weather satellite [GEO-KOMPSAT-2A (GK-2A)](https://nmsc.kma.go.kr/enhome/html/base/cmm/selectPage.do?page=satellite.gk2a.intro). It is designed for use with [**goesrecv**](https://github.com/sam210723/goestools) (originally by [Pieter Noordhuis](https://twitter.com/pnoordhuis)), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
+**xrit-rx** is a packet demultiplexer and file processor for receiving images from geostationary weather satellite [GEO-KOMPSAT-2A (GK-2A)](https://nmsc.kma.go.kr/enhome/html/base/cmm/selectPage.do?page=satellite.gk2a.intro). It is designed for use with [**SatDump**](https://github.com/altillimity/SatDump) by [Aang254](https://twitter.com/aang254), [**goesrecv**](https://github.com/sam210723/goestools) (originally by [Pieter Noordhuis](https://twitter.com/pnoordhuis)), or [**xritdecoder**](https://github.com/opensatelliteproject/xritdemod/releases/tag/1.0.3) by [Lucas Teske](https://twitter.com/lucasteske).
 
-**xrit-rx** receives [Virtual Channel Data Units (VCDUs)](https://nmsc.kma.go.kr/resources/homepage/pdf/GK2A_LRIT_Mission_Specification_Document_v1.0.pdf#page=27) over the network from either **goesrecv** or **xritdecoder** and demultiplexes them into separate virtual channels, each containing a different type of image data.
+**xrit-rx** receives [Virtual Channel Data Units (VCDUs)](https://nmsc.kma.go.kr/resources/homepage/pdf/GK2A_LRIT_Mission_Specification_Document_v1.0.pdf#page=27) over a local network connection from either **SatDump**, **goesrecv** or **xritdecoder** and demultiplexes them into separate virtual channels, each containing a different type of image data.
 The demultiplexed packets are assembled into complete files which are output as images such as the ones below.
 
 ![GK-2A Wavelengths](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/wavelengths.png)
@@ -17,7 +17,7 @@ A guide for setting up the hardware and software components of a GK-2A LRIT rece
 
 <a href="https://vksdr.com/xrit-rx" target="_blank"><p align="center"><img src="https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/guide-thumb-light.png" title="Receiving Images from Geostationary Weather Satellite GEO-KOMPSAT-2A"></p></a>
 
-The [RTL-SDR Blog](https://www.rtl-sdr.com) has also [written a guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **goesrecv**, you can begin installing and configuring **xrit-rx**.
+The [RTL-SDR Blog](https://www.rtl-sdr.com) has also [written a guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **SatDump**, **goesrecv** or **xritdecoder**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
 Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
@@ -33,7 +33,7 @@ More information is [available in the setup guide](https://vksdr.com/xrit-rx#key
 ### Configuring xrit-rx
 All user-configurable options are found in [`xrit-rx.ini`](src/xrit-rx.ini). The default configuration will work for most situations.
 
-If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **goesrecv** / **xritdecoder**.
+If **xrit-rx** is not running on the same device as **SatDump** / **goesrecv** / **xritdecoder**, the `ip` option will need to be updated with the IP address of the device running **SatDump** / **goesrecv** / **xritdecoder**.
 
 [Click here for a full list of configuration options](#configuration-options)
 
@@ -54,7 +54,7 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 | ------------ | ----------- | ------- | ------- |
 | `spacecraft` | Name of spacecraft being received | `GK-2A` | `GK-2A` |
 | `mode`       | Type of downlink being received | `lrit` or `hrit` | `lrit` |
-| `input`      | Input source | `goesrecv`, `tcp` or `udp` | `goesrecv` |
+| `input`      | Input source | `nng`, `tcp` or `udp` | `nng` |
 | `keys`       | Path to decryption key file | *Absolute or relative file path* | `EncryptionKeyMessage.bin` |
 
 #### `output` section
@@ -67,19 +67,19 @@ By default the dashboard is enabled and accessible on port <abbr title="Comes fr
 | `enhance` | Automatically enhance LRIT IR105 images | `true` or `false` | `true` |
 | `ignored` | List of virtual channels to ignore<br>Can be multiple channels (e.g. `4,5`) | `0: Full Disk`<br>`4: Alpha-numeric Text`<br>`5: Additional Data`<br> | *none* |
 
-#### `goesrecv` section
+#### `nng` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
-| `ip`    | IP address of a device running **goesrecv** | *Any IPv4 address* | `127.0.0.1` |
-| `port`  | Output port of **goesrecv** | *Any TCP port number* | `5004` |
+| `ip`    | IP address of a **nanomsg** data source (e.g. **SatDump** or **goesrecv**) | *Any IPv4 address* | `127.0.0.1` |
+| `port`  | Server port of a **nanomsg** data source | *Any TCP port number* | `5004` |
 
 #### `tcp` section
 
 | Setting | Description | Options | Default |
 | ------- | ----------- | ------- | ------- |
 | `ip`    | IP address of a TCP data source (e.g. **xritdecoder**) | *Any IPv4 address* | `127.0.0.1` |
-| `port`  | Output port of a TCP data source | *Any TCP port number* | `5001` |
+| `port`  | Server port of a TCP data source | *Any TCP port number* | `5001` |
 
 #### `udp` section
 
@@ -146,6 +146,7 @@ The root endpoint is located at `/api` which returns information about the curre
 
 ## Acknowledgments
   - [Lucas Teske](https://twitter.com/lucasteske) - Developer of [**Open Satellite Project**](https://github.com/opensatelliteproject) and writer of ["GOES Satellite Hunt"](https://www.teske.net.br/lucas/2016/10/goes-satellite-hunt-part-1-antenna-system/)
+  - [Aang254](https://twitter.com/aang254) - Developer of [**SatDump**](https://github.com/altillimity/SatDump)
   - [Pieter Noordhuis](https://twitter.com/pnoordhuis) - Developer of [**goestools**](https://github.com/pietern/goestools)
   - [John Bell](https://twitter.com/eswnl) - Software testing and IQ recordings
   - ["kisaa"](https://github.com/kisaa) - GK-2A HRIT debugging and packet recordings
