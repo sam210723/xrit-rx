@@ -75,8 +75,13 @@ class Main:
 
         # Open packet dump file
         if self.args.dump:
-            dump_path = Path(self.args.dump)
-            self.dump_file = open(dump_path, "wb+")
+            self.args.dump = Path(self.args.dump)
+            
+            try:
+                self.dump_file = open(self.args.dump, "wb+")
+            except OSError as e:
+                self.log(f"UNABLE TO OPEN PACKET DUMP FILE\"{self.args.dump.absolute()}\"", style="error")
+                self.stop(code=1)
 
         # Change working directory to script location
         os.chdir(Path(__file__).parent.absolute())
@@ -175,7 +180,7 @@ class Main:
         self.keys = self.load_keys(self.config['rx']['keys'])
 
         # Dump file status
-        if self.args.dump: self.log(f"WRITING PACKETS TO \"{dump_path.absolute()}\"", style="ok")
+        if self.args.dump: self.log(f"WRITING PACKETS TO \"{self.args.dump.absolute()}\"", style="ok")
 
         # Check for new version on GitHub
         try:
