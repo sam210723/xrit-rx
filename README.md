@@ -27,6 +27,8 @@ Some extra Python packages are required to run **xrit-rx**. Use the following co
 pip3 install -r requirements.txt
 ```
 
+[**ffmpeg**](https://www.ffmpeg.org/) is also required for processing GK-2A HRIT imagery. To install **ffmpeg** on Debian Linux (Ubuntu, Raspbian etc.) run `sudo apt install ffmpeg`. For Windows installations, [download **ffmpeg**](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-github) (`ffmpeg-essentials_build.zip`), extract `bin/ffmpeg.exe` to a new folder and [add that folder to the `PATH` environment variable](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
+
 Images downlinked from GK-2A are encrypted by the [Korean Meteorological Administration](https://nmsc.kma.go.kr/enhome/html/main/main.do) (KMA). Decryption keys can be downloaded from KMA's website and used with **xrit-rx**.
 More information is [available in the setup guide](https://vksdr.com/xrit-rx#keys).
 
