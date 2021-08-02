@@ -16,18 +16,19 @@ import socket
 import struct
 import time
 
-from demuxer import Demuxer
+from   demuxer import Demuxer
 import ccsds as CCSDS
-from dash import Dashboard
+from   dash import Dashboard
+
 
 class Main:
     def __init__(self):
-        print("┌──────────────────────────────────────────────┐")
-        print("│                   xrit-rx                    │")
-        print("│         LRIT/HRIT Downlink Processor         │")
-        print("├──────────────────────────────────────────────┤")
-        print("│     @sam210723         vksdr.com/xrit-rx     │")
-        print("└──────────────────────────────────────────────┘\n")
+        print("┌──────────────────────────────────────────────┐\n"
+              "│                   xrit-rx                    │\n"
+              "│         LRIT/HRIT Downlink Processor         │\n"
+              "├──────────────────────────────────────────────┤\n"
+              "│     @sam210723         vksdr.com/xrit-rx     │\n"
+              "└──────────────────────────────────────────────┘\n")
 
         # Set instance variables
         self.demuxer = None         # Demuxer class instance
@@ -55,10 +56,10 @@ class Main:
         # Get command line arguments
         argp = argparse.ArgumentParser()
         argp.add_argument("-v", "--verbose", action="store_true", help="Enable verbose console output (only useful for debugging)")
-        argp.add_argument("--config", action="store", help="Path to configuration file (*.ini)", default="xrit-rx.ini")
-        argp.add_argument("--file", action="store", help="Path to VCDU packet file")
-        argp.add_argument("--dump", action="store", help="Write VCDU packets to file (only useful for debugging)")
-        argp.add_argument("--no-exit", action="store_true", help="Pause main thread before exiting (only useful for debugging)")
+        argp.add_argument("--config",        action="store",      help="Path to configuration file (*.ini)", default="xrit-rx.ini")
+        argp.add_argument("--file",          action="store",      help="Path to VCDU packet file")
+        argp.add_argument("--dump",          action="store",      help="Write VCDU packets to file (only useful for debugging)")
+        argp.add_argument("--no-exit",       action="store_true", help="Pause main thread before exiting (only useful for debugging)")
         self.args = argp.parse_args()
 
         # Open input packet file
