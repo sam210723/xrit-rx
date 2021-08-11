@@ -41,6 +41,22 @@ class Main:
         # Initialise Colorama
         colorama.init(autoreset=True)
 
+        # Information dictionary
+        self.satellites = {
+            "GK-2A": {
+                "name": "GEO-KOMPSAT-2A (GK-2A)",
+                "LRIT": [1692.14, "64 kbps"],
+                "HRIT": [1695.4, "3 Mbps"],
+                "SCID": 195,
+                "VCID": {
+                    0: "FULL DISK",
+                    4: "ALPHA-NUMERIC TEXT",
+                    5: "ADDITIONAL DATA",
+                    63: "IDLE"
+                }
+            }
+        }
+
         # Configure xrit-rx
         self.configure()
 
@@ -121,24 +137,17 @@ class Main:
         self.config['dashboard']['interval'] = round(float(self.config['dashboard']['interval']), 1)
         self.config['dashboard']['interval'] = max(1, self.config['dashboard']['interval'])
 
-        # Information dictionary
-        info = {
-            "GK-2A": {
-                "name": "GEO-KOMPSAT-2A (GK-2A)",
-                "LRIT": [1692.14, "64 kbps"],
-                "HRIT": [1695.4, "3 Mbps"]
-            }
-        }
+        
         spacecraft = self.config['rx']['spacecraft']
         downlink = self.config['rx']['mode']
 
         # Check spacecraft is valid
-        if spacecraft not in info:
+        if spacecraft not in self.satellites:
             self.log(f"INVALID SPACECRAFT \"{spacecraft}\"", style="error")
             self.stop(code=1)
         
         # Check downlink is valid
-        if downlink not in info[spacecraft]:
+        if downlink not in self.satellites[spacecraft]:
             self.log(f"INVALID DOWNLINK \"{downlink}\"", style="error")
             self.stop(code=1)
         
@@ -167,8 +176,8 @@ class Main:
             self.config['rx']['input'] = "file"
         
         # Print configuration info
-        self.log(f"SPACECRAFT:   {info[spacecraft]['name'] if spacecraft in info else spacecraft}")
-        self.log(f"DOWNLINK:     {downlink.upper()} ({info[spacecraft][downlink][0]} MHz, {info[spacecraft][downlink][1]})")
+        self.log(f"SPACECRAFT:   {self.satellites[spacecraft]['name'] if spacecraft in self.satellites else spacecraft}")
+        self.log(f"DOWNLINK:     {downlink.upper()} ({self.satellites[spacecraft][downlink][0]} MHz, {self.satellites[spacecraft][downlink][1]})")
         self.log(f"INPUT:        {input_path}")
         self.log(f"OUTPUT:       {self.config['output']['path'].absolute()}")
         self.log(f"KEY FILE:     {self.config['rx']['keys'].name}")
