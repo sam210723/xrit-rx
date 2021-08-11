@@ -278,11 +278,18 @@ class MultiSegmentImage(Product):
         f.write(data)
         f.close()
 
-        # Convert J2P to PNG then delete JP2
+        # Setup ffmpeg
         stream = ffmpeg.input(str(jp2.absolute()))
         stream = ffmpeg.output(stream, str(png.absolute()))
         stream = ffmpeg.overwrite_output(stream)
-        ffmpeg.run(stream, quiet=True)
+        
+        # Run ffmpeg JP2 to PNG conversion
+        try:
+            ffmpeg.run(stream, quiet=self.config.verbose)
+        except ffmpeg.Error as e:
+            print(f"    {STYLE_ERR}{str(e).upper()}")
+
+        # Delete JP2
         Path(jp2).unlink()
         
         # Load 16-bit PNG into Image object
