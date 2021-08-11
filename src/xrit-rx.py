@@ -137,16 +137,14 @@ class Main:
         self.config['dashboard']['interval'] = round(float(self.config['dashboard']['interval']), 1)
         self.config['dashboard']['interval'] = max(1, self.config['dashboard']['interval'])
 
-        
-        spacecraft = self.config['rx']['spacecraft']
-        downlink = self.config['rx']['mode']
-
         # Check spacecraft is valid
+        spacecraft = self.config['rx']['spacecraft']
         if spacecraft not in self.satellites:
             self.log(f"INVALID SPACECRAFT \"{spacecraft}\"", style="error")
             self.stop(code=1)
         
         # Check downlink is valid
+        downlink = self.config['rx']['mode']
         if downlink not in self.satellites[spacecraft]:
             self.log(f"INVALID DOWNLINK \"{downlink}\"", style="error")
             self.stop(code=1)
