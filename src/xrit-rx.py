@@ -45,8 +45,8 @@ class Main:
         self.satellites = {
             "GK-2A": {
                 "name": "GEO-KOMPSAT-2A (GK-2A)",
-                "LRIT": [1692.14, "64 kbps"],
-                "HRIT": [1695.4, "3 Mbps"],
+                "LRIT": [1692.14, "64 kbps", 64e3],
+                "HRIT": [1695.4, "3 Mbps", 3e6],
                 "SCID": 195,
                 "VCID": {
                     0: "FULL DISK",
@@ -131,14 +131,16 @@ class Main:
             self.config['output']['ignored'] = set(self.config['output']['ignored'])
         else:
             self.config['output']['ignored'] = set()
-        ignored = ", ".join(f"{c} ({CCSDS.VCDU.get_VC(None, c)})" for c in self.config['output']['ignored'])
+
+        # Create ignored VCID string
+        spacecraft = self.config['rx']['spacecraft']
+        ignored = ", ".join(f"{c} ({self.satellites[spacecraft]['VCID'][c]})" for c in self.config['output']['ignored'])
 
         # Limit dashboard refresh rate
         self.config['dashboard']['interval'] = round(float(self.config['dashboard']['interval']), 1)
         self.config['dashboard']['interval'] = max(1, self.config['dashboard']['interval'])
 
         # Check spacecraft is valid
-        spacecraft = self.config['rx']['spacecraft']
         if spacecraft not in self.satellites:
             self.log(f"INVALID SPACECRAFT \"{spacecraft}\"", style="error")
             self.stop(code=1)
