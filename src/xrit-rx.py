@@ -46,12 +46,12 @@ class Main:
             "GK-2A": {
                 "name": "GEO-KOMPSAT-2A (GK-2A)",
                 "LRIT": [1692.14, "64 kbps", 64e3],
-                "HRIT": [1695.4, "3 Mbps", 3e6],
+                "HRIT": [1695.4,   "3 Mbps",  3e6],
                 "SCID": 195,
                 "VCID": {
-                    0: "FULL DISK",
-                    4: "ALPHA-NUMERIC TEXT",
-                    5: "ADDITIONAL DATA",
+                     0: "FULL DISK",
+                     4: "ALPHA-NUMERIC TEXT",
+                     5: "ADDITIONAL DATA",
                     63: "IDLE"
                 }
             }
