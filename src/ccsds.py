@@ -20,7 +20,7 @@ class VCDU:
     Parses CCSDS Virtual Channel Data Unit (VCDU)
     """
 
-    def __init__(self, buffer):
+    def __init__(self, buffer, info):
         self.payload = buffer[6:]
         
         header = int.from_bytes(buffer[:6], byteorder="big")
@@ -31,15 +31,18 @@ class VCDU:
         self.replay  = (header & 0x000000000080) >> 7       # Replay Flag
         self.spare   = (header & 0x00000000007F)            # Spare Bits
 
-    def print_info(self, info):
+        # Get spacecraft and virtual channel names
+        self.sc = None
+        self.vc = None
+        for sc in info:
+            if self.scid == info[sc]["SCID"]:
+                self.sc = sc
+                self.vc = info[self.sc]["VCID"][self.vcid]
+
+    def print_info(self):
         """
         Prints information about the current VCDU to the console
         """
-
-        for sc in info:
-            if self.scid == info[sc]["SCID"]: self.sc = sc
-        
-        self.vc = info[self.sc]["VCID"][self.vcid]
 
         print(f"\n[VCID {self.vcid}] {self.sc}: {self.vc}")
 
