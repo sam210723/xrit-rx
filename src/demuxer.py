@@ -20,7 +20,7 @@ STYLE_OK  = f"{Fore.GREEN}{Style.BRIGHT}"
 
 class Demuxer:
     """
-    Coordinates demultiplexing of CCSDS virtual channels into xRIT files.
+    Coordinates demultiplexing of CCSDS virtual channels into xRIT and image files
     """
 
     def __init__(self, config):
@@ -36,11 +36,11 @@ class Demuxer:
         self.channels = {}          # List of channel handlers
         self.vcid = None            # Current Virtual Channel ID
         self.progress = None        # Current multi-segment image progress
-        self.latest_image = None    # Latest image output by demuxer
-        self.latest_xrit = None     # Latest xRIT file output by demuxer
+        self.latest_image = None    # Path to latest image output by demuxer
+        self.latest_xrit = None     # Path to latest xRIT file output by demuxer
 
         # Set core loop delay
-        bitrate = self.config.satellite[self.config.downlink][2]
+        bitrate = self.config.info[self.config.spacecraft][self.config.downlink][2]
         cadu_len = 1024 * 8
         cadu_period = 1 / (bitrate / cadu_len)
         self.core_wait = cadu_period / 2
