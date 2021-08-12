@@ -20,67 +20,28 @@ class VCDU:
     Parses CCSDS Virtual Channel Data Unit (VCDU)
     """
 
-    def __init__(self, data):
-        self.data = data
-        self.tools = Tools()
-        self.parse()
-    
-    def parse(self):
-        """
-        Parse VCDU header fields
-        """
+    def __init__(self, buffer):
+        self.payload = buffer[6:]
+        
+        header = int.from_bytes(buffer[:6], byteorder="big")
+        self.version = (header & 0xC00000000000) >> 46      # Virtual Channel version number
+        self.scid    = (header & 0x3FC000000000) >> 38      # Spacecraft ID
+        self.vcid    = (header & 0x003F00000000) >> 32      # Virtual Channel ID
+        self.counter = (header & 0x0000FFFFFF00) >> 8       # Continuity Counter
+        self.replay  = (header & 0x000000000080) >> 7       # Replay Flag
+        self.spare   = (header & 0x00000000007F)            # Spare Bits
 
-        header = self.data[:6]
-
-        # Header fields
-        self.VER = self.tools.get_bits_int(header, 0, 2, 48)           # Virtual Channel Version
-        self.SCID = self.tools.get_bits_int(header, 2, 8, 48)          # Spacecraft ID
-        self.VCID = self.tools.get_bits_int(header, 10, 6, 48)         # Virtual Channel ID
-        self.COUNTER = self.tools.get_bits_int(header, 16, 24, 48)     # VCDU Counter
-        self.REPLAY = self.tools.get_bits_int(header, 40, 1, 48)       # Replay Flag
-        self.SPARE = self.tools.get_bits_int(header, 41, 7, 48)        # Spare (always b0000000)
-
-        # Spacecraft and virtual channel names
-        self.SC = self.get_SC(self.SCID)
-        self.VC = self.get_VC(self.VCID)
-
-        # M_PDU contained in VCDU
-        self.MPDU = self.data[6:]
-    
-    def get_SC(self, scid):
-        """
-        Get name of spacecraft by ID
-        """
-
-        scname = {}
-        scname[195] = "GK-2A"
-
-        try:
-            return scname[scid]
-        except KeyError:
-            return "UNKNOWN"
-    
-    def get_VC(self, vcid):
-        """
-        Get name of Virtual Channel by ID
-        """
-        vcname = {}
-        vcname[0] = "FULL DISK"
-        vcname[4] = "ALPHA-NUMERIC TEXT"
-        vcname[5] = "ADDITIONAL DATA"
-        vcname[63] = "IDLE"
-
-        try:
-            return vcname[vcid]
-        except KeyError:
-            return "UNKNOWN"
-
-    def print_info(self):
+    def print_info(self, info):
         """
         Prints information about the current VCDU to the console
         """
 
-        print("\n[VCID {}] {}: {}".format(self.VCID, self.SC, self.VC))
+        for sc in info:
+            if self.scid == info[sc]["SCID"]: self.sc = sc
+        
+        self.vc = info[self.sc]["VCID"][self.vcid]
+
+        print(f"\n[VCID {self.vcid}] {self.sc}: {self.vc}")
 
 
 class M_PDU:

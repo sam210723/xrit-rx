@@ -60,68 +60,18 @@ class Demuxer:
         # Indicate core thread has initialised
         self.core_ready = True
 
-        # Thread globals
-        last_vcid = None                        # Last VCID seen
-        crc_lut = CCSDS.CP_PDU.CCITT_LUT(None)  # CP_PDU CRC LUT
-
-        # Thread loop
         while not self.core_stop:
             # Pull next packet from queue
-            packet = self.pull()
-            
-            # If queue is not empty
-            if packet:
-                # Parse VCDU
-                vcdu = CCSDS.VCDU(packet)
-                self.vcid = vcdu.VCID
+            buffer = self.pull()
 
-                # Dump raw VCDU to file
-                if self.config.dump:
-                    # Write packet to file if not fill
-                    if vcdu.VCID != 63:
-                        self.config.dump.write(packet)
-                    else:
-                        # Write single fill packet to file (forces VCDU change on playback)
-                        if last_vcid != 63:
-                            self.config.dump.write(packet)
+            if buffer:
+                # Parse VCDU in buffer
+                vcdu = CCSDS.VCDU(buffer)
+                vcdu.print_info(self.config.info)
 
-                # Check spacecraft is supported
-                if vcdu.SC != "GK-2A":
-                    if self.config.verbose: print(f"{STYLE_ERR}SPACECRAFT \"{vcdu.SCID}\" NOT SUPPORTED")
-                    continue
-
-                # Check for VCID change
-                if last_vcid != vcdu.VCID:
-                    # Notify channel handlers of VCID change
-                    for c in self.channels:
-                        self.channels[c].notify(vcdu.VCID)
-                    
-                    # Print VCID info
-                    if self.config.verbose: print()
-                    vcdu.print_info()
-                    if vcdu.VCID in self.config.ignored: print(f"  {STYLE_ERR}SKIPPING DATA (CHANNEL IS IGNORED IN CONFIG)")
-                    last_vcid = vcdu.VCID
-
-                # Discard fill packets and ignored VCIDs
-                if vcdu.VCID == 63 or vcdu.VCID in self.config.ignored:
-                    self.progress = 100
-                    continue
-
-                # Create channel handlers for new VCIDs
-                if vcdu.VCID not in self.channels:
-                    #FIXME: Probably a better way to do this
-                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit enhance ignored keys VCID lut')
-                    self.channels[vcdu.VCID] = Channel(ccfg(*self.config, vcdu.VCID, crc_lut), self)
-                    if self.config.verbose: print(f"  {STYLE_OK}CREATED NEW CHANNEL HANDLER\n")
-
-                # Pass VCDU to appropriate channel handler
-                self.channels[vcdu.VCID].data_in(vcdu)
             else:
-                # No packet available, sleep thread
+                # Sleep thread when no VCDU available
                 sleep(self.core_wait)
-        
-        # Gracefully exit core thread
-        if self.core_stop: return
 
 
     def push(self, packet):
