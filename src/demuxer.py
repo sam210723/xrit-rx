@@ -34,11 +34,8 @@ class Demuxer:
         self.rxq = deque()          # Data receive queue
         self.core_ready = False     # Core thread ready flag
         self.core_stop = False      # Core thread stop flag
-        self.channels = {}          # List of channel handlers
-        self.vcid = None            # Current Virtual Channel ID
-        self.progress = None        # Current multi-segment image progress
-        self.latest_image = None    # Path to latest image output by demuxer
-        self.latest_xrit = None     # Path to latest xRIT file output by demuxer
+        self.channels = {}          # Channel handler instances
+        self.status = {}            # Demuxer status dictionary
 
         # Set core loop delay
         bitrate = self.config.info[self.config.spacecraft][self.config.downlink][2]
@@ -345,7 +342,7 @@ class Channel:
         # Save xRIT file if enabled
         if self.config.xrit:
             xrit.save(self.config.output)
-            self.demuxer.latest_xrit = xrit.get_save_path(None)
+            self.demuxer.status["xrit"] = xrit.get_save_path(None)
 
         # Save image file if enabled
         if self.config.images:
@@ -372,7 +369,7 @@ class Channel:
             if self.product.complete:
                 self.product.save()
 
-                self.demuxer.latest_image = self.product.last
+                self.demuxer.status["image"] = self.product.last
                 self.demuxer.progress = 0
                 self.product = None
         else:
@@ -408,6 +405,6 @@ class Channel:
                 # Save and clear current product
                 self.product.save()
 
-                self.demuxer.latest_image = self.product.last
+                self.demuxer.status["image"] = self.product.last
                 self.demuxer.progress = 0
                 self.product = None
