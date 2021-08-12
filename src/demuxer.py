@@ -6,6 +6,7 @@ CCSDS demultiplexer
 """
 
 from collections import deque, namedtuple
+import colorama
 from colorama import Fore, Back, Style
 from time import sleep
 from threading import Thread
@@ -110,6 +111,24 @@ class Demuxer:
         """
 
         self.core_stop = True
+
+
+    def log(self, msg, style="none", indent=0):
+        """
+        Writes to console
+        """
+
+        # Colorama styles
+        styles = {
+            "none":   "",
+            "ok":    f"{colorama.Fore.GREEN}{colorama.Style.BRIGHT}",
+            "error": f"{colorama.Fore.WHITE}{colorama.Back.RED}{colorama.Style.BRIGHT}"
+        }
+
+        # Create indent string
+        indent = "".join(" " for _ in range(indent))
+        
+        print(f"{indent}{styles[style]}{msg}")
 
 
 class Channel:
