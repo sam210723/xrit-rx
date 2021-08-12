@@ -40,13 +40,7 @@ class Demuxer:
         self.latest_xrit = None     # Latest xRIT file output by demuxer
 
         # Set core loop delay
-        bitrates = {
-            "GK-2A": {
-                "LRIT": 65536,      # 64 kbps
-                "HRIT": 3072000     # 3 Mbps
-            }
-        }
-        bitrate = bitrates[self.config.spacecraft][self.config.downlink]
+        bitrate = self.config.satellite[self.config.downlink][2]
         cadu_len = 1024 * 8
         cadu_period = 1 / (bitrate / cadu_len)
         self.core_wait = cadu_period / 2

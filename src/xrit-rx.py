@@ -303,7 +303,7 @@ class Main:
         """
 
         # Create demuxer instance
-        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit enhance ignored keys')
+        demux_config = namedtuple('demux_config', 'spacecraft downlink verbose dump output images xrit enhance ignored keys satellite')
         self.demuxer = Demuxer(
             demux_config(
                 self.config['rx']['spacecraft'],
@@ -315,7 +315,8 @@ class Main:
                 self.config['output']['xrit'],
                 self.config['output']['enhance'],
                 self.config['output']['ignored'],
-                self.keys
+                self.keys,
+                self.satellites[self.config['rx']['spacecraft']]
             )
         )
 
