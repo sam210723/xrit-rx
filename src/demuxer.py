@@ -54,9 +54,10 @@ class Demuxer:
         """
         Distributes VCDUs to channel handlers.
         """
-        
+
         # Indicate core thread has initialised
         self.core_ready = True
+        prev_vcid = None
 
         while not self.core_stop:
             # Pull next packet from queue
@@ -64,8 +65,52 @@ class Demuxer:
 
             if buffer:
                 # Parse VCDU in buffer
-                vcdu = CCSDS.VCDU(buffer)
-                vcdu.print_info(self.config.info)
+                vcdu = CCSDS.VCDU(buffer, self.config.info)
+                self.status['vcid'] = vcdu.vcid
+
+                # Dump VCDU to file
+                if self.config.dump:
+                    # Write packet to file (except fill packets)
+                    if vcdu.vcid != 63:
+                        self.config.dump.write(buffer)
+                    else:
+                        # Write single fill packet to file
+                        if prev_vcid != 63: self.config.dump.write(buffer)
+
+                # Check SCID is supported
+                if not vcdu.sc:
+                    if self.config.verbose: self.log(f"SPACECRAFT \"{vcdu.scid}\" NOT SUPPORTED", style="error")
+                    continue
+
+                # Check for VCID change
+                if vcdu.vcid != prev_vcid:
+                    prev_vcid = vcdu.vcid
+
+                    # Notify channel handlers of VCID change
+                    for c in self.channels:
+                        self.channels[c].notify(vcdu.vcid)
+
+                    # Print VCID info
+                    if self.config.verbose: print()
+                    vcdu.print_info()
+
+                    if vcdu.vcid in self.config.ignored:
+                        self.log(f"SKIPPING DATA (CHANNEL IS IGNORED IN CONFIG)", style="error", indent=2)
+
+                # Discard fill packets and ignored VCIDs
+                if vcdu.vcid == 63 or vcdu.vcid in self.config.ignored:
+                    self.status["progress"] = 100
+                    continue
+                
+                # Create channel handlers for new VCIDs
+                if vcdu.vcid not in self.channels:
+                    #FIXME: Probably a better way to do this
+                    ccfg = namedtuple('ccfg', 'spacecraft downlink verbose dump output images xrit enhance ignored keys info VCID')
+                    self.channels[vcdu.vcid] = Channel(ccfg(*self.config, vcdu.vcid), self)
+                    if self.config.verbose: print(f"  {STYLE_OK}CREATED NEW CHANNEL HANDLER\n")
+
+                # Push VCDU to appropriate channel handler
+                self.channels[vcdu.vcid].push(vcdu)
 
             else:
                 # Sleep thread when no VCDU available
@@ -144,19 +189,20 @@ class Channel:
         self.tpfile = None          # Current TP_File object
         self.product = None         # Current Product object
         self.demuxer = parent       # Demuxer class instance (parent)
+        self.crc_lut = CCSDS.CP_PDU.CCITT_LUT(None)  # CP_PDU CRC LUT
 
 
-    def data_in(self, vcdu):
+    def push(self, vcdu):
         """
         Takes in VCDUs for the channel handler to process
         """
 
         # Check VCDU continuity counter
         self.continuity(vcdu)
-        self.counter = vcdu.COUNTER
+        self.counter = vcdu.counter
 
         # Parse M_PDU
-        mpdu = CCSDS.M_PDU(vcdu.MPDU)
+        mpdu = CCSDS.M_PDU(vcdu.payload)
         
         # If M_PDU contains CP_PDU header
         if mpdu.HEADER:
@@ -173,7 +219,7 @@ class Channel:
 
                 # Finish current CP_PDU
                 try:
-                    len_ok, crc_ok = self.cppdu.finish(pre_ptr, self.config.lut)
+                    len_ok, crc_ok = self.cppdu.finish(pre_ptr, self.crc_lut)
                     if self.config.verbose:
                         # Show length error
                         if len_ok:
@@ -204,7 +250,7 @@ class Channel:
                     
                     # Finish current CP_PDU
                     try:
-                        len_ok, crc_ok = self.cppdu.finish(b'', self.config.lut)
+                        len_ok, crc_ok = self.cppdu.finish(b'', self.crc_lut)
                         if self.config.verbose:
                             # Show length error
                             if len_ok:
@@ -265,7 +311,7 @@ class Channel:
         if self.counter == 0xFFFFFF and vcdu.COUNTER == 0: return True
         
         # Check counter difference
-        diff = vcdu.COUNTER - self.counter - 1
+        diff = vcdu.counter - self.counter - 1
         if diff > 0:
             if self.config.verbose:
                 print(f"  {STYLE_ERR}DROPPED {diff} PACKET{'S' if diff > 1 else ''}    ({vcdu.COUNTER} -> {self.counter})")
