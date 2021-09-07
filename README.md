@@ -136,11 +136,11 @@ The root endpoint is located at `/api` which returns information about the curre
 ```
 
 ### List of Endpoints
-| URL                       | Description                       | Example                                                                               | MIME               |
-| ------------------------- | --------------------------------- | ------------------------------------------------------------------------------------- | ------------------ |
-| `/api`                    | General configuration information | *see above*                                                                           | `application/json` |
-| `/api/status`             | Current demuxer status            | `{ "vcid": 63, "progress": 100, "image": "IMG_[...].jpg", "xrit": "IMG_[...].xrit" }` | `application/json` |
-| `/api/received/[...]`     | Received data access              | *binary data*                                                                         | `image/...`        |
+| URL                       | Description                       | Example                                                                                                                | MIME               |
+| ------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `/api`                    | General configuration information | *see above*                                                                                                            | `application/json` |
+| `/api/status`             | Current demuxer status            | `{`<br>`  "vcid": 63,`<br>`  "progress": 100,`<br>`  "image": "IMG_[...].jpg",`<br>`  "xrit": "IMG_[...].xrit"`<br>`}` | `application/json` |
+| `/api/received/[...]`     | Received data access              | *binary data*                                                                                                          | `image/...`        |
 
 
 ## Acknowledgments
