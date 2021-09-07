@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
   - Full dashboard URL displayed on startup
   - Dynamic core wait time based on downlink bitrate
   - Static received data API endpoint
+  - Combined status API endpoint
   - Parse ignored VCIDs into a set
   - Remove unused legacy functions
   - Rename `osp` source to `tcp`

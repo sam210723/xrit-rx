@@ -176,11 +176,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 data = file_obj.read()
                 file_obj.close()
 
-        # Simple value endpoints
-        elif api_path == "/current/vcid":     data = { "vcid":      demuxer.vcid }
-        elif api_path == "/current/progress": data = { "progress":  demuxer.progress }
-        elif api_path == "/latest/image":     data = { "image":     demuxer.latest_image }
-        elif api_path == "/latest/xrit":      data = { "xrit":      demuxer.latest_xrit }
+        # All other endpoints
+        elif api_path == "/status": data = demuxer.status
 
         # Send HTTP 200 OK if content has been updated
         if data != b'': code = 200

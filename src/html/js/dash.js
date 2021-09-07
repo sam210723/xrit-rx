@@ -155,43 +155,17 @@ function configure()
  */
 function poll()
 {
-    // Get current VCID
-    http_get("/api/current/vcid", (res) => {
+    // Get current status of xrit-rx
+    http_get("/api/status", (res) => {
         if (res.status == 200) {
             res.json().then((data) => {
                 current_vcid = data['vcid'];
-            });
-        }
-        else {
-            print("Failed to get current VCID", "POLL");
-            return false;
-        }
-    });
-
-    // Get current multi-segment image progress
-    http_get("/api/current/progress", (res) => {
-        if (res.status == 200) {
-            res.json().then((data) => {
                 current_progress = data['progress'];
+                latest_image = data['image'];
             });
         }
         else {
-            print("Failed to get current progress", "POLL");
-            return false;
-        }
-    });
-
-    // Get last image
-    http_get("/api/latest/image", (res) => {
-        if (res.status == 200) {
-            res.json().then((data) => {
-                if (data['image'] != null) {
-                    latest_image = data['image'].replace(/\\/g, '/');
-                }
-            });
-        }
-        else {
-            print("Failed to get last image", "POLL");
+            print("Failed to poll API", "POLL");
             return false;
         }
     });

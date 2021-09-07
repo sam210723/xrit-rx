@@ -37,6 +37,12 @@ class Demuxer:
         self.channels = {}          # Channel handler instances
         self.status = {}            # Demuxer status dictionary
 
+        # Set default status values
+        self.status['vcid'] = -1
+        self.status['image'] = ""
+        self.status['xrit'] = ""
+        self.status['progress'] = 100
+
         # Set core loop delay
         bitrate = self.config.info[self.config.spacecraft][self.config.downlink][2]
         cadu_len = 1024 * 8
@@ -415,7 +421,7 @@ class Channel:
             if self.product.complete:
                 self.product.save()
 
-                self.demuxer.status["image"] = self.product.last
+                self.demuxer.status["image"] = self.product.last.replace('\\', '/')
                 self.demuxer.progress = 0
                 self.product = None
         else:
