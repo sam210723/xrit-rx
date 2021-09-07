@@ -155,13 +155,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Root endpoint
         if api_path == "":
             data = {
-                'version':        config.version,
-                'spacecraft':     config.spacecraft,
-                'downlink':       config.downlink,
-                'ignored_vcids':  list(config.ignored),
-                'images':         config.images,
-                'xrit':           config.xrit,
-                'interval':       int(config.interval)
+                'version':    config.version,
+                'spacecraft': config.spacecraft,
+                'downlink':   config.downlink,
+                'ignored':    list(config.ignored),
+                'images':     config.images,
+                'xrit':       config.xrit,
+                'interval':   int(config.interval)
             }
 
         # Received data endpoint

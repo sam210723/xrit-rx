@@ -128,7 +128,7 @@ The root endpoint is located at `/api` which returns information about the curre
   "version": 1.4,
   "spacecraft": "GK-2A",
   "downlink": "LRIT",
-  "ignored_vcids": [4, 5],
+  "ignored": [4, 5],
   "images": true,
   "xrit": false,
   "interval": 1

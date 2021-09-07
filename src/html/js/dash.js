@@ -352,7 +352,7 @@ function block_decoder(element)
             indicator.innerHTML = `<div class="progress-text"><span>${name}</span><p>VCID ${ch}</p></div><div class="progress-bar">&nbsp;</div>`;
 
             // Set 'disabled' attribute on ignored VCIDs
-            if (config.ignored_vcids.indexOf(parseInt(ch)) > -1) {
+            if (config.ignored.indexOf(parseInt(ch)) > -1) {
                 indicator.setAttribute("disabled", "");
                 indicator.title += " (ignored)";
             }
@@ -363,7 +363,7 @@ function block_decoder(element)
     else {  // Update block
         for (var ch in vchans[config.spacecraft]) {
             // Do not update ignored channels
-            if (config.ignored_vcids.indexOf(parseInt(ch)) > -1) { continue; }
+            if (config.ignored.indexOf(parseInt(ch)) > -1) { continue; }
 
             // Update active channel
             if (ch == current_vcid) {
