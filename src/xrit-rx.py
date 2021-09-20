@@ -29,6 +29,15 @@ class Main:
               "├──────────────────────────────────────────────┤\n"
               "│     @sam210723         vksdr.com/xrit-rx     │\n"
               "└──────────────────────────────────────────────┘\n")
+        
+        # Initialise Colorama
+        colorama.init(autoreset=True)
+
+        # Check minimum Python version requirement
+        import sys
+        if sys.version_info[1] < 7:
+            self.log("Python v3.7 or newer is required to run xrit-rx", style="error")
+            exit(1)
 
         # Set instance variables
         self.demuxer = None         # Demuxer class instance
@@ -37,9 +46,6 @@ class Main:
         self.packet_file = None     # Packet input file
         self.dump_file = None       # Packet output file
         self.version = "1.4"        # Application version
-
-        # Initialise Colorama
-        colorama.init(autoreset=True)
 
         # Information dictionary
         self.info = {
