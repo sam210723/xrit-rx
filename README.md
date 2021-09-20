@@ -121,8 +121,8 @@ optional arguments:
 **xrit-rx** has a basic API accessible via HTTP primarily to support its web-based monitoring dashboard.
 This may be useful for integrating **xrit-rx** with other applications.
 
-The API only supports `GET` requests and will return either a `200 OK` or `404 Not Found` status.
-The root endpoint is located at `/api` which returns information about the current xrit-rx configuration (example below).
+The API only supports `GET` requests and will return either `200 OK` or `404 Not Found`.
+The root endpoint located at `/api` returns information about the current xrit-rx configuration.
 ```json
 {
   "version": 1.4,
@@ -135,12 +135,28 @@ The root endpoint is located at `/api` which returns information about the curre
 }
 ```
 
+The `/api/status` endpoint returns information about the current decoder state. This is used to update the dashboard interface at regular intervals.
+The `image` and `xrit` values will only be present if **xrit-rx** is configured to output the respective file types (see the [Configuration Options](#configuration-options) section).
+
+```json
+{
+  "vcid": 63,
+  "progress": 100,
+  "image": "YYYYMMDD/FD/IMG_[...].[jpg/gif/png]",
+  "xrit": "YYYMMDD/FD/IMG_[...].[lrit/hrit]"
+}
+```
+
+The `/api/received` endpoint enables access to received files using the paths returned by the `/api/status` endpoint. The response MIME type will change depending on the type of file requested.
+
+For example, requesting `/api/received/20201231/FD/IMG_FD_143_IR105_20201231_2359.jpg` will return an JPEG image with MIME `image/jpeg`.
+
 ### List of Endpoints
-| URL                       | Description                       | Example                                                                                                                | MIME               |
-| ------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `/api`                    | General configuration information | *see above*                                                                                                            | `application/json` |
-| `/api/status`             | Current demuxer status            | `{`<br>`  "vcid": 63,`<br>`  "progress": 100,`<br>`  "image": "IMG_[...].jpg",`<br>`  "xrit": "IMG_[...].xrit"`<br>`}` | `application/json` |
-| `/api/received/[...]`     | Received data access              | *binary data*                                                                                                          | `image/...`        |
+| URL                       | Description                       | Example       | MIME                   |
+| ------------------------- | --------------------------------- | ------------- | ---------------------- |
+| `/api`                    | General configuration information | *see above*   | `application/json`     |
+| `/api/status`             | Current demuxer status            | *see above*   | `application/json`     |
+| `/api/received/[...]`     | Received data access              | *binary data* | `image/[jpeg/gif/png]` |
 
 
 ## Acknowledgments
