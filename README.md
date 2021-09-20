@@ -20,7 +20,9 @@ A guide for setting up the hardware and software components of a GK-2A LRIT rece
 The [RTL-SDR Blog](https://www.rtl-sdr.com) has also [written a guide](https://www.rtl-sdr.com/rtl-sdr-com-goes-16-17-and-gk-2a-weather-satellite-reception-comprehensive-tutorial/) for setting up the hardware and software required to receive imagery from GOES-16/17 and GK-2A. Once you are able to receive the GK-2A LRIT downlink with **SatDump**, **goesrecv** or **xritdecoder**, you can begin installing and configuring **xrit-rx**.
 
 ### Installing xrit-rx
-Download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
+First, ensure Python version 3.7 or newer is installed by running `python3 -V` which will return something like `Python 3.8.3`.
+
+Next, download the [latest version of **xrit-rx**](https://github.com/sam210723/xrit-rx/releases/latest) (``xrit-rx.zip``) from the Releases page, then unzip the contents to a new folder.
 
 Some extra Python packages are required to run **xrit-rx**. Use the following command to download and install these packages:
 ```
