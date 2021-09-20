@@ -18,7 +18,6 @@ import sys
 import time
 
 from   demuxer import Demuxer
-import ccsds as CCSDS
 from   dash import Dashboard
 
 
