@@ -25,10 +25,6 @@ class Demuxer:
     """
 
     def __init__(self, config):
-        """
-        Initialises demuxer class
-        """
-
         # Configure instance globals
         self.config = config        # Configuration tuple
         self.rxq = deque()          # Data receive queue
