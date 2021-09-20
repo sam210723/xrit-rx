@@ -14,6 +14,7 @@ from   pathlib import Path
 import requests
 import socket
 import struct
+import sys
 import time
 
 from   demuxer import Demuxer
@@ -34,7 +35,6 @@ class Main:
         colorama.init(autoreset=True)
 
         # Check minimum Python version requirement
-        import sys
         if sys.version_info[1] < 7:
             self.log("Python v3.7 or newer is required to run xrit-rx", style="error")
             exit(1)
