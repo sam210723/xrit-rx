@@ -12,7 +12,7 @@ Run `pip3 install -r requirements.txt` to update these packages before using v1.
 
 ### Added
   - Automatic LRIT IR105 image enhancement
-  - Offline schedule loading when online schedule fails
+  - Offline schedule fallback when online schedule fails
   - Dashboard schedule download failue message
   - Flag to pause main thread after processing (`--no-exit`)
   - New version notification on startup console output
@@ -25,26 +25,26 @@ Run `pip3 install -r requirements.txt` to update these packages before using v1.
   - Complete rewrite of `xrit-rx.py`
   - Partial rewrite of CCSDS classes (`S_PDU`)
   - Full dashboard URL displayed on startup
-  - Dynamic core wait time based on downlink bitrate
   - Static received data API endpoint
   - Combined status API endpoint
+  - Dynamic core wait time based on downlink bitrate
   - Parse ignored VCIDs into a set
   - Remove unused legacy functions
+  - Rename `goesrecv` source to `nng` (nanomsg)
   - Rename `osp` source to `tcp`
   - Use `f-strings` instead of `str.format()`
-  - Rename `goesrecv` source to `nng` (nanomsg)
 
 ### Fixed
   - Naming convention and code quality issues
   - HTTP request handler locking up
   - Safe exit when demux core not ready
+  - Relative paths when script is not in the CWD
+  - Product file path manipulation using `pathlib`
   - Partial FDs not showing up on dashboard
+  - Payload DES ECB block boundary alignment
   - Dashboard font fallback
   - Check config file exists before reading
-  - Relative paths when script is not in the CWD
   - Clipping to white in enhancement script
-  - Payload DES ECB block boundary alignment
-  - Product file path manipulation using `pathlib`
 </details>
 
 
