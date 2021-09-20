@@ -3,4 +3,6 @@ pillow>=8.1.2
 pycryptodome>=3.10.1
 colorama>=0.4.4
 requests>=2.25.1
+aiohttp>=3.7.4
+cchardet>=2.1.7
 ffmpeg-python>=0.2.0

@@ -4,8 +4,8 @@ All notable changes to this project will be documented in this file.
 <details>
 <summary>Unreleased changes</summary>
 
-**Note:** This release updates the minimum required versions of all external packages used by **xrit-rx**.
-Run `pip3 install -r requirements.txt` to update these packages before using v1.4.
+**Note:** This release adds new dependencies and updates minimum versions of existing dependencies.
+Run `pip3 install -r requirements.txt` to install and update these packages before using v1.4.
 
 **Note:** This release includes changes to the configuration file format. Configuration files from previous versions will not work with v1.4.
 
