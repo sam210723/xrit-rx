@@ -88,7 +88,7 @@ If **xrit-rx** is not running on the same device as **goesrecv** / **xritdecoder
 **xrit-rx** includes a web-based dashboard for easy monitoring and viewing of received data.
 The current GK-2A LRIT schedule is also displayed on the dashboard (retrieved from [KMA NMSC](https://nmsc.kma.go.kr/enhome/html/main/main.do)).
 
-![Dashboard](https://vksdr.com/bl-content/uploads/pages/ee5e126f5e958391589fea17a681d7f7/dashboard.png)
+![Dashboard](https://vksdr.com/bl-content/uploads/pages/5fdcbf35a5231fc135c274ac17ca50c8/dashboard.png)
 
 By default the dashboard is enabled and accessible on port <abbr title="Comes from the COMS-1/GK-2A LRIT frequency: 1692.14 MHz">1692</abbr> via HTTP (no HTTPS). These settings can be changed in the ``[dashboard]`` section of ``xrit-rx.ini``.
 
